@@ -1,2 +1,4 @@
 #~
 *~
+progressReports/*
+!progressReports/.gitkeep

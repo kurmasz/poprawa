@@ -190,6 +190,10 @@ class GradebookLoader
           end
           #p assignment_keys
         end # end each cell for second row
+        if first_assignment_column.nil?
+          puts "Unable to identify first assignment column for #{sheet.sheet_name}"
+          exit
+        end
       else 
         # We add 1 row index so it matches the row number in the spreadsheet 
         student = students[row_index+1]

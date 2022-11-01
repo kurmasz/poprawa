@@ -9,18 +9,28 @@
 # (c) 2022 Zachary Kurmas
 ######################################################################################
 
-# --porcelin   https://github.com/ruby-git/ruby-git
+# --porcelain   https://github.com/ruby-git/ruby-git
 
 require 'optparse'
 require_relative "lib/gradebook"
 require_relative "lib/report_generator"
 
 options = {
+  create: false,
+  suppress_github: false,
   verbose: false,
 }
 
 OptionParser.new do |opts|
   opts.banner = "Usage: gh_progress_report.rb [options]"
+
+  opts.on("-c", "--[no-]create-report-directories", "Create report directories, if necessary") do |c|
+    options[:create] = c
+  end
+
+  opts.on("-s", "--[no-]suppress-github", "Suppresses updates to github") do |s|
+    options[:suppress] = s
+  end
 
   opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
     options[:verbose] = v
@@ -38,6 +48,13 @@ g = Gradebook.new(config_file_name, verbose: options[:verbose])
 setup_report = lambda do |student|
   puts "Processing #{student.full_name}" if options[:verbose]
   filename = g.config[:output_file].call(student.info[:github])
+
+  dirname = File.dirname(filename)
+  if (options[:create] && !File.exist?(dirname))
+    puts "Creating report directory for #{student.full_name} --- #{dirname}"
+    Dir.mkdir(dirname)
+  end
+
   begin
     File.open(filename, "w+")
   rescue Errno::ENOENT => e
@@ -52,8 +69,8 @@ end # setup_report
 
 push_report = lambda do |student|
   directory =  File.dirname(g.config[:output_file].call(student.info[:github]))
-  if (File.exist?(directory))
-    `(cd #{directory}; git add .; git commit -m "Updated grade report"; git push)` unless directory.nil?
+  if (File.exist?(directory) && !options[:suppress])
+    `(cd #{directory}; git add .; git commit -m "Updated grade report"  --porcelain; git push --porcelain)` unless directory.nil?
   end
 end
 
