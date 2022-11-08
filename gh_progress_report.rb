@@ -15,6 +15,15 @@ require 'optparse'
 require_relative "lib/gradebook"
 require_relative "lib/report_generator"
 
+def run_and_log(command, log)
+  output = `#{command}`
+  log.puts "#{command} --- #{$?.exitstatus}"
+  log.puts output
+  $?.exitstatus == 0
+end
+
+
+
 options = {
   create: false,
   suppress_github: false,
@@ -41,6 +50,8 @@ if ARGV.length == 0
   $stderr.puts "Usage: gh_progress_report config_file"
   exit
 end
+
+log = File.open("log.txt", "w+")
 
 config_file_name = ARGV[0]
 g = Gradebook.new(config_file_name, verbose: options[:verbose])
@@ -70,9 +81,18 @@ end # setup_report
 push_report = lambda do |student|
   directory =  File.dirname(g.config[:output_file].call(student.info[:github]))
   if (File.exist?(directory) && !options[:suppress])
-    `(cd #{directory}; git add .; git commit -m "Updated grade report"  --porcelain; git push --porcelain)` unless directory.nil?
+    log.puts "*********************"
+    puts student.info[:github]
+    commands = ["git -C #{directory} add .", "git -C #{directory} commit -m 'Updated grade report'", "git -C #{directory} push"]
+    success = commands.map {|command| run_and_log(command, log)}
+    if success.include?(false)
+      puts "Problem updating repo for #{student.full_name} (#{student.info[:github]})"
+    end
+  else
+    puts "Skipping GitHub for #{student.full_name}" if options[:verbose]
   end
 end
 
 
 ReportGenerator.generate_reports(g, before: setup_report, after: push_report)
+log.close
