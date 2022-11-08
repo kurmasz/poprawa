@@ -45,21 +45,25 @@ HERE
     gradebook.categories.each do |category|
       out.puts "## #{category[:title]}"
       out.puts
-      out.puts "| #{category[:short_name]} |       |  "
+      out.puts "|#{category[:title]}|Grade|"
       out.puts "|------|-------|"
 
-      category[:item_keys].each do |item_key|
-        mark = student.get_mark(category[:key], item_key)
+      # puts category[:item_keys]
+      category[:item_keys].each do |key, value|
+        mark = student.get_mark(category[:key], key) # why is this acting like an array?
         # mark_sym = mark_to_sym(mark) #  mark.nil? ? :future : mark.downcase.to_sym
     
         #if (mark.nil?)
          # $stderr.puts "#{student.full_name} has a nil for #{hw}"
         #end
-    
-        out.printf "| %-4s | %-5s |\n", item_key.to_s, mark
+
+        # separate marks with spaces
+        mark = mark.split('').join(' ') if !mark.nil?
+
+        out.printf "| %s (%s) | %-5s |\n", value.to_s, key.to_s, mark
       end # each item
-        out.puts
-        out.puts
+      out.puts
+      out.puts
     end # each category
 
     generate_legend(out)

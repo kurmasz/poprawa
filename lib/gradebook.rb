@@ -71,6 +71,7 @@ class Gradebook
 
   attr_reader :students, :config
 
+  # config_in represents input file
   def initialize(config_in, verbose: false)
 
     if (config_in.is_a? String)

@@ -51,7 +51,8 @@ class GradebookLoader
 
     config[:categories].each do |category|
       sheet_name = category[:key].to_s
-      category[:item_keys] = self.load_gradesheet(workbook[sheet_name], info_sheet, student_map)
+      category[:item_keys] = self.load_assignment_names(workbook[sheet_name], info_sheet, student_map)
+      self.load_gradesheet(workbook[sheet_name], info_sheet, student_map)
     end
 
     yield student_map.values
@@ -137,6 +138,45 @@ class GradebookLoader
     end # info_sheet.each
     students
   end # load_info
+
+  def self.load_assignment_names(sheet, info_sheet, students)
+    short_names = []
+    long_names = []
+    assignment_names = {}
+
+    sheet.each do |row|
+      row.cells.each_with_index do |cell, index|
+        # skip empty cells
+        next if cell.nil? || cell.value.nil? || cell.value.to_s.strip.empty?
+
+        stripped_cell = cell.value.to_s.strip
+        
+        # skip cells that contain student info
+        if cell.formula.nil? # NOTE apparently first cell doesn't match formula expression ?
+          # Process the row with "long names"
+          if row.index_in_collection == 0
+            long_names.append(stripped_cell.to_sym)
+          end
+  
+          # Process the row with "short names"
+          if row.index_in_collection == 1
+            put_warning "Warning! Assignment key '#{stripped_cell}' contains whitespace." if stripped_cell =~ /\s+/
+            short_names.append(stripped_cell.to_sym)
+          end
+
+          if row.index_in_collection > 1
+            # create hash from long and short name arrays
+            long_names.each_with_index do |value, index|
+              next if short_names[index].start_with?('x') # should we ignore these?
+              assignment_names[short_names[index].to_sym] = value.to_sym
+            end
+
+            return assignment_names
+          end
+        end
+      end
+    end
+  end
 
   #
   # load_gradesheet
