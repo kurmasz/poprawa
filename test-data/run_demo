@@ -1,0 +1,5 @@
+# Add --create when running the fist time to create the necessary directories.
+# --suppress suppresses the calls to github (since this dummy data doesn't have 
+# real GitHub accounts.)
+
+ruby ../gh_progress_report.rb gradebook_config.rb --suppress

@@ -24,6 +24,7 @@ class Student
     @info = info_map
     @index = index
     @marks = {}
+    @assignment_names = {}
   end
 
   #

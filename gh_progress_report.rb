@@ -70,7 +70,9 @@ end # setup_report
 push_report = lambda do |student|
   directory =  File.dirname(g.config[:output_file].call(student.info[:github]))
   if (File.exist?(directory) && !options[:suppress])
-    `(cd #{directory}; git add .; git commit -m "Updated grade report"  --porcelain; git push --porcelain)` unless directory.nil?
+    puts `(cd #{directory}; pwd; git add .; git commit -m "Updated grade report" --porcelain; git push --porcelain)` unless directory.nil?
+  else
+    puts "Skipping GitHub for #{student.full_name}" if options[:verbose]
   end
 end
 
