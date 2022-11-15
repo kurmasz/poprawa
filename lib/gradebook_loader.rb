@@ -51,8 +51,7 @@ class GradebookLoader
 
     config[:categories].each do |category|
       sheet_name = category[:key].to_s
-      category[:item_keys] = self.load_assignment_names(workbook[sheet_name], info_sheet, student_map)
-      self.load_gradesheet(workbook[sheet_name], info_sheet, student_map)
+      category[:item_keys] = self.load_gradesheet(workbook[sheet_name], info_sheet, student_map)
     end
 
     yield student_map.values
@@ -139,20 +138,32 @@ class GradebookLoader
     students
   end # load_info
 
-  def self.load_assignment_names(sheet, info_sheet, students)
+  #
+  # load_gradesheet
+  #
+  # This method returns a hash containing assignment names & descriptions 
+  # in addition to loading student grades.
+  #
+  def self.load_gradesheet(sheet, info_sheet, students)
     short_names = []
     long_names = []
     assignment_names = {}
+    first_assignment_column = nil
 
     sheet.each do |row|
       row.cells.each_with_index do |cell, index|
-        # skip empty cells
-        next if cell.nil? || cell.value.nil? || cell.value.to_s.strip.empty?
+        # warn about empty cells and skip
+        if cell.nil? || cell.value.nil? || cell.value.to_s.strip.empty?
+          put_warning "Warning! row #{row.index_in_collection + 1} column #{index + 1} in #{sheet.sheet_name} is empty."
+          next
+        end
 
         stripped_cell = cell.value.to_s.strip
         
         # skip cells that contain student info
-        if cell.formula.nil? # NOTE apparently first cell doesn't match formula expression ?
+        if cell.formula.nil?
+          first_assignment_column = index if first_assignment_column.nil?
+
           # Process the row with "long names"
           if row.index_in_collection == 0
             long_names.append(stripped_cell.to_sym)
@@ -164,110 +175,33 @@ class GradebookLoader
             short_names.append(stripped_cell.to_sym)
           end
 
+          # Process the rows containing student grades
           if row.index_in_collection > 1
-            # create hash from long and short name arrays
-            long_names.each_with_index do |value, index|
-              next if short_names[index].start_with?('x') # should we ignore these?
-              assignment_names[short_names[index].to_sym] = value.to_sym
-            end
+            # add 1 row so it matches the row number in the spreadsheet
+            student = students[row.index_in_collection + 1]
 
-            return assignment_names
+            # skip to next student row if inactive
+            break unless student.active? # TRY next if break doesn't work
+
+            # don't process data in assignments that are marked with 'x'
+            if !short_names[index - first_assignment_column].start_with?('x')
+              info = parse_mark_cell(cell.value)
+              if (info[:mark].nil?)
+                put_warning "Warning! #{assignment_keys[index]} grade for #{student.full_name} on row #{row_index + 1}: #{info[:message]}" 
+              end
+              student.set_mark(sheet.sheet_name.to_sym, short_names[index - first_assignment_column], info[:mark])
+            end
           end
         end
       end
     end
+    # create hash from long and short name arrays
+    long_names.each_with_index do |value, index|
+      next if short_names[index].start_with?('x') # should we ignore these?
+      assignment_names[short_names[index].to_sym] = value.to_sym
+    end
+    return assignment_names
   end
-
-  #
-  # load_gradesheet
-  #
-  # Load a Worksheet containing student marks
-  #   * The first several columns are references to the student info worksheet.
-  #     (This is how the user knows whose marks go on which row.)
-  #     * It is important that the user data is by reference.  This code
-  #       assumes cells with formulas referencing the info sheet are user data
-  #       and the remaining cells in a row are grade/mark data.  
-  #   * The first row is simply a decorative header row.
-  #   * The second row contains the user info symbols followed my the "short name" of 
-  #     assignments stored on the sheet.
-  #     * These "short names" should look like Ruby symbols. 
-  #
-  def self.load_gradesheet(sheet, info_sheet, students)
-
-    puts "Loading gradesheet #{sheet.sheet_name}"
-
-    info_map= {}  
-    assignment_keys = {}
-    first_assignment_column = nil
-
-    sheet.each do |row|
-
-      # ignore the header row
-      next if row.index_in_collection == 0
-
-      row_index = row.index_in_collection;
-
-      # Process the row with "short names" for assignments
-      if (row.index_in_collection == 1)
-        row.cells.each_with_index do |cell, index|
-
-          # Warn about empty cells
-          if cell.nil? || cell.value.nil? || cell.value.to_s.strip.empty?
-            put_warning "Warning: The cell in column #{index} of the #{sheet.sheet_name} key row is nil or empty"
-            next
-          end
-          
-          # Check if cell is a formula pointing to the information sheet
-          stripped_cell = cell.value.to_s.strip
-          if !cell.formula.nil? && cell.formula.expression =~ /^#{info_sheet.sheet_name}\!\w+2$/
-            # TODO Make sure stripped_cell matches key from Student info sheet
-            info_map[index] = stripped_cell.to_sym
-            # puts "Setting #{index} to #{stripped_cell}"
-          else
-            first_assignment_column = index  if first_assignment_column.nil?              
-            put_warning "Warning! Assignment key '#{stripped_cell}' contains whitespace." if stripped_cell =~ /\s+/
-            assignment_keys[index] = stripped_cell.to_sym unless stripped_cell.start_with?('x')
-          end
-          #p assignment_keys
-        end # end each cell for second row
-        if first_assignment_column.nil?
-          puts "Unable to identify first assignment column for #{sheet.sheet_name}"
-          exit
-        end
-      else 
-        # We add 1 row index so it matches the row number in the spreadsheet 
-        student = students[row_index+1]
-        # puts "#{row_index} #{student.inspect}"
-        raise "Programmer Error! Row #{row_index + 1} of #{sheet.sheet_name} Worksheet contains unexpected student." unless row_index = student.index
-        next unless student.active?
-
-        row.cells.each_with_index do |cell, index|
-          if (index < first_assignment_column) 
-            # puts "Key is #{info_map[index].inspect} ---- #{info_map.inspect}"
-            # puts "Student info => #{student.info} -- #{student.info[info_map[index]]}"
-            put_warning "Warning! Unexpected student info on row #{row_index + 1} column #{index}.  Expected #{student.info[info_map[index]]}.  Got #{cell.value}" unless student.info[info_map[index]] == stripped_string(cell.value)
-          elsif assignment_keys.keys.include?(index)  # don't process data in assignments that are marked with 'x'
-            if (cell.nil? || cell.value.nil? || cell.value.to_s.strip.empty?)
-              put_warning "Warning! #{assignment_keys[index]} grade for #{student.full_name} on row #{row_index + 1} is empty."
-            else
-              info = parse_mark_cell(cell.value)
-              if (info[:mark].nil?) 
-                put_warning "Warning! #{assignment_keys[index]} grade for #{student.full_name} on row #{row_index + 1}: #{info[:message]}"
-              end
-              student.set_mark(sheet.sheet_name.to_sym, assignment_keys[index], info[:mark])
-            end # if cell is empty
-          end # if user info column
-        end # each cell for remaining rows
-        assignment_keys.keys.each do |key| 
-          if key >= row.cells.count
-            put_warning "Warning! #{assignment_keys[key]} grade for #{student.full_name} on row #{row_index + 1} is empty."
-          end
-        end # each key
-      end # if row.index_in_collection == 
-    end # each row
-    assignment_keys.sort.map {|item| item.last}
-  end # end load_gradesheet
-
 
   #
   # parse_mark_cell
