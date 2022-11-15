@@ -51,7 +51,7 @@ class GradebookLoader
 
     config[:categories].each do |category|
       sheet_name = category[:key].to_s
-      category[:item_keys] = self.load_gradesheet(workbook[sheet_name], info_sheet, student_map)
+      category[:item_keys] = self.load_gradesheet(workbook[sheet_name], student_map)
     end
 
     yield student_map.values
@@ -144,7 +144,7 @@ class GradebookLoader
   # This method returns a hash containing assignment names & descriptions 
   # in addition to loading student grades.
   #
-  def self.load_gradesheet(sheet, info_sheet, students)
+  def self.load_gradesheet(sheet, students)
     short_names = []
     long_names = []
     assignment_names = {}
@@ -181,7 +181,7 @@ class GradebookLoader
             student = students[row.index_in_collection + 1]
 
             # skip to next student row if inactive
-            break unless student.active? # TRY next if break doesn't work
+            break unless student.active?
 
             # don't process data in assignments that are marked with 'x'
             if !short_names[index - first_assignment_column].start_with?('x')
@@ -197,7 +197,7 @@ class GradebookLoader
     end
     # create hash from long and short name arrays
     long_names.each_with_index do |value, index|
-      next if short_names[index].start_with?('x') # should we ignore these?
+      next if short_names[index].start_with?('x')
       assignment_names[short_names[index].to_sym] = value.to_sym
     end
     return assignment_names
