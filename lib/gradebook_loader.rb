@@ -164,9 +164,16 @@ class GradebookLoader
         if cell.formula.nil?
           first_assignment_column = index if first_assignment_column.nil?
 
+          # TODO:  Are we asking for trouble here?  What happens if the user, for some dumb reason
+          # Puts a formula in row 0, but not in row 1?  Would it be safer to do something 
+          # like long_names[index] = stripped_cell?
+
+          # TODO: I don't think long names should be converted to symbols. 
+          # Leave them as strings.  (Let me know if I'm overlooking something.)
+
           # Process the row with "long names"
           if row.index_in_collection == 0
-            long_names.append(stripped_cell.to_sym)
+            long_names.append(stripped_cell)
           end
   
           # Process the row with "short names"
