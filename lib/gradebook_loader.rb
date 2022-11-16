@@ -192,6 +192,8 @@ class GradebookLoader
 
             # don't process data in assignments that are marked with 'x'
             if !short_names[index - first_assignment_column].start_with?('x')
+
+              # QQQQ info contains mark and late days
               info = parse_mark_cell(cell.value)
               if (info[:mark].nil?)
                 put_warning "Warning! #{assignment_keys[index]} grade for #{student.full_name} on row #{row_index + 1}: #{info[:message]}" 
@@ -237,6 +239,7 @@ class GradebookLoader
       answer = {mark: $1&.strip, late: ($2&.strip)&.to_i, comment: $3&.strip}
     end
     #puts "Mark =>#{value}<= #{answer.inspect}"
+    # QQQQ Notice that answer contains both the grade and late days
     answer
   end
 
