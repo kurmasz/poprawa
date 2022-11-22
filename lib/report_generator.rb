@@ -45,15 +45,14 @@ HERE
     gradebook.categories.each do |category|
       out.puts "## #{category[:title]}"
       out.puts
-      out.puts "|#{category[:title]}|Grade|"
-      out.puts "|------|-------|"
+      out.puts "|#{category[:title]}|Grade|Late Days|"
+      out.puts "|------|-------|-------|"
 
       category[:assignment_names].each do |key, value|
-        mark = student.get_mark(category[:key], key)
+        mark = format_marks(student.get_mark(category[:key], key))
+        late_days = student.get_late_days(key)
 
-        mark = format_marks(mark)
-
-        out.printf "|%s (%s)|%-5s|\n", value.to_s, key.to_s, mark
+        out.printf "|%s (%s)|%s|%s|\n", value, key, mark, late_days.nil? ? 0 : late_days
       end # each item
       out.puts
       out.puts

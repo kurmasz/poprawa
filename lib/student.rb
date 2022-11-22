@@ -89,8 +89,8 @@ class Student
   #
   # get_late_days
   #
-  def get_late_days()
-    @late_days
+  def get_late_days(assignment)
+    @late_days[assignment]
   end
 
   def get_mark_old(item)
