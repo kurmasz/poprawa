@@ -51,7 +51,7 @@ class GradebookLoader
 
     config[:categories].each do |category|
       sheet_name = category[:key].to_s
-      category[:item_keys] = self.load_gradesheet(workbook[sheet_name], student_map)
+      category[:assignment_names] = self.load_gradesheet(workbook[sheet_name], student_map)
     end
 
     yield student_map.values
@@ -160,16 +160,9 @@ class GradebookLoader
 
         stripped_cell = cell.value.to_s.strip
         
-        # skip cells that contain student info
-        if cell.formula.nil?
+        # skip cells that contain student info (checks formulas only in the first row)
+        if (!first_assignment_column.nil? && index >= first_assignment_column) || cell.formula.nil?
           first_assignment_column = index if first_assignment_column.nil?
-
-          # TODO:  Are we asking for trouble here?  What happens if the user, for some dumb reason
-          # Puts a formula in row 0, but not in row 1?  Would it be safer to do something 
-          # like long_names[index] = stripped_cell?
-
-          # TODO: I don't think long names should be converted to symbols. 
-          # Leave them as strings.  (Let me know if I'm overlooking something.)
 
           # Process the row with "long names"
           if row.index_in_collection == 0
@@ -199,6 +192,7 @@ class GradebookLoader
                 put_warning "Warning! #{assignment_keys[index]} grade for #{student.full_name} on row #{row_index + 1}: #{info[:message]}" 
               end
               student.set_mark(sheet.sheet_name.to_sym, short_names[index - first_assignment_column], info[:mark])
+              student.set_late_days(short_names[index - first_assignment_column], info[:late])
             end
           end
         end

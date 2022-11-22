@@ -24,6 +24,7 @@ class Student
     @info = info_map
     @index = index
     @marks = {}
+    @late_days = {}
     @assignment_names = {}
   end
 
@@ -71,12 +72,26 @@ class Student
     @marks[type][assignment] = mark
   end
 
-#
-# get_mark
-#
-def get_mark(type, assignment) 
-  @marks[type][assignment]
-end
+  #
+  # get_mark
+  #
+  def get_mark(type, assignment) 
+    @marks[type][assignment]
+  end
+
+  #
+  # set_late_days
+  #
+  def set_late_days(assignment, late_days)
+    @late_days[assignment] = late_days
+  end
+
+  #
+  # get_late_days
+  #
+  def get_late_days()
+    @late_days
+  end
 
   def get_mark_old(item)
     mark_values = { "e" => 2, "m" => 3, "p" => 4, "x" => 5, "." => 6, "?" => 6 }

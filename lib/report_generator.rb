@@ -48,12 +48,12 @@ HERE
       out.puts "|#{category[:title]}|Grade|"
       out.puts "|------|-------|"
 
-      category[:item_keys].each do |key, value|
+      category[:assignment_names].each do |key, value|
         mark = student.get_mark(category[:key], key)
 
-        mark = format_grades(mark)
+        mark = format_marks(mark)
 
-        out.printf "| %s (%s) | %-5s |\n", value.to_s, key.to_s, mark
+        out.printf "|%s (%s)|%-5s|\n", value.to_s, key.to_s, mark
       end # each item
       out.puts
       out.puts
@@ -64,27 +64,32 @@ HERE
     out.close  
   end
 
-  def self.format_grades(grades)
-    return if grades.nil?
+  #
+  # format_grades
+  #
+  # returns a formatted string of grades with the highest grade bolded
+  #
+  def self.format_marks(marks)
+    return if marks.nil?
     
     mark_values = {"e" => 3, "m" => 2, "p" => 1}
     highest = 0
     highest_index = -1
     
-    grades = grades.split('')
+    marks = marks.split('')
 
-    grades.each_with_index do |grade, index|
-      next if !mark_values.key?(grade)
+    marks.each_with_index do |mark, index|
+      next if !mark_values.key?(mark)
 
-      if mark_values[grade] > highest
-        highest = mark_values[grade]
+      if mark_values[mark] >= highest
+        highest = mark_values[mark]
         highest_index = index
       end
     end
 
-    grades[highest_index] = "**#{grades[highest_index]}**" if highest_index > -1
+    marks[highest_index] = "**#{marks[highest_index]}**" if highest_index > -1
 
-    return grades.join(' ')
+    return marks.join(' ')
   end
 
   def self.generate_legend(out)
