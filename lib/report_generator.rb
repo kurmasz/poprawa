@@ -100,6 +100,8 @@ HERE
       out.puts "* `p`: Progressing"
       out.puts "* `x`: Not Yet"
       out.puts "* `.`: Missing"
+      out.puts "* `d`: Demonstrated but not yet graded"
+      out.puts "* `r`: Received but not yet graded"
       out.puts "* `?`: Received; Grading in progress"
       out.puts "* `!`: Error in gradesheet"
   end
