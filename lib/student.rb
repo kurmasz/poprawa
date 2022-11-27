@@ -4,10 +4,38 @@
 #
 # Holds personal and grade data for one student.
 #
+# Data:
+#
+# @active:     Boolean indicating whether student is still active (or has withdrawn)
+#    
+# @index:      The index of this Student item in the containing array.
+#
+# @info:       Student data stored in the "info" worksheet.  Most of this data is
+#              optional (displayed in the workbook primarily for the convenience of 
+#              the gradekeeper).  Commonly included items include
+#              - fname    (required)
+#              - lname    (required)
+#              - section
+#              - github   (required if posting progress reports to github)
+#    
+# @marks:      A nested Hash (Hash of Hashes) that stores a student's marks for an assignment
+#              using both the assignment type (the worksheet name) and assignment "short" name
+#              (the symbol in the second row of the corresponding worksheet).  For example, 
+#              to access the mark for assignment :hw2 in the "homework" worksheet, use 
+#              @marks[:homework][:hw2].  This Student class does not specify the form of the 
+#              mark itself; but, the current report_generator assumes the mark is a String.
+#
+# @late_days:  A nested Hash that stores the number of late days accrued for a given assignment.
+#              (See description of @marks above)
+#         
+#
+#
 # (c) 2022 Zachary Kurmas
 ######################################################################################
 
 class Student
+
+  # Keys required to be present in @info
   REQUIRED_KEYS = [:fname, :lname]
 
   attr_reader :info, :index
@@ -25,7 +53,6 @@ class Student
     @index = index
     @marks = {}
     @late_days = {}
-    @assignment_names = {}
   end
 
   #
@@ -91,17 +118,5 @@ class Student
   #
   def get_late_days(assignment)
     @late_days[assignment]
-  end
-
-  def get_mark_old(item)
-    mark_values = { "e" => 2, "m" => 3, "p" => 4, "x" => 5, "." => 6, "?" => 6 }
-    mark = @marks[item]
-    return mark if mark.nil? || mark.length <= 1
-    $stderr.puts "Mark for #{item} is nil" if mark.nil?
-    mark.chars.each do |v|
-      $stderr.puts "Unknown mark for #{item}:  =>#{v}<=" unless mark_values.has_key?(v)
-    end
-
-    mark.chars.sort { |a, b| mark_values[a] <=> mark_values[b] }.first
   end
 end
