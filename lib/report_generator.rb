@@ -50,9 +50,9 @@ HERE
 
       category[:assignment_names].each do |key, value|
         mark = format_marks(student.get_mark(category[:key], key))
-        late_days = student.get_late_days(key)
+        late_days = student.get_late_days(category[:key], key)
 
-        out.printf "|%s (%s)|%s|%s|\n", value, key, mark, late_days.nil? ? 0 : late_days
+        out.printf "|%s (%s)|%s|%s|\n", value, key, mark, late_days
       end # each item
       out.puts
       out.puts

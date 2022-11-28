@@ -109,14 +109,15 @@ class Student
   #
   # set_late_days
   #
-  def set_late_days(assignment, late_days)
-    @late_days[assignment] = late_days
+  def set_late_days(type, assignment, late_days)
+    @late_days[type] = {} unless @late_days.has_key?(type)
+    @late_days[type][assignment] = late_days.nil? ? 0 : late_days
   end
 
   #
   # get_late_days
   #
-  def get_late_days(assignment)
-    @late_days[assignment]
+  def get_late_days(type, assignment)
+    @late_days[type][assignment]
   end
 end
