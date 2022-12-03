@@ -8,20 +8,28 @@
 #
 # Conventions:
 #  * All Worksheets
-#    * If first (leftmost) column begins with "xx" that row is ignored.
+#    * If first (leftmost) column of a row begins with "xx", then that row is ignored.
 #    * Rows after END are ignored.
 #  * Student Info
 #    * Student info is in the first (leftmost) Worksheet
-#    * First row of info worksheet contains display names
-#    * Second row of info worksheet contains Ruby symbols used to access that info
+#    * First row of the Info worksheet contains "display" names (i.e., long, descriptive names)
+#    * Second row of info worksheet contains Ruby symbols used to access the info in that column.
+#      (In other words, this row contains the symbols used as keys in the Student class's @info Hash)
 #      Values in this row should "look like" Ruby symbols (lower-case, no whitespace, 
 #      alphanumeric characters only, etc.) 
 #  * Grade Worksheets
-#    * First row is header containing "long" assignment names
-#    * Second row contains "short" assignment names
-#    * First several columns will be copies of user data (so it is easy to enter data into workbook)
-#    * Second row should be left blank for these student info columns
-
+#    * First row of a grade worksheet contains "display" names (i.e., long, descriptive names)
+#    * Second row of a grade worksheet contains Ruby symbols used to access the info in that column.
+#      (For example, the second row contains the symbols that serve as an assignment's unique id.)
+#      Values in this row should "look like" Ruby symbols (lower-case, no whitespace, 
+#      alphanumeric characters only, etc.) 
+#    * First several columns will be formulas that reference a column in the Info worksheet. 
+#      (This places the students name, and other  select student information in each grade worksheet 
+#      so it is easy to enter data into that worksheet.)
+#      Formulas are assumed to be these references.  Actual grading data (including headers) should be 
+#      entered directly in the cell (i.e., not be formulas)
+#    
+#
 # (c) 2022 Zachary Kurmas
 ######################################################################################
 
@@ -189,7 +197,7 @@ class GradebookLoader
               # QQQQ info contains mark and late days
               info = parse_mark_cell(cell.value)
               if (info[:mark].nil?)
-                put_warning "Warning! #{assignment_keys[index]} grade for #{student.full_name} on row #{row_index + 1}: #{info[:message]}" 
+                put_warning "Warning! grade for #{student.full_name} on row #{row.index_in_collection + 1} index #{index}: #{info[:message]}" 
               end
               student.set_mark(sheet.sheet_name.to_sym, short_names[index - first_assignment_column], info[:mark])
               student.set_late_days(short_names[index - first_assignment_column], info[:late])
