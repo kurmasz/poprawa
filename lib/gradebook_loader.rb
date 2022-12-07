@@ -200,7 +200,7 @@ class GradebookLoader
                 put_warning "Warning! grade for #{student.full_name} on row #{row.index_in_collection + 1} index #{index}: #{info[:message]}" 
               end
               student.set_mark(sheet.sheet_name.to_sym, short_names[index - first_assignment_column], info[:mark])
-              student.set_late_days(short_names[index - first_assignment_column], info[:late])
+              student.set_late_days(sheet.sheet_name.to_sym, short_names[index - first_assignment_column], info[:late])
             end
           end
         end
