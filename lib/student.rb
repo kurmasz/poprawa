@@ -106,6 +106,12 @@ class Student
     @marks[type][assignment]
   end
 
+  def get_marks(type)
+    puts "Calling get_marks for #{type}"
+    p @marks.keys
+    @marks[type].values
+  end
+
   #
   # set_late_days
   #

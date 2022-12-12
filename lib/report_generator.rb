@@ -7,27 +7,34 @@
 #####################################################################################
 
 class ReportGenerator
+  MARK_ORDER = ["e", "m", "p", "x"]
+
+  # TODO  This probably now belongs somewhere else.  But, I'm not sure where...
+  def self.highest_mark(mark_list)
+    marks = mark_list.split("").map { |m| MARK_ORDER.include?(m) ? m : "x" }
+    marks.sort { |a, b| MARK_ORDER.find_index(a) <=> MARK_ORDER.find_index(b) }.first.to_sym
+  end
 
   #
   # generate_reports
   #
-  # before: is a lambda that generates the output stream to which 
+  # before: is a lambda that generates the output stream to which
   # this student should be printed.
   #
-  # after: is a lambda that does any necessary post-processing 
+  # after: is a lambda that does any necessary post-processing
   # (e.g., delivering the report to the target location)
   #
   # The "pre-processing" code can alternatively be passed as a block
   # instead of a lambda.
-  def self.generate_reports(gradebook, students=gradebook.students, before: nil, after: nil)
-    students.select{ |s| s.active?}.each do |student|
+  def self.generate_reports(gradebook, students = gradebook.students, before: nil, after: nil)
+    students.select { |s| s.active? }.each do |student|
       out = before.nil? ? yield(student) : before.(student)
       generate_report(student, gradebook, out) unless out.nil?
       after.(student) unless after.nil?
     end
-  end 
+  end
 
-  # 
+  #
   # generate_report
   #
   # generate a report for one student
@@ -39,7 +46,6 @@ class ReportGenerator
     Note:  This is a draft of the progress report generator.  This version only shows the
     marks I have for each graded item.  Future reports will contain more detail.
 HERE
-
 
     gradebook.categories.each do |category|
       out.puts "## #{category[:title]}"
@@ -54,12 +60,13 @@ HERE
       end # each item
 
       generate_mark_breakdown(student, category, out)
-
+      current_grade = gradebook.calc_grade(student, category: category[:key])      
+      out.printf "\nCurrent grade:  #{current_grade}\n" if current_grade
     end # each category
 
     generate_legend(out)
 
-    out.close  
+    out.close
   end
 
   #
@@ -69,12 +76,12 @@ HERE
   #
   def self.format_marks(marks)
     return if marks.nil?
-    
-    mark_values = {"e" => 3, "m" => 2, "p" => 1}
+
+    mark_values = { "e" => 3, "m" => 2, "p" => 1 }
     highest = 0
     highest_index = -1
-    
-    marks = marks.split('')
+
+    marks = marks.split("")
 
     marks.each_with_index do |mark, index|
       next if !mark_values.key?(mark)
@@ -87,35 +94,28 @@ HERE
 
     marks[highest_index] = "**#{marks[highest_index]}**" if highest_index > -1
 
-    return marks.join(' ')
+    return marks.join(" ")
   end
 
   #
   # generate_mark_breakdown
   #
   def self.generate_mark_breakdown(student, category, out)
-    numE = 0
-    numM = 0
-    numP = 0
-    numX = 0
+    mark_count = { e: 0, m: 0, p: 0, x: 0 }
 
     category[:assignment_names].each do |key, value|
       marks = student.get_mark(category[:key], key)
-      
       next if marks.nil?
 
-      marks = marks.split('')
-      
-      numE += marks.count('e')
-      numM += marks.count('m')
-      numP += marks.count('p')
-      numX += marks.count('x') + marks.count('?') + marks.count('.')
+      mark_count[highest_mark(marks)] += 1
     end
 
     out.puts
     out.puts "|E|M|P|X|"
     out.puts "|------|-------|-------|-------|"
-    out.puts "|#{numE}|#{numM}|#{numP}|#{numX}|"
+    out.puts "|#{mark_count[:e]}|#{mark_count[:m]}|#{mark_count[:p]}|#{mark_count[:x]}|"
+    out.puts
+    out.puts "#{mark_count[:e] + mark_count[:m]} at 'm' or better."
   end
 
   def self.generate_legend(out)
