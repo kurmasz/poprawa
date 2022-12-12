@@ -5,29 +5,29 @@
 |Learning Objectives|Grade|Late Days|
 |------|-------|-------|
 |Origins (o1)|**m**|0|
-Current grade:  A|Get/Post (m1)|**e**|0|
-Current grade:  A|Implementation (i1)|**p**|0|
-Current grade:  A|URL parts (i2)|**m**|0|
-Current grade:  A|Write CSS (h3)|**m**|0|
-Current grade:  A
+|Get/Post (m1)|**e**|0|
+|Implementation (i1)|**p**|0|
+|URL parts (i2)|**m**|0|
+|Write CSS (h3)|**m**|0|
+
 |E|M|P|X|
 |------|-------|-------|-------|
 |1|3|1|0|
 
 4 at 'm' or better.
-## Homework
+Current grade:  A## Homework
 |Homework|Grade|Late Days|
 |------|-------|-------|
 |Web Client (H1)|**e**|0|
-Current grade:  B|Web Server (H2)|**m**|0|
-Current grade:  B|Qwixx Board (H3)|**m**|0|
-Current grade:  B
+|Web Server (H2)|**m**|0|
+|Qwixx Board (H3)|**m**|0|
+
 |E|M|P|X|
 |------|-------|-------|-------|
 |1|2|0|0|
 
 3 at 'm' or better.
-
+Current grade:  B
 ## Legend 
 * `e`: Exceeds expectations
 * `m`: Meets expectations
