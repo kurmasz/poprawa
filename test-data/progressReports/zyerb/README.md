@@ -15,7 +15,9 @@
 |0|2|2|1|
 
 2 at 'm' or better.
-Current grade:  B## Homework
+
+Current grade:  B
+## Homework
 |Homework|Grade|Late Days|
 |------|-------|-------|
 |Web Client (H1)|.|0|
@@ -27,7 +29,9 @@ Current grade:  B## Homework
 |0|2|0|1|
 
 2 at 'm' or better.
+
 Current grade:  B
+
 ## Legend 
 * `e`: Exceeds expectations
 * `m`: Meets expectations
