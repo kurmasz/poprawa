@@ -5,11 +5,11 @@
 |Learning Objectives|Grade|Late Days|
 |------|-------|-------|
 |Origins (o1)|.|0|
-|Get/Post (m1)|||
-|Implementation (i1)|||
-|URL parts (i2)|||
-|Write CSS (h3)|||
-
+Current grade:  B|Get/Post (m1)|||
+Current grade:  B|Implementation (i1)|||
+Current grade:  B|URL parts (i2)|||
+Current grade:  B|Write CSS (h3)|||
+Current grade:  B
 |E|M|P|X|
 |------|-------|-------|-------|
 |0|0|0|1|
@@ -19,9 +19,9 @@
 |Homework|Grade|Late Days|
 |------|-------|-------|
 |Web Client (H1)|d **m**|0|
-|Web Server (H2)|**m**|0|
-|Qwixx Board (H3)|. - -|0|
-
+Current grade:  B|Web Server (H2)|**m**|0|
+Current grade:  B|Qwixx Board (H3)|. - -|0|
+Current grade:  B
 |E|M|P|X|
 |------|-------|-------|-------|
 |0|2|0|1|
