@@ -59,7 +59,13 @@ HERE
         out.printf "|%s (%s)|%s|%s|\n", value, key, marks, late_days
       end # each item
 
-      generate_mark_breakdown(student, category, out)
+      if !category.has_key?(:empx) || category[:empx]
+        #puts "Generating breakdown for #{category.inspect}"
+        generate_mark_breakdown(student, category, out)
+      else
+        #puts "*NOT* Generating breakdown for #{category[:key]}"
+      end
+        
       current_grade = gradebook.calc_grade(student, category: category[:key])      
       out.printf "\nCurrent grade:  #{current_grade}\n" if current_grade
     end # each category
