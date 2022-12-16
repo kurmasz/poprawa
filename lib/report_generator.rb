@@ -94,6 +94,8 @@ HERE
   # generate_mark_breakdown
   #
   def self.generate_mark_breakdown(student, category, out)
+    assigned = category[:assignment_names].length
+    name = (student.lname + student.fname[0]).downcase
     numE = 0
     numM = 0
     numP = 0
@@ -103,7 +105,7 @@ HERE
       marks = student.get_mark(category[:key], key)
       
       next if marks.nil?
-
+      
       marks = marks.split('')
       
       numE += marks.count('e')
@@ -112,10 +114,13 @@ HERE
       numX += marks.count('x') + marks.count('?') + marks.count('.')
     end
 
+
     out.puts
     out.puts "|E|M|P|X|"
     out.puts "|------|-------|-------|-------|"
     out.puts "|#{numE}|#{numM}|#{numP}|#{numX}|"
+
+    system("node lib/generate_graph.js #{name} #{numM + numE} #{assigned}")
   end
 
   def self.generate_legend(out)

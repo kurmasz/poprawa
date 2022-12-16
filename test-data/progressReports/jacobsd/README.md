@@ -12,9 +12,7 @@
 
 |E|M|P|X|
 |------|-------|-------|-------|
-|0|0|0|5|
-
-0 at 'm' or better.
+|0|0|0|6|
 ## Homework
 |Homework|Grade|Late Days|
 |------|-------|-------|
@@ -24,9 +22,7 @@
 
 |E|M|P|X|
 |------|-------|-------|-------|
-|0|0|0|3|
-
-0 at 'm' or better.
+|0|0|0|2|
 
 ## Legend 
 * `e`: Exceeds expectations
