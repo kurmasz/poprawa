@@ -95,7 +95,6 @@ HERE
   #
   def self.generate_mark_breakdown(student, category, out)
     assigned = category[:assignment_names].length
-    name = (student.lname + student.fname[0]).downcase
     numE = 0
     numM = 0
     numP = 0
@@ -115,12 +114,15 @@ HERE
     end
 
 
-    out.puts
-    out.puts "|E|M|P|X|"
-    out.puts "|------|-------|-------|-------|"
-    out.puts "|#{numE}|#{numM}|#{numP}|#{numX}|"
+    # out.puts
+    # out.puts "|E|M|P|X|"
+    # out.puts "|------|-------|-------|-------|"
+    # out.puts "|#{numE}|#{numM}|#{numP}|#{numX}|"
 
-    system("node lib/generate_graph.js #{name} #{numM + numE} #{assigned}")
+    system("node lib/generate_graph.js #{student.info[:github]} #{category[:title].delete(' ')} #{numM + numE} #{assigned}")
+
+    out.puts
+    out.puts "![#{category[:title]}](#{category[:title].delete(' ')}.png)"
   end
 
   def self.generate_legend(out)

@@ -10,27 +10,3 @@
 |URL parts (i2)|**p**|0|
 |Write CSS (h3)|p **m**|0|
 
-|E|M|P|X|
-|------|-------|-------|-------|
-|0|3|5|0|
-## Homework
-|Homework|Grade|Late Days|
-|------|-------|-------|
-|Web Client (H1)|**e**|0|
-|Web Server (H2)|**m**|0|
-|Qwixx Board (H3)|**m**|0|
-
-|E|M|P|X|
-|------|-------|-------|-------|
-|1|2|0|0|
-
-## Legend 
-* `e`: Exceeds expectations
-* `m`: Meets expectations
-* `p`: Progressing
-* `x`: Not Yet
-* `.`: Missing
-* `d`: Demonstrated but not yet graded
-* `r`: Received but not yet graded
-* `?`: Received; Grading in progress
-* `!`: Error in gradesheet

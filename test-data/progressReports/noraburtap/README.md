@@ -10,9 +10,9 @@
 |URL parts (i2)|**p**|0|
 |Write CSS (h3)|**p**|0|
 
-|E|M|P|X|
-|------|-------|-------|-------|
-|0|2|4|1|
+
+
+![Learning Objectives](LearningObjectives.png)
 ## Homework
 |Homework|Grade|Late Days|
 |------|-------|-------|
@@ -20,9 +20,9 @@
 |Web Server (H2)|**m**|0|
 |Qwixx Board (H3)|p **m**|0|
 
-|E|M|P|X|
-|------|-------|-------|-------|
-|0|3|1|0|
+
+
+![Homework](Homework.png)
 
 ## Legend 
 * `e`: Exceeds expectations
