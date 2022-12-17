@@ -239,7 +239,7 @@ class GradebookLoader
     # Mark can be anything except a | or ;
     # Late days must be a number.
     #
-    result = (value =~ /^\s*([^|;]+)\s*(?:\|\s*(\d+)\s*)?(?:\;\s*(.*))?\s*$/)
+    result = (value.to_s =~ /^\s*([^|;]+)\s*(?:\|\s*(\d+)\s*)?(?:\;\s*(.*))?\s*$/)
     if (result.nil?)
       answer = {mark: nil, message: "=>#{value}<= doesn't parse!"}
     elsif $1.nil?
@@ -250,7 +250,7 @@ class GradebookLoader
       # &.strip only calls strip if not nil
       answer = {mark: $1&.strip, late: ($2&.strip)&.to_i, comment: $3&.strip}
     end
-    #puts "Mark =>#{value}<= #{answer.inspect}"
+    # puts "Mark =>#{value}<= #{answer.inspect} ==== #{$1} -- #{$2}"
     # QQQQ Notice that answer contains both the grade and late days
     answer
   end
