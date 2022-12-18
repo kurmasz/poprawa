@@ -160,6 +160,7 @@ class GradebookLoader
 
     sheet.each do |row|
       row.cells.each_with_index do |cell, index|
+
         # warn about empty cells and skip
         if cell.nil? || cell.value.nil? || cell.value.to_s.strip.empty?
           put_warning "Warning! row #{row.index_in_collection + 1} column #{index + 1} in #{sheet.sheet_name} is empty."
@@ -188,10 +189,19 @@ class GradebookLoader
             # add 1 row so it matches the row number in the spreadsheet
             student = students[row.index_in_collection + 1]
 
+            if student.nil?
+              puts "Don't have student for #{row.index_in_collection}"
+            end
+
             # skip to next student row if inactive
             break unless student.active?
 
             # don't process data in assignments that are marked with 'x'
+
+            if short_names[index - first_assignment_column].nil?
+              puts "There is data in column #{index}, but no header."
+            end
+
             if !short_names[index - first_assignment_column].start_with?('x')
 
               # QQQQ info contains mark and late days
@@ -229,7 +239,7 @@ class GradebookLoader
     # Mark can be anything except a | or ;
     # Late days must be a number.
     #
-    result = (value =~ /^\s*([^|;]+)\s*(?:\|\s*(\d+)\s*)?(?:\;\s*(.*))?\s*$/)
+    result = (value.to_s =~ /^\s*([^|;]+)\s*(?:\|\s*(\d+)\s*)?(?:\;\s*(.*))?\s*$/)
     if (result.nil?)
       answer = {mark: nil, message: "=>#{value}<= doesn't parse!"}
     elsif $1.nil?
@@ -240,7 +250,7 @@ class GradebookLoader
       # &.strip only calls strip if not nil
       answer = {mark: $1&.strip, late: ($2&.strip)&.to_i, comment: $3&.strip}
     end
-    #puts "Mark =>#{value}<= #{answer.inspect}"
+    # puts "Mark =>#{value}<= #{answer.inspect} ==== #{$1} -- #{$2}"
     # QQQQ Notice that answer contains both the grade and late days
     answer
   end

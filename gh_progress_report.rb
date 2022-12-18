@@ -22,8 +22,6 @@ def run_and_log(command, log)
   $?.exitstatus == 0
 end
 
-
-
 options = {
   create: false,
   suppress_github: false,

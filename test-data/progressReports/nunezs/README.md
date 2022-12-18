@@ -20,6 +20,8 @@
 
 ![Homework](Homework.png)
 
+Current grade:  B
+
 ## Legend 
 * `e`: Exceeds expectations
 * `m`: Meets expectations

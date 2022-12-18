@@ -13,7 +13,7 @@ class Gradebook
 
   # TODO Write a method to validate the format of the config
   # (e.g., is categories an array, does it have the necessary keys, etc.)
-  def self.cis371_config
+  def self.default_config
     {
       info_sheet_name: "info",
       categories: [{
@@ -27,26 +27,6 @@ class Gradebook
         short_name: "HW",
       }],
     }
-  end
-
-  def self.cis343_config
-    {
-      info_sheet_name: "info",
-      categories: [{
-        key: :learningObjectives,
-        title: "Learning Objectives",
-        short_name: "LO",
-      },
-                   {
-        key: :projects,
-        title: "Projects",
-        short_name: "P",
-      }],
-    }
-  end
-
-  def self.default_config
-    self.cis371_config
   end
 
   #
@@ -95,5 +75,14 @@ class Gradebook
 
   def categories
     @config[:categories]
+  end
+
+  # This name is dumb. Any ideas for a better one?
+  def calc_grade(student, category: nil, final_grade: true)
+    if @config.has_key?(:calc_grade)
+      @config[:calc_grade].call(student, category: category, final_grade: final_grade)
+    else
+      nil
+    end
   end
 end
