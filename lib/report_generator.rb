@@ -107,6 +107,7 @@ HERE
   # generate_mark_breakdown
   #
   def self.generate_mark_breakdown(student, category, out)
+    assigned = category[:assignment_names].length
     mark_count = { e: 0, m: 0, p: 0, x: 0 }
 
     category[:assignment_names].each do |key, value|
@@ -116,13 +117,6 @@ HERE
       mark_count[highest_mark(marks)] += 1
     end
 
-
-    # out.puts
-    # out.puts "|E|M|P|X|"
-    # out.puts "|------|-------|-------|-------|"
-    # out.puts "|#{numE}|#{numM}|#{numP}|#{numX}|"
-
-    system("node lib/generate_graph.js #{student.info[:github]} #{category[:title].delete(' ')} #{numM + numE} #{assigned}")
     
     out.puts
     out.puts "|E|M|P|X|"
@@ -130,6 +124,11 @@ HERE
     out.puts "|#{mark_count[:e]}|#{mark_count[:m]}|#{mark_count[:p]}|#{mark_count[:x]}|"
     out.puts
     out.puts "#{mark_count[:e] + mark_count[:m]} at 'm' or better."
+    
+    system("node lib/generate_graph.js #{student.info[:github]} #{category[:title].delete(' ')} #{mark_count[:m] + mark_count[:e]} #{assigned}")
+
+    out.puts
+    out.puts "![#{category[:title]}](#{category[:title].delete(' ')}.png)"
   end
 
   def self.generate_legend(out)
