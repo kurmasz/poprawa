@@ -120,7 +120,7 @@ HERE
     # out.puts "|#{numE}|#{numM}|#{numP}|#{numX}|"
 
     system("node lib/generate_graph.js #{student.info[:github]} #{category[:title].delete(' ')} #{numM + numE} #{assigned}")
-
+    
     out.puts
     out.puts "![#{category[:title]}](#{category[:title].delete(' ')}.png)"
   end

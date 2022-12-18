@@ -35,11 +35,6 @@
                     label: 'Assigned',
                     data: [assigned],
                     borderWidth: 1
-                },
-                {
-                    label: 'All',
-                    data: [all],
-                    borderWidth: 1
                 }],
             },
             options: {
@@ -55,26 +50,14 @@
                                     return "B"
                                 if (value == 10)
                                     return "A"
-                                return value
                             }
-                        }
+                        },
+                        max: all
                     },
                     y: {
-                        barPercentage: 0.4,
-                        beginAtZero: true,
                         stacked: true
                     }
                 }
-            },
-            animation: {
-                onComplete: function () {
-                    var a = document.createElement('a');
-                    a.href = myChart.toBase64Image();
-                    a.download = '/Users/annacarvalho/Desktop/School/work/alt-gradebook/lib/mychart3.png';
-
-                    // Trigger the download
-                    a.click();
-                },
             }
         });
     </script>

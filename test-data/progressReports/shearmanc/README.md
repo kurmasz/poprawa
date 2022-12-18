@@ -10,7 +10,6 @@
 |URL parts (i2)|||
 |Write CSS (h3)|||
 
-
 ![Learning Objectives](LearningObjectives.png)
 ## Homework
 |Homework|Grade|Late Days|
@@ -18,7 +17,6 @@
 |Web Client (H1)|d **m**|0|
 |Web Server (H2)|**m**|0|
 |Qwixx Board (H3)|. - -|0|
-
 
 ![Homework](Homework.png)
 
