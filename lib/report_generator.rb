@@ -125,7 +125,7 @@ HERE
     out.puts
     out.puts "#{mark_count[:e] + mark_count[:m]} at 'm' or better."
     
-    system("node lib/generate_graph.js #{student.info[:github]} #{category[:title].delete(' ')} #{mark_count[:m] + mark_count[:e]} #{assigned}")
+    system("node lib/generate_graph.js #{student.info[:github]} #{category[:title].delete(' ')} #{mark_count[:m] + mark_count[:e]} #{mark_count[:p]} #{assigned}")
 
     out.puts
     out.puts "![#{category[:title]}](#{category[:title].delete(' ')}.png)"
