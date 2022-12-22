@@ -36,6 +36,16 @@ require "rubyXL/convenience_methods"
 
 COLUMNS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+DAY_ABBREV = {
+  u: 0,
+  m: 1,
+  t: 2,
+  w: 3,
+  r: 4,
+  f: 5,
+  s: 6,
+}
+
 #
 # Sample configuration
 #
@@ -158,95 +168,6 @@ end
 
 #################################################################
 #
-# header_keys
-#
-# Generate an array containing only the keys from the Hashes
-# in the info_sheet_config.  (Each Hash in headers must contain
-# exactly one key.)
-#################################################################
-def header_keys(headers)
-  headers.map do |item|
-    if (item.keys.length != 1)
-      puts "Invalid info sheet config. Item has multiple keys: #{item.inspect}"
-      exit
-    end
-    item.keys.first
-  end
-end
-
-#################################################################
-#
-# add_headers
-#
-# Add the headers to the specified worksheet.  headers should be
-# an array containing Hashes with one key only.  The value will 
-# be placed in row 1 and the key will be placed in row 2.
-#################################################################
-def add_headers(sheet, headers)
-  header_keys(headers).each_with_index do |header_key, index|
-    sheet.add_cell(0, index, headers[index][header_key])
-    sheet.add_cell(1, index, header_key.to_s)
-  end
-end
-
-#################################################################
-#
-# add_gradesheet
-#
-# Add a worksheet for the given category.
-#
-#################################################################
-def add_gradesheet(workbook, category, config, protected_xf_id, unprotected_xf_id)
-  info_sheet = workbook[config[:info_sheet_name]]
-  sheet = workbook.add_worksheet(category[:key].to_s)
-  num_info_columns = config[:info_sheet_config].count
-
-  # Add references to the info sheet
-  info_sheet.each_with_index do |row, row_index|
-    # (three dots "..." in a range excludes ending value)
-    (0...num_info_columns).each do |col_index|
-      cell = sheet.add_cell(row_index, col_index, "", formula = "=#{config[:info_sheet_name]}!#{COLUMNS[col_index]}#{row_index + 1}")
-      
-      # Protect these references so they can't be modified.
-      # (Any changes should be made on the info sheet only.)
-      cell.style_index = protected_xf_id
-    end
-  end
-
-  # Hide unneeded columns.
-  keys = header_keys(config[:info_sheet_config])
-  (0...num_info_columns).each do |col_index|
-    if (category[:hidden_info_columns].include?(keys[col_index]))
-      sheet.cols.get_range(col_index).hidden = true
-    end
-  end
-
-  # Create a ColumnRange to describe "all" columns.
-  # Specify that the columns in this range should be unprotected by default.
-  # (Individual cells may override this protection.) 
-  range = RubyXL::ColumnRange.new
-  range.min = 1
-  range.max = 16384
-  range.width = 10.83203125
-  range.style_index = unprotected_xf_id
-  sheet.cols << range   # add this range to the set of ColumnRanges for this sheet.
-
-  # Enable protection for this sheet.
-  sheet.sheet_protection = RubyXL::WorksheetProtection.new(
-    sheet: true,
-    objects: true,
-    scenarios: true,
-    format_cells: false,
-    format_columns: false,
-    insert_columns: false,
-    delete_columns: false,
-    insert_rows: false,
-    delete_rows: false,
-  )
-end
-
-#################################################################
-#
 # add_protected_xf
 #
 # Add a new XF (object that describes style) to the workbook.
@@ -279,6 +200,152 @@ end
 
 #################################################################
 #
+# header_keys
+#
+# Generate an array containing only the keys from the Hashes
+# in the info_sheet_config.  (Each Hash in headers must contain
+# exactly one key.)
+#################################################################
+def header_keys(headers)
+  headers.map do |item|
+    if (item.keys.length != 1)
+      puts "Invalid info sheet config. Item has multiple keys: #{item.inspect}"
+      exit
+    end
+    item.keys.first
+  end
+end
+
+#################################################################
+#
+# add_headers
+#
+# Add the headers to the specified worksheet.  headers should be
+# an array containing Hashes with one key only.  The value will
+# be placed in row 1 and the key will be placed in row 2.
+#################################################################
+def add_headers(sheet, headers)
+  header_keys(headers).each_with_index do |header_key, index|
+    sheet.add_cell(0, index, headers[index][header_key])
+    sheet.add_cell(1, index, header_key.to_s)
+  end
+end
+
+#################################################################
+#
+# add_gradesheet
+#
+# Add a worksheet for the given category.
+#
+#################################################################
+def add_gradesheet(workbook, category, config, protected_xf_id, unprotected_xf_id, section: nil)
+  base_name = category[:key].to_s
+  name = section.nil? ? base_name : "#{base_name}_s#{section}"
+
+  info_sheet = workbook[config[:info_sheet_name]]
+  sheet = workbook.add_worksheet(name)
+  num_info_columns = config[:info_sheet_config].count
+
+  # Add references to the info sheet
+  info_sheet.each_with_index do |row, row_index|
+    # (three dots "..." in a range excludes ending value)
+    (0...num_info_columns).each do |col_index|
+      cell = sheet.add_cell(row_index, col_index, "", formula = "=#{config[:info_sheet_name]}!#{COLUMNS[col_index]}#{row_index + 1}")
+
+      # Protect these references so they can't be modified.
+      # (Any changes should be made on the info sheet only.)
+      cell.style_index = protected_xf_id
+
+      # TODO:  Hide rows belonging to other sections
+    end
+  end
+
+  # Hide unneeded columns.
+  keys = header_keys(config[:info_sheet_config])
+  (0...num_info_columns).each do |col_index|
+    if (category[:hidden_info_columns].include?(keys[col_index]))
+      sheet.cols.get_range(col_index).hidden = true
+    end
+  end
+
+  # Create a ColumnRange to describe "all" columns.
+  # Specify that the columns in this range should be unprotected by default.
+  # (Individual cells may override this protection.)
+  range = RubyXL::ColumnRange.new
+  range.min = 1
+  range.max = 16384
+  range.width = 10.83203125
+  range.style_index = unprotected_xf_id
+  sheet.cols << range   # add this range to the set of ColumnRanges for this sheet.
+
+  # Enable protection for this sheet.
+  sheet.sheet_protection = RubyXL::WorksheetProtection.new(
+    sheet: true,
+    objects: true,
+    scenarios: true,
+    format_cells: false,
+    format_columns: false,
+    insert_columns: false,
+    delete_columns: false,
+    insert_rows: false,
+    delete_rows: false,
+  )
+
+  # Add a freeze
+  worksheetviews = RubyXL::WorksheetViews.new
+  pane = RubyXL::Pane.new(:top_left_cell => RubyXL::Reference.new(2, num_info_columns),
+                          :x_split => num_info_columns, :y_split => 2, :state => "frozenSplit")
+  worksheetviews << RubyXL::WorksheetView.new(:pane => pane)
+  sheet.sheet_views = worksheetviews
+
+  sheet
+end
+
+#################################################################
+#
+# add_attendance_sheet
+#
+#################################################################
+def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
+  category = {
+    key: :attendance,
+    title: "Attendance",
+    type: :attendance,
+    hidden_info_columns: [:username, :github, :major],
+  }
+  sheet = add_gradesheet(workbook, category, config, protected_xf_id, unprotected_xf_id)
+
+  start_date = Date.parse(config[:attendance][:first_sunday])
+  end_date = Date.parse(config[:attendance][:last_saturday])
+
+  meeting_days = config[:attendance][:meeting_days].to_s.downcase.chars.map { |day_char| "umtwrfs".index(day_char) }
+  skip_weeks = config[:attendance][:skip_weeks].map { |week| Date.parse(week)}
+
+  left = false
+  col_index = config[:info_sheet_config].count
+  start_date.upto(end_date) do |current_date|
+
+    # TODO skip skip_weeks and skip_days
+
+    c = sheet.add_cell(1, col_index)
+    c.set_number_format("d-mmm-yy")
+    c.change_contents(current_date)
+
+    top = false
+    (2...sheet.sheet_data.rows.size).each do |row_index|
+      sheet.add_cell(row_index, col_index)
+      sheet.sheet_data[row_index][col_index].change_border(:left, "thin") if left # skip the first column
+      sheet.sheet_data[row_index][col_index].change_border(:top, "thin") if top  # skip the first data row
+      top = true
+    end
+
+    left = true
+    col_index += 1
+  end
+end
+
+#################################################################
+#
 # main
 #
 #################################################################
@@ -293,10 +360,9 @@ parser = OptionParser.new do |opts|
     exit
   end
 
-  opts.on("-o", "--output", "Output file") do |name|
+  opts.on("-oFILE", "--output=FILE", "Output file") do |name|
     options[:output] = name
   end
-
 end
 
 parser.parse!
@@ -310,7 +376,7 @@ config_file = ARGV[0]
 
 config = load_config(config_file)
 
-if options.has_key?(:output) 
+if options.has_key?(:output)
   output_file = options[:output]
 else
   output_file = config[:gradebook_file]
@@ -319,7 +385,7 @@ end
 if (File.exists?(output_file))
   puts "Output file #{output_file} exists.  Overwrite?"
   answer = $stdin.gets.downcase.strip
-  if answer == 'y' || answer == 'yes'
+  if answer == "y" || answer == "yes"
     puts "Overwriting."
   else
     puts "Exiting without overwriting."
@@ -363,6 +429,7 @@ config[:categories].each do |category|
   add_gradesheet(workbook, category, config, protected_xf_id, unprotected_xf_id)
 end
 
+add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
 
 #
 # Write the new workbook.
