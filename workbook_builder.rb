@@ -319,13 +319,22 @@ def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
   end_date = Date.parse(config[:attendance][:last_saturday])
 
   meeting_days = config[:attendance][:meeting_days].to_s.downcase.chars.map { |day_char| "umtwrfs".index(day_char) }
-  skip_weeks = config[:attendance][:skip_weeks].map { |week| Date.parse(week)}
+  skip_weeks = config[:attendance][:skip_weeks].map { |week| Date.parse(week.to_s)}
+  skip_days = config[:attendance][:skip_days].map { |day| Date.parse(day.to_s)}
 
   left = false
   col_index = config[:info_sheet_config].count
   start_date.upto(end_date) do |current_date|
 
-    # TODO skip skip_weeks and skip_days
+    # Skip days that class doesn't meet.
+    next unless meeting_days.include?(current_date.wday)
+
+    # Skip any days explicitly listed in config.
+    next if skip_days.include?(current_date)
+
+    # Skip any weeks explicitly listed in config.
+    prev_sunday = current_date - current_date.wday
+    next if skip_weeks.include?(prev_sunday)
 
     c = sheet.add_cell(1, col_index)
     c.set_number_format("d-mmm-yy")
