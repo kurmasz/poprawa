@@ -67,7 +67,7 @@ HERE
       end
         
       current_grade = gradebook.calc_grade(student, category: category[:key])      
-      out.printf "\nCurrent grade:  #{current_grade}\n" if current_grade
+      out.printf "\Projected grade:  #{current_grade}\n" if current_grade
     end # each category
 
     generate_legend(out)
