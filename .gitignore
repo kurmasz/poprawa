@@ -1,4 +1,6 @@
 #~
 *~
+**/.DS_Store
 progressReports/*
 !progressReports/.gitkeep
+playspace
