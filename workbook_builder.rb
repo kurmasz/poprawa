@@ -48,6 +48,7 @@ DAY_ABBREV = {
 
 module ExitValues  
   INVALID_PARAMETER = 4
+  INVALID_CONFIG = 8
 end
 
 #
@@ -175,12 +176,12 @@ def load_config(filename)
   rescue SyntaxError => se
     $stderr.puts "Syntax error in config file:"
     $stderr.puts se.message
-    exit ExitValues::INVALID_PARAMETER
+    exit ExitValues::INVALID_CONFIG
   rescue => e
     $stderr.puts "Exception thrown while evaluating config file:"
     $stderr.puts e.message
     $stderr.puts e.backtrace
-    exit ExitValues::INVALID_PARAMETER
+    exit ExitValues::INVALID_CONFIG
   end
 end
 

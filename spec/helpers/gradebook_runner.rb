@@ -15,6 +15,10 @@ module GradebookRunner
   WORKBOOK_BUILDER_COMMAND="#{File.dirname(__FILE__)}/../../workbook_builder.rb"
   TEST_DATA="#{File.dirname(__FILE__)}/../../test-data"
 
+  def test_data(file) 
+    "#{TEST_DATA}/#{file}"
+  end
+
   # (1) Run the program under test as an external process.
   # (2) Split the resulting standard output and standard error into an array of lines.
   # (3) Verify that the standard error and standard error end with a newline

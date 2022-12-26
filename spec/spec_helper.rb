@@ -46,4 +46,5 @@ end
 
 module ExitValues  
   INVALID_PARAMETER = 4
+  INVALID_CONFIG = 8
 end
