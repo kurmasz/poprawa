@@ -29,7 +29,7 @@ describe "workbook_builder command line" do
     expect(result[:out].length).to eq 0
 
     expect(result[:exit]).to eq ExitValues::INVALID_PARAMETER
-  end
+  end 
 
   it "displays helpful message if config file cannot be opened" do
     cur_dir = GradebookRunner::TEST_DATA #  File.dirname(__FILE__)

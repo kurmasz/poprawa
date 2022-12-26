@@ -172,7 +172,7 @@ def load_config(filename)
   end
 
   begin
-    eval content, b, filename
+    config = eval content, b, filename
   rescue SyntaxError => se
     $stderr.puts "Syntax error in config file:"
     $stderr.puts se.message
@@ -183,6 +183,13 @@ def load_config(filename)
     $stderr.puts e.backtrace
     exit ExitValues::INVALID_CONFIG
   end
+
+  unless config.is_a? Hash
+   $stderr.puts "Config file must return a Ruby Hash"
+   exit ExitValues::INVALID_CONFIG
+  end
+
+  config
 end
 
 #################################################################
