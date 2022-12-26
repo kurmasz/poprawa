@@ -46,6 +46,10 @@ DAY_ABBREV = {
   s: 6,
 }
 
+module ExitValues  
+  INVALID_PARAMETER = 4
+end
+
 #
 # Sample configuration
 #
@@ -377,9 +381,9 @@ end
 parser.parse!
 
 if ARGV.length < 1
-  puts "Must specify config file"
-  puts parser.banner
-  exit
+  $stderr.puts "Must specify a config file."
+  $stderr.puts parser.banner
+  exit ExitValues::INVALID_PARAMETER
 end
 config_file = ARGV[0]
 
