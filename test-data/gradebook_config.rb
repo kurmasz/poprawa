@@ -5,7 +5,7 @@ grade_info = {
      total: 13
   },
   homework: {
-    total: 13
+    total: 13,
   }
 }
 

@@ -50,7 +50,6 @@ describe "workbook_builder command line" do
     expect(result[:out].length).to eq 0
 
     expect(result[:exit]).to eq ExitValues::INVALID_PARAMETER
-
   end
 
 end
