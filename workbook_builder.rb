@@ -185,7 +185,7 @@ def load_config(filename)
   end
 
   unless config.is_a? Hash
-   $stderr.puts "Config file must return a Ruby Hash"
+   $stderr.puts "Config file must return a Ruby Hash."
    exit ExitValues::INVALID_CONFIG
   end
 
