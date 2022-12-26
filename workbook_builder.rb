@@ -158,18 +158,23 @@ end
 #################################################################
 def load_config(filename)
   b = {}.instance_eval { binding }
+
   begin
-    eval File.read(filename), b, filename
+    content = File.read(filename)
   rescue Errno::ENOENT => e
     $stderr.puts "Config file \"#{filename}\" not found."
     exit ExitValues::INVALID_PARAMETER
+  rescue => ioe
+    $stderr.puts "Could not open config file \"#{filename}\" because"
+    $stderr.puts ioe.message
+    exit ExitValues::INVALID_PARAMETER
+  end
+
+  begin
+    eval content, b, filename
   rescue SyntaxError => se
     $stderr.puts "Syntax error in config file:"
     $stderr.puts se.message
-    exit ExitValues::INVALID_PARAMETER
-  rescue SystemCallError => ioe
-    $stderr.puts "Could not open config file \"#{filename}\" because"
-    $stderr.puts ioe.message
     exit ExitValues::INVALID_PARAMETER
   rescue => e
     $stderr.puts "Exception thrown while evaluating config file:"
