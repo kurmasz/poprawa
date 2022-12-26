@@ -20,4 +20,37 @@ describe "workbook_builder command line" do
 
     expect(result[:exit]).to eq ExitValues::INVALID_PARAMETER
   end
+
+  it "displays helpful message if config file not found" do
+    result = run_workbook_builder('no_such_file.rb')
+    expect(result[:err]).to include('Config file "no_such_file.rb" not found.')
+
+    expect(result[:err].length).to eq 1
+    expect(result[:out].length).to eq 0
+
+    expect(result[:exit]).to eq ExitValues::INVALID_PARAMETER
+  end
+
+  it "displays helpful message if config file not found" do
+    cur_dir = GradebookRunner::TEST_DATA #  File.dirname(__FILE__)
+    result = run_workbook_builder(cur_dir)
+    expect(result[:err]).to include("Could not open config file \"#{cur_dir}\" because")
+
+    expect(result[:err].length).to eq 2
+    expect(result[:out].length).to eq 0
+
+    expect(result[:exit]).to eq ExitValues::INVALID_PARAMETER
+  end
+
+  it "displays a helpful error message if the config file contains a syntax error" do
+    result = run_workbook_builder("#{GradebookRunner::TEST_DATA}/demo_grades.xlsx")
+    expect(result[:err]).to include("Syntax error in config file:")
+
+    expect(result[:err].length).to eq 2
+    expect(result[:out].length).to eq 0
+
+    expect(result[:exit]).to eq ExitValues::INVALID_PARAMETER
+
+  end
+
 end

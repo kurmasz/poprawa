@@ -161,12 +161,16 @@ def load_config(filename)
   begin
     eval File.read(filename), b, filename
   rescue Errno::ENOENT => e
-    puts "Config file #{filename} not found."
-    exit
+    $stderr.puts "Config file \"#{filename}\" not found."
+    exit ExitValues::INVALID_PARAMETER
   rescue => e
-    puts "Could not open config file"
-    puts e.message
-    exit
+    $stderr.puts "Could not open config file \"#{filename}\" because"
+    $stderr.puts e.message
+    exit ExitValues::INVALID_PARAMETER
+  rescue SyntaxError => se
+    $stderr.puts "Syntax error in config file:"
+    $stderr.puts se.message
+    exit ExitValues::INVALID_PARAMETER
   end
 end
 
