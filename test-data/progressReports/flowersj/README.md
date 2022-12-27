@@ -10,13 +10,7 @@
 |URL parts (i2)|**m**|0|
 |Write CSS (h3)|x **m**|0|
 
-|E|M|P|X|
-|------|-------|-------|-------|
-|0|5|0|0|
-
-5 at 'm' or better.
-
-Current grade:  A
+![Learning Objectives](LearningObjectives.png)
 ## Homework
 |Homework|Grade|Late Days|
 |------|-------|-------|
@@ -24,11 +18,7 @@ Current grade:  A
 |Web Server (H2)|.|0|
 |Qwixx Board (H3)|p **m**|0|
 
-|E|M|P|X|
-|------|-------|-------|-------|
-|0|2|0|1|
-
-2 at 'm' or better.
+![Homework](Homework.png)
 
 Current grade:  B
 

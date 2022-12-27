@@ -4,3 +4,5 @@
 progressReports/*
 !progressReports/.gitkeep
 playspace
+node_modules
+.DS_Store
