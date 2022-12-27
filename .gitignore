@@ -2,3 +2,4 @@
 *~
 progressReports/*
 !progressReports/.gitkeep
+node_modules
