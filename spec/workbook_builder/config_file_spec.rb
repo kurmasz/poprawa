@@ -21,11 +21,11 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and stack trace if config file raises exception" do
-    result = run_workbook_builder(test_data('config_with_exception.rb'))
+    result = run_workbook_builder(test_data('bad_configs/config_with_exception.rb'))
 
     expect(result[:err]).to include('Exception thrown while evaluating config file:')
     expect(result[:err]).to include('undefined method `another_method\' for nil:NilClass')
-    expect(result[:err]).to include_line_matching(/test-data\/config_with_exception.rb:2:in \`a_method\'$/)
+    expect(result[:err]).to include_line_matching(/test-data\/bad_configs\/config_with_exception.rb:2:in \`a_method\'$/)
 
     expect(result[:err].length).to be >= 3
     expect(result[:out].length).to eq 0
@@ -34,7 +34,7 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message if the config file doesn't return a Ruby Hash" do
-    result = run_workbook_builder(test_data('config_non_hash_return.rb'))
+    result = run_workbook_builder(test_data('bad_configs/config_non_hash_return.rb'))
 
     expect(result[:err]).to include('Config file must return a Ruby Hash.')
     

@@ -45,8 +45,9 @@ OptionParser.new do |opts|
 end.parse!
 
 if ARGV.length == 0
-  $stderr.puts "Usage: gh_progress_report config_file"
-  exit
+  $stderr.puts "Must specify a config file."
+  $stderr.puts parser.banner
+  exit ExitValues::INVALID_PARAMETER
 end
 
 log = File.open("log.txt", "w+")

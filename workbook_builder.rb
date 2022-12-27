@@ -33,6 +33,8 @@ require "date"
 require "optparse"
 require "rubyXL"
 require "rubyXL/convenience_methods"
+require_relative "lib/exit_values"
+require_relative "lib/config_loader"
 
 COLUMNS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -45,11 +47,6 @@ DAY_ABBREV = {
   f: 5,
   s: 6,
 }
-
-module ExitValues  
-  INVALID_PARAMETER = 4
-  INVALID_CONFIG = 8
-end
 
 #
 # Sample configuration
@@ -148,48 +145,6 @@ def parse_blackboard_userinfo(input_file)
     students << student
   end
   students
-end
-
-#################################################################
-#
-# load_config
-#
-# Load the config from the named file
-#
-#################################################################
-def load_config(filename)
-  b = {}.instance_eval { binding }
-
-  begin
-    content = File.read(filename)
-  rescue Errno::ENOENT => e
-    $stderr.puts "Config file \"#{filename}\" not found."
-    exit ExitValues::INVALID_PARAMETER
-  rescue => ioe
-    $stderr.puts "Could not open config file \"#{filename}\" because"
-    $stderr.puts ioe.message
-    exit ExitValues::INVALID_PARAMETER
-  end
-
-  begin
-    config = eval content, b, filename
-  rescue SyntaxError => se
-    $stderr.puts "Syntax error in config file:"
-    $stderr.puts se.message
-    exit ExitValues::INVALID_CONFIG
-  rescue => e
-    $stderr.puts "Exception thrown while evaluating config file:"
-    $stderr.puts e.message
-    $stderr.puts e.backtrace
-    exit ExitValues::INVALID_CONFIG
-  end
-
-  unless config.is_a? Hash
-   $stderr.puts "Config file must return a Ruby Hash."
-   exit ExitValues::INVALID_CONFIG
-  end
-
-  config
 end
 
 #################################################################
@@ -409,7 +364,7 @@ if ARGV.length < 1
 end
 config_file = ARGV[0]
 
-config = load_config(config_file)
+config = ConfigLoader::load_config(config_file)
 
 if options.has_key?(:output)
   output_file = options[:output]

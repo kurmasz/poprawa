@@ -1,5 +1,5 @@
-require 'open3'
-require_relative 'external_runner'
+require "open3"
+require_relative "external_runner"
 
 #################################################################################################
 #
@@ -11,11 +11,11 @@ require_relative 'external_runner'
 #
 ##################################################################################################
 module GradebookRunner
+  WORKBOOK_BUILDER_COMMAND = "#{File.dirname(__FILE__)}/../../workbook_builder.rb"
+  GHPR_COMMAND = "#{File.dirname(__FILE__)}/../../gh_progress_report.rb"
+  TEST_DATA = "#{File.dirname(__FILE__)}/../../test-data"
 
-  WORKBOOK_BUILDER_COMMAND="#{File.dirname(__FILE__)}/../../workbook_builder.rb"
-  TEST_DATA="#{File.dirname(__FILE__)}/../../test-data"
-
-  def test_data(file) 
+  def test_data(file)
     "#{TEST_DATA}/#{file}"
   end
 
@@ -36,27 +36,30 @@ module GradebookRunner
     # Verify that the standard output and standard error arrays to either (a) be empty, or (b) end with a single
     # empty string.  This indicates that the output ended with a newline, and that there are no extra blank lines at
     # the end.
-    expect(output.empty? || output[-1].empty?).to be(true), 'Standard output does not end with a newline.'
+    expect(output.empty? || output[-1].empty?).to be(true), "Standard output does not end with a newline."
     output.pop # remove the empty string caused by the trailing newline.
     # At this point, the output array should either be empty or contain a *non-empty* string
     unless allow_trailing_blank_lines
-      expect(output.empty? || !output[-1].empty?).to be(true), 'Standard output has an extra blank line and the end.'
+      expect(output.empty? || !output[-1].empty?).to be(true), "Standard output has an extra blank line and the end."
     end
 
-    expect(error.empty? || error[-1].empty?).to be(true), 'Standard output does not end with a newline.'
+    expect(error.empty? || error[-1].empty?).to be(true), "Standard output does not end with a newline."
     error.pop # remove the empty string caused by the trailing newline.
     # At this point, the error array should either be empty or contain a *non-empty* string
     unless allow_trailing_blank_lines
-      expect(error.empty? || !error[-1].empty?).to be(true), 'Standard output has an extra blank line and the end.'
+      expect(error.empty? || !error[-1].empty?).to be(true), "Standard output has an extra blank line and the end."
     end
 
     { out: output, err: error, exit: result[:exit] }
   end
 
-
-
   def run_workbook_builder(*args)
-    command = "#{WORKBOOK_BUILDER_COMMAND} #{args.join(' ')}"   
-   run_helper(command, false)
+    command = "#{WORKBOOK_BUILDER_COMMAND} #{args.join(" ")}"
+    run_helper(command, false)
   end
-end 
+
+  def run_ghpr(*args)
+    command = "#{GHPR_COMMAND} #{args.join(" ")}"
+    run_helper(command, false)
+  end
+end

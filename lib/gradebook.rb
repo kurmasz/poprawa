@@ -8,6 +8,8 @@
 ######################################################################################
 
 require_relative "./gradebook_loader"
+require_relative "./exit_values"
+require_relative "./config_loader"
 
 class Gradebook
 
@@ -55,7 +57,7 @@ class Gradebook
   def initialize(config_in, verbose: false)
 
     if (config_in.is_a? String)
-      config = Gradebook.load_config(config_in)
+      config = ConfigLoader::load_config(config_in)
     elsif (config_in.is_a? Hash)
       config = config_in
     else 
