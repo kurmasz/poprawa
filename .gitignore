@@ -3,3 +3,4 @@
 progressReports/*
 !progressReports/.gitkeep
 node_modules
+.DS_Store
