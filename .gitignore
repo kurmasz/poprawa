@@ -6,3 +6,4 @@ progressReports/*
 playspace
 node_modules
 .DS_Store
+/log.txt
