@@ -9,6 +9,8 @@
 ##################################################################################################
 require "spec_helper"
 
+# Test change
+
 describe "gh_progress_report command line" do
   it "complains if no parameters passed" do
     result = run_ghpr()
