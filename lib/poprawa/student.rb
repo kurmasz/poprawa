@@ -28,8 +28,6 @@
 # @late_days:  A nested Hash that stores the number of late days accrued for a given assignment.
 #              (See description of @marks above)
 #
-#
-#
 # (c) 2022 Zachary Kurmas
 ######################################################################################
 
@@ -108,8 +106,6 @@ module Poprawa
     end
 
     def get_marks(type)
-      puts "Calling get_marks for #{type}"
-      p @marks.keys
       @marks[type].values
     end
 
