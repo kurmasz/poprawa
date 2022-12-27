@@ -1,0 +1,2 @@
+Files here should be for purposes of demonstrating to users how to use the different tools.
+(Files for automated tests should go in `spec/data`. Files for testing during development should go in `playspace`.)
