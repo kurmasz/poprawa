@@ -17,7 +17,7 @@ describe "workbook_builder command line" do
     expect(result[:err].length).to eq 2
     expect(result[:out].length).to eq 0
 
-    expect(result[:exit]).to eq ExitValues::INVALID_CONFIG
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
   it "displays a helpful message and stack trace if config file raises exception" do
@@ -30,7 +30,7 @@ describe "workbook_builder command line" do
     expect(result[:err].length).to be >= 3
     expect(result[:out].length).to eq 0
 
-    expect(result[:exit]).to eq ExitValues::INVALID_CONFIG
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
   it "displays a helpful message if the config file doesn't return a Ruby Hash" do
@@ -41,6 +41,6 @@ describe "workbook_builder command line" do
     expect(result[:err].length).to eq 1
     expect(result[:out].length).to eq 0
 
-    expect(result[:exit]).to eq ExitValues::INVALID_CONFIG
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 end

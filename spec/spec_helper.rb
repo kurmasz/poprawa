@@ -8,6 +8,8 @@
 #
 ##################################################################################################
 
+require 'poprawa/exit_values'
+
 require 'helpers/env_helper'
 require 'helpers/gradebook_runner'
 
@@ -39,12 +41,4 @@ RSpec::Matchers.define :include_line_matching do |expected|
   failure_message do |actual|
     "expected #{actual} to include a line matching #{expected}"
   end
-end
-
-
-
-
-module ExitValues  
-  INVALID_PARAMETER = 4
-  INVALID_CONFIG = 8
 end

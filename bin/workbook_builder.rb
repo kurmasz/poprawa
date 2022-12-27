@@ -28,13 +28,16 @@
 # (c) 2022 Zachary Kurmas
 ######################################################################################
 
+# TODO: Remove me before production
+# Temporary hack to run scripts in development
+$LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
+
 require "csv"
 require "date"
 require "optparse"
 require "rubyXL"
 require "rubyXL/convenience_methods"
-require_relative "lib/exit_values"
-require_relative "lib/config_loader"
+require "poprawa/config_loader"
 
 COLUMNS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -360,11 +363,11 @@ parser.parse!
 if ARGV.length < 1
   $stderr.puts "Must specify a config file."
   $stderr.puts parser.banner
-  exit ExitValues::INVALID_PARAMETER
+  exit Poprawa::ExitValues::INVALID_PARAMETER
 end
 config_file = ARGV[0]
 
-config = ConfigLoader::load_config(config_file)
+config = Poprawa::ConfigLoader::load_config(config_file)
 
 if options.has_key?(:output)
   output_file = options[:output]

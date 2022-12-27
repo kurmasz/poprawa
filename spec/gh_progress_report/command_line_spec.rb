@@ -13,12 +13,12 @@ describe "gh_progress_report command line" do
   it "complains if no parameters passed" do
     result = run_ghpr()
     expect(result[:err]).to include("Must specify a config file.")
-    expect(result[:err]).to include_line_matching(/^Usage: workbook_builder/)
+    expect(result[:err]).to include_line_matching(/^Usage: gh_progress_report/)
 
     expect(result[:err].length).to eq 2
     expect(result[:out].length).to eq 0
 
-    expect(result[:exit]).to eq ExitValues::INVALID_PARAMETER
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_PARAMETER
   end
 
   it "displays helpful message if config file not found" do
@@ -28,7 +28,7 @@ describe "gh_progress_report command line" do
     expect(result[:err].length).to eq 1
     expect(result[:out].length).to eq 0
 
-    expect(result[:exit]).to eq ExitValues::INVALID_PARAMETER
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_PARAMETER
   end
 
   it "displays helpful message if config file cannot be opened" do
@@ -39,7 +39,7 @@ describe "gh_progress_report command line" do
     expect(result[:err].length).to eq 2
     expect(result[:out].length).to eq 0
 
-    expect(result[:exit]).to eq ExitValues::INVALID_PARAMETER
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_PARAMETER
   end
 
   # TODO verify the correct behavior of the output

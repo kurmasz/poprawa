@@ -11,9 +11,13 @@
 
 # --porcelain   https://github.com/ruby-git/ruby-git
 
+# TODO: Remove me before production
+# Temporary hack to run scripts in development
+$LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
+
 require 'optparse'
-require_relative "lib/gradebook"
-require_relative "lib/report_generator"
+require 'poprawa/gradebook'
+require 'poprawa/report_generator'
 
 def run_and_log(command, log)
   output = `#{command}`
@@ -28,7 +32,7 @@ options = {
   verbose: false,
 }
 
-OptionParser.new do |opts|
+parser = OptionParser.new do |opts|
   opts.banner = "Usage: gh_progress_report.rb [options]"
 
   opts.on("-c", "--[no-]create-report-directories", "Create report directories, if necessary") do |c|
@@ -42,12 +46,13 @@ OptionParser.new do |opts|
   opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
     options[:verbose] = v
   end
-end.parse!
+end
+parser.parse!
 
 if ARGV.length == 0
   $stderr.puts "Must specify a config file."
   $stderr.puts parser.banner
-  exit ExitValues::INVALID_PARAMETER
+  exit Poprawa::ExitValues::INVALID_PARAMETER
 end
 
 log = File.open("log.txt", "w+")

@@ -1,4 +1,6 @@
-require 'gradebook_loader'
+require 'poprawa/gradebook_loader'
+
+GradebookLoader = Poprawa::GradebookLoader
 
 describe 'parse_mark' do
 

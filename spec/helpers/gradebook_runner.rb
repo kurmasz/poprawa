@@ -11,8 +11,8 @@ require_relative "external_runner"
 #
 ##################################################################################################
 module GradebookRunner
-  WORKBOOK_BUILDER_COMMAND = "#{File.dirname(__FILE__)}/../../workbook_builder.rb"
-  GHPR_COMMAND = "#{File.dirname(__FILE__)}/../../gh_progress_report.rb"
+  WORKBOOK_BUILDER_COMMAND = "#{File.dirname(__FILE__)}/../../bin/workbook_builder.rb"
+  GHPR_COMMAND = "#{File.dirname(__FILE__)}/../../bin/gh_progress_report.rb"
   TEST_DATA = "#{File.dirname(__FILE__)}/../../test-data"
 
   def test_data(file)
