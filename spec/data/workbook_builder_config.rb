@@ -1,5 +1,5 @@
 {
-  gradebook_file: "#{File.dirname(__FILE__)}/test-output/testWorkbookBuilder.xlsx",
+  gradebook_file: "#{File.dirname(__FILE__)}/../output/testWorkbook.xlsx",
   roster_file: "#{File.dirname(__FILE__)}/testStudentInfo.csv",
 
   info_sheet_name: "info",

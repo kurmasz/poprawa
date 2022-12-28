@@ -428,3 +428,4 @@ add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
 # Write the new workbook.
 #
 workbook.write(output_file)
+$stdout.puts "Workbook written to #{output_file}"

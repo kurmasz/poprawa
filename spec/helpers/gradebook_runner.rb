@@ -14,9 +14,20 @@ module GradebookRunner
   WORKBOOK_BUILDER_COMMAND = "#{File.dirname(__FILE__)}/../../bin/workbook_builder.rb"
   GHPR_COMMAND = "#{File.dirname(__FILE__)}/../../bin/gh_progress_report.rb"
   TEST_DATA = "#{File.dirname(__FILE__)}/../data"
+  TEST_OUTPUT = "#{File.dirname(__FILE__)}/../output"
 
   def test_data(file)
     "#{TEST_DATA}/#{file}"
+  end
+
+  def test_output(file)
+    "#{TEST_OUTPUT}/#{file}"
+  end
+
+  def clean_test_output
+    Dir.children(TEST_OUTPUT).reject {|f| f.start_with?('.')}.each do |f|
+      File.unlink(test_output(f))
+    end
   end
 
   # (1) Run the program under test as an external process.
