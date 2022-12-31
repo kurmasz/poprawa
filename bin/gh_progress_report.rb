@@ -58,7 +58,7 @@ end
 log = File.open("log.txt", "w+")
 
 config_file_name = ARGV[0]
-g = Gradebook.new(config_file_name, verbose: options[:verbose])
+g = Poprawa::Gradebook.new(config_file_name, verbose: options[:verbose])
 
 setup_report = lambda do |student|
   puts "Processing #{student.full_name}" if options[:verbose]
@@ -98,5 +98,5 @@ push_report = lambda do |student|
 end
 
 
-ReportGenerator.generate_reports(g, before: setup_report, after: push_report)
+Poprawa::ReportGenerator.generate_reports(g, before: setup_report, after: push_report)
 log.close
