@@ -2,4 +2,4 @@
 # --suppress suppresses the calls to github (since this dummy data doesn't have 
 # real GitHub accounts.)
 
-ruby ../gh_progress_report.rb gradebook_config.rb --suppress
+ruby bin/gh_progress_report.rb demo/gradebook_config.rb --suppress
