@@ -87,7 +87,7 @@ push_report = lambda do |student|
   if (File.exist?(directory) && !options[:suppress])
     log.puts "*********************"
     puts student.info[:github]
-    commands = ["git -C #{directory} add .", "git -C #{directory} commit -m 'Updated grade report'", "git -C #{directory} push"]
+    commands = ["git -C #{directory} add . > /dev/null", "git -C #{directory} commit -m 'Updated grade report' > /dev/null", "git -C #{directory} push > /dev/null"]
     success = commands.map {|command| run_and_log(command, log)}
     if success.include?(false)
       puts "Problem updating repo for #{student.full_name} (#{student.info[:github]})"
