@@ -10,6 +10,13 @@
 require "spec_helper"
 
 describe "gh_progress_report generation" do
+  before(:all) do
+    unless File.exist?(gh_output('.git'))
+      $stderr.puts "For these tests #{gh_output} must be a github directory"
+      exit
+    end
+  end
+
   it "places reports in each student's github repo" do
     output_dir = gh_output("tw_clean")
 

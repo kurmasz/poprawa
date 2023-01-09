@@ -25,8 +25,8 @@ module GradebookRunner
     "#{TEST_OUTPUT}/#{file}"
   end
 
-  def gh_output(file)
-    "#{TEST_OUTPUT}/poprawa_test/#{file}"
+  def gh_output(file=nil)
+    "#{TEST_OUTPUT}/poprawa-github-test/#{file}"
   end
 
   def clean_dir(dirname) 
