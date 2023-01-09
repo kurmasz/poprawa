@@ -157,6 +157,13 @@ module Poprawa
       first_assignment_column = nil
 
       sheet.each do |row|
+        if row.nil? 
+          # TODO Need to check if this matters or not.
+          # TODO Stop at the end of the names
+          $stderr.puts "Warning! current row in #{sheet.sheet_name} is nil."
+          next
+        end
+
         row.cells.each_with_index do |cell, index|
 
           # warn about empty cells and skip

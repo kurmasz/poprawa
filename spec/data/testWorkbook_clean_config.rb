@@ -1,8 +1,8 @@
-OUTPUT_BASE = "#{File.dirname(__FILE__)}/../spec/output/poprawa_test/tw_clean"
+OUTPUT_BASE = "#{File.dirname(__FILE__)}/../output/poprawa_test/tw_clean"
 
 {
-  gradebook_file: "#{File.dirname(__FILE__)}/../output/testWorkbook.xlsx",
-  roster_file: "#{File.dirname(__FILE__)}/testStudentInfo.csv",
+  gradebook_file: "#{File.dirname(__FILE__)}/testWorkbook_clean.xlsx",
+  output_file: lambda {|github_dir| "#{OUTPUT_BASE}/#{github_dir}/README.md" },
 
   info_sheet_name: "info",
   info_sheet_config: [

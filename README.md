@@ -7,9 +7,9 @@ use this code "out of the box".
 
 
 
-Note: The automated tests make use of a submodule (https://github.com/kurmasz/poprawa_test).  If you plan to run the automated tests, you'll need to run these two commands after cloning the repository:
-* `git submodule init`
-* `git submodule update`
-
-One of the programs in this repo writes progress reports to a git repo than updates that repo. In order to 
-avoid a lot of "noise" in our commit history, we created a submodule for testing the git aspects of the project.
+Note: Some automated tests need to push generated reports to a GitHub repo. We didn't want those
+test reports pushed to this repo, because it would severely clutter the repo's commit logs.
+So, each user that wants to run tests that push to github must 
+1. Choose/Create a separate repo to which she has write permissions
+2. Place that repo in `spec/output/poprawa-github-tests` 
+   * You can specify the desired directory name when cloning a repo:  `git clone repo_url poprawa-github-tests`

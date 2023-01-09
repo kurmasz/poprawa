@@ -1,4 +1,5 @@
 require "open3"
+require "fileutils"
 require_relative "external_runner"
 
 #################################################################################################
@@ -24,7 +25,21 @@ module GradebookRunner
     "#{TEST_OUTPUT}/#{file}"
   end
 
+  def gh_output(file)
+    "#{TEST_OUTPUT}/poprawa_test/#{file}"
+  end
+
+  def clean_dir(dirname) 
+    if File.exist?(dirname) 
+      FileUtils.remove_entry_secure(dirname)
+    end
+    FileUtils.mkdir(dirname)
+  end
+
   def clean_test_output
+    $stderr.puts "CLEANING TEST OUTPUT"
+    exit
+
     Dir.children(TEST_OUTPUT).reject {|f| f.start_with?('.')}.each do |f|
       File.unlink(test_output(f))
     end
