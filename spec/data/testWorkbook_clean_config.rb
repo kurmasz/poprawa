@@ -1,4 +1,4 @@
-OUTPUT_BASE = "#{File.dirname(__FILE__)}/../output/poprawa_test/tw_clean"
+OUTPUT_BASE = "#{File.dirname(__FILE__)}/../output/tw_clean"
 
 {
   gradebook_file: "#{File.dirname(__FILE__)}/testWorkbook_clean.xlsx",

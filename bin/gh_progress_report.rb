@@ -27,9 +27,11 @@ def run_and_log(command, log)
 end
 
 options = {
+  debug_config: false,
   create: false,
   suppress_github: false,
   verbose: false,
+  overrides: {}
 }
 
 parser = OptionParser.new do |opts|
@@ -43,11 +45,26 @@ parser = OptionParser.new do |opts|
     options[:suppress] = s
   end
 
+  opts.on("-o", "--override VALUE", "Override a config value") do |o|
+
+    # TODO Write tests
+    unless o =~ /([^:]+):(.*)/
+      $stderr.puts "--override parameter \"#{o}\" is incorrectly formatted."
+      exit Poprawa::ExitValues::INVALID_PARAMETER
+    end
+    puts "Overriding #{$1} with #{$2}"
+    options[:overrides][$1.to_sym] = $2
+  end
+
+  opts.on("--debug-config=[KEY]", "Display config values and exit") do |dc|
+    options[:debug_config] = dc
+  end
+
   opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
     options[:verbose] = v
   end
 end
-parser.parse!
+parser.parse!()
 
 if ARGV.length == 0
   $stderr.puts "Must specify a config file."
@@ -58,7 +75,24 @@ end
 log = File.open("log.txt", "w+")
 
 config_file_name = ARGV[0]
-g = Poprawa::Gradebook.new(config_file_name, verbose: options[:verbose])
+config = Poprawa::ConfigLoader::load_config(config_file_name)
+options[:overrides].each { |key, value| config[key] = value }
+
+if (options[:debug_config]) 
+  key = options[:debug_config].to_sym
+  if config.has_key?(key)
+    puts "Config key #{key} has value \"#{config[key]}\""
+  else
+    puts "Config does not contain key #{key}"
+  end
+  exit Poprawa::ExitValues::SUCCESS
+elsif options[:debug_config].nil?
+  p config
+  exit Poprawa::ExitValues::SUCCESS
+end
+
+
+g = Poprawa::Gradebook.new(config, verbose: options[:verbose])
 
 setup_report = lambda do |student|
   puts "Processing #{student.full_name}" if options[:verbose]

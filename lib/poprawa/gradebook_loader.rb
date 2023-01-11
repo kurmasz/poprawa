@@ -169,6 +169,8 @@ module Poprawa
           # warn about empty cells and skip
           if cell.nil? || cell.value.nil? || cell.value.to_s.strip.empty?
             put_warning "Warning! row #{row.index_in_collection + 1} column #{index + 1} in #{sheet.sheet_name} is empty."
+            p row.cells
+            exit
             next
           end
 
