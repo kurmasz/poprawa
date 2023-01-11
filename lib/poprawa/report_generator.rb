@@ -125,7 +125,9 @@ HERE
       out.puts
       out.puts "#{mark_count[:e] + mark_count[:m]} at 'm' or better."
 
-      system("node lib/generate_graph.js #{student.info[:github]} #{category[:title].delete(" ")} #{mark_count[:m] + mark_count[:e]} #{assigned}")
+      # but now it's hard-coded here
+      path = "demo/progressReports/#{student.info[:github]}/#{category[:title].delete(" ")}.png"
+      system("node lib/generate_graph.js #{path} #{category[:title].delete(" ")} #{mark_count[:m] + mark_count[:e]} #{assigned}")
 
       out.puts
       out.puts "![#{category[:title]}](#{category[:title].delete(" ")}.png)"
