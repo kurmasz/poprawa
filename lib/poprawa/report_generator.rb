@@ -19,19 +19,41 @@ module Poprawa
     #
     # generate_reports
     #
-    # before: is a lambda that generates the output stream to which
-    # this student should be printed.
-    #
     # after: is a lambda that does any necessary post-processing
     # (e.g., delivering the report to the target location)
     #
-    # The "pre-processing" code can alternatively be passed as a block
-    # instead of a lambda.
-    def self.generate_reports(gradebook, students = gradebook.students, before: nil, after: nil)
+    def self.generate_reports(gradebook, students = gradebook.students, report_dir, after: nil)
       students.select { |s| s.active? }.each do |student|
-        out = before.nil? ? yield(student) : before.(student)
-        generate_report(student, gradebook, out) unless out.nil?
+        out = setup_student_dir(student, gradebook)
+        generate_report(student, gradebook, out, report_dir) unless out.nil?
         after.(student) unless after.nil?
+      end
+    end
+
+    #
+    # setup_student_dir
+    #
+    # loads a student directory and creates an output file
+    # 
+    def self.setup_student_dir(student, g)
+      filename = g.config[:output_file].call(student.info[:github])
+
+      dirname = File.dirname(filename)
+      # warn about nonexistent directory
+      if !File.exist?(dirname)
+        puts "Report directory doesn't exist for #{student.full_name} --- #{dirname}"
+        return nil
+      end
+
+      begin
+        File.open(filename, "w+")
+      rescue Errno::ENOENT => e
+        puts "#{student.full_name}"
+        puts "\tUnable to open output file #{filename} (Make sure the directory exists.)"
+        return nil
+      rescue => e
+        puts "#{student.full_name}"
+        puts "\tUnable to open output file: #{e.message}"  
       end
     end
 
@@ -40,7 +62,7 @@ module Poprawa
     #
     # generate a report for one student
     #
-    def self.generate_report(student, gradebook, out)
+    def self.generate_report(student, gradebook, out, report_dir)
       out.puts "# Progress Report for #{student.full_name}"
 
       out.puts <<HERE
@@ -62,13 +84,14 @@ HERE
 
         if !category.has_key?(:empx) || category[:empx]
           #puts "Generating breakdown for #{category.inspect}"
-          generate_mark_breakdown(student, category, out)
+          generate_mark_breakdown(student, category, out, report_dir)
         else
           #puts "*NOT* Generating breakdown for #{category[:key]}"
         end
 
         current_grade = gradebook.calc_grade(student, category: category[:key])
-        out.printf "\Projected grade:  #{current_grade}\n" if current_grade
+        out.puts
+        out.printf "Projected grade:  #{current_grade}\n" if current_grade
       end # each category
 
       generate_legend(out)
@@ -107,7 +130,7 @@ HERE
     #
     # generate_mark_breakdown
     #
-    def self.generate_mark_breakdown(student, category, out)
+    def self.generate_mark_breakdown(student, category, out, report_dir)
       assigned = category[:assignment_names].length
       mark_count = { e: 0, m: 0, p: 0, x: 0 }
 
@@ -125,9 +148,8 @@ HERE
       out.puts
       out.puts "#{mark_count[:e] + mark_count[:m]} at 'm' or better."
 
-      # but now it's hard-coded here
-      path = "demo/progressReports/#{student.info[:github]}/#{category[:title].delete(" ")}.png"
-      system("node lib/generate_graph.js #{path} #{category[:title].delete(" ")} #{mark_count[:m] + mark_count[:e]} #{assigned}")
+      imagePath = "#{report_dir}/#{student.info[:github]}/#{category[:title].delete(" ")}.png"
+      system("node lib/generate_graph.js #{imagePath} #{category[:title].delete(" ")} #{mark_count[:m] + mark_count[:e]} #{assigned}")
 
       out.puts
       out.puts "![#{category[:title]}](#{category[:title].delete(" ")}.png)"
