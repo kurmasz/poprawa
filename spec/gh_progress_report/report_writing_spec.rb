@@ -19,15 +19,15 @@ describe "gh_progress_report writing" do
     clean_dir(output_dir)
 
     # Create necessary student directories
-    dirs = %w(andersl brodieb davisc ahmede floresc garciam hernani jacksonr kimjus leee martinp nelsonm ortizja patelj quinna)
-    dirs.each do |dir|
-      FileUtils.mkdir("#{output_dir}/#{dir}")
-    end
+    dirs = %w(lellaAnderson brodieb davisc Ahmed734 flocar macg Issac93 Rohan JustinKim elee pam3 nelsonm ortizzz JaggerP quinna)
+    dirs.each { |dir| FileUtils.mkdir("#{output_dir}/#{dir}") }
 
-    result = run_ghpr('--suppress-github', test_data("testWorkbook_clean_config.rb"))
+    result = run_ghpr('--suppress-github', test_data("testWorkbook_config.rb"))
 
     expect(result[:err].length).to eq 0
-    expect(result[:out].length).to eq 3
+    expect(result[:out].length).to eq 0
+
+    dirs.each { |dir| expect(File.exist?("#{output_dir}/#{dir}/README.md")).to be true}
 
     expect(result[:exit]).to eq Poprawa::ExitValues::SUCCESS
   end

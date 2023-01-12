@@ -34,16 +34,42 @@
 ######################################################################################
 
 require "rubyXL"
-require 'poprawa/student'
+require "poprawa/student"
 
 module Poprawa
   class GradebookLoader
+
+    # Convert 0-based column indexes into letters.
+    # From https://stackoverflow.com/questions/13578555/convert-spreadsheet-column-index-into-character-sequence
+    COLUMN_INDEX_HASH = Hash.new { |hash, key| hash[key] = hash[key - 1].next }.merge({ 0 => "A" })
+
     def self.put_error(str)
-      puts str
+      $stderr.puts str
     end
 
     def self.put_warning(str)
       puts str
+    end
+
+    #
+    # strip_to_nil
+    #
+    # Return nil if the string is empty or contains only whitespace
+    # otherwise, return the stripped string.
+    #
+    def self.strip_to_nil(str)
+      return nil if str.nil?
+      stripped = str.to_s.strip
+      stripped.empty? ? nil : stripped
+    end
+
+    #
+    # cell_location
+    #
+    # Return a string describing the cell's location
+    # as Excel does (e.g., A1, B7, AZE44)
+    def self.cell_location(cell)
+      "#{COLUMN_INDEX_HASH[cell.column]}#{cell.row}"
     end
 
     #
@@ -54,16 +80,17 @@ module Poprawa
     def self.load(filename, config, verbose: false)
       workbook = RubyXL::Parser.parse(filename)
       info_sheet = student_info_worksheet(workbook, config[:info_sheet_name])
+      num_info_columns = config[:info_sheet_config].count
 
       student_map = self.load_info(info_sheet)
 
       config[:categories].each do |category|
         sheet_name = category[:key].to_s
-        category[:assignment_names] = self.load_gradesheet(workbook[sheet_name], student_map)
+        category[:assignment_names] = self.load_gradesheet(workbook[sheet_name], student_map, num_info_columns)
       end
 
       yield student_map.values
-    end
+    end # load method
 
     #
     # student_info_worksheet
@@ -145,91 +172,140 @@ module Poprawa
     end # load_info
 
     #
+    # load_long_name_header
+    #
+    # Row 0 (the top row) is the "Display names" (easily understandable, human-readable names)
+    #
+    def self.load_long_name_header(row, sheet_name)
+      # TODO Test me
+      if row.nil?
+        put_error "ERROR: Worksheet #{sheet_name} is missing the Long Name header row (the row labeled 1 in Excel)."
+        exit Poprawa::ExitValues::SPREADSHEET_ERROR
+      end
+
+      # Note: Empty / missing cells here are not necessarily a problem.
+      # They may just represent an unused column.
+      row.cells.map { |cell| strip_to_nil(cell&.value&.to_s) }
+    end
+
+    #
+    # load_short_name_header
+    #
+    # Row 1 (the second row) is the "short" names (the symbols used internally to reference the data)
+    #
+    def self.load_short_name_header(row, sheet_name)
+      # TODO Test me
+      if row.nil?
+        put_error "ERROR: Worksheet #{sheet_name} is missing the Short Name header row (the row labeled 2 in Excel)."
+        exit Poprawa::ExitValues::SPREADSHEET_ERROR
+      end
+
+      # Note: Empty / missing cells here are not necessarily a problem.
+      # They may just represent an unused column.
+      row.cells.map do |cell|
+        stripped_value = strip_to_nil(cell&.value&.to_s)
+
+        # TODO: Test Me
+        put_warning "Warning! Assignment key '#{stripped_value}' contains whitespace." if stripped_value =~ /\s+/
+        stripped_value.to_sym
+      end
+    end # load_short_name_header
+
+    #
     # load_gradesheet
     #
     # This method returns a hash containing assignment names & descriptions
     # in addition to loading student grades.
     #
-    def self.load_gradesheet(sheet, students)
-      short_names = []
-      long_names = []
+    def self.load_gradesheet(sheet, students, num_info_columns)
       assignment_names = {}
       first_assignment_column = nil
 
+      # Handle rows 0 and 1 (which contains the "display" names and "short" names respectively)
+      long_names = load_long_name_header(sheet[0], sheet.sheet_name)
+      short_names = load_short_name_header(sheet[1], sheet.sheet_name)
+
+      # TODO: Look through both long_names and short_names and produce a
+      # warning if there is a short name without a long name.
+
       sheet.each do |row|
-        if row.nil? 
-          # TODO Need to check if this matters or not.
-          # TODO Stop at the end of the names
-          $stderr.puts "Warning! current row in #{sheet.sheet_name} is nil."
-          next
+
+        # nil rows are not necessarily a big deal.  If the user enters data in a row, then pulls it back out,
+        # the row object may still be recorded as nil in the underlying data structure.
+        #
+        # TODO There is only an issue if there is not a row for each student.
+        next if row.nil?
+
+        # We already handled the first two rows
+        next if row.index_in_collection < 2
+
+        # Collect the values in each cell.
+        cell_values = row.cells.map { |cell| strip_to_nil(cell&.value)}
+
+        # If every cell in the row is empty / nil, then move on.
+        next if cell_values.reject { |item| item.nil?}.length == 0
+
+        # TODO: This code assumes students appear in the same row in each
+        # worksheet.  There is probably no need to maintain this strict of a structure.
+        # Consider searching for the student based on the data in the info columns (e.g., matching by username)
+
+        # Get Student object for this row.
+        # (add 1 row so it matches the row number in the spreadsheet)
+        student = students[row.index_in_collection + 1]
+        # TODO Test me.
+        if student.nil?
+          put_error "ERROR: Info worksheet doesn't have a student on row #{row.index_in_collection + 1}."
+          exit Poprawa::ExitValues::SPREADSHEET_ERROR
         end
 
-        row.cells.each_with_index do |cell, index|
+        # skip to next student row if inactive
+        break unless student.active?
 
-          # warn about empty cells and skip
-          if cell.nil? || cell.value.nil? || cell.value.to_s.strip.empty?
-            put_warning "Warning! row #{row.index_in_collection + 1} column #{index + 1} in #{sheet.sheet_name} is empty."
-            p row.cells
-            exit
-            next
+        # Handle the grade columns 
+        # (We use the for .. in syntax using the length of short_names 
+        # instead of .each in case there is a missing cell at the end of the row.)
+        for index in num_info_columns..short_names.length
+          value = cell_values[index]
+
+          has_short_name = !short_names[index].nil?
+
+          # don't process data in assignments that are marked with 'x'
+          process_this_column = has_short_name && !short_names[index].start_with?("x")
+
+          # Move on if we aren't processing this column yet
+          next if value.nil? && !process_this_column
+
+          # Complain if we are processing this column but there is no value
+          if value.nil? && process_this_column
+            # TODO Test me
+            puts_warning "WARNING: #{sheet.sheet_name} #{long_names[index]} (#{short_names[index]}) Grade missing for #{student.full_name} (Cell #{cell_location(cell)})"
           end
 
-          stripped_cell = cell.value.to_s.strip
-
-          # skip cells that contain student info (checks formulas only in the first row)
-          if (!first_assignment_column.nil? && index >= first_assignment_column) || cell.formula.nil?
-            first_assignment_column = index if first_assignment_column.nil?
-
-            # Process the row with "long names"
-            if row.index_in_collection == 0
-              long_names.append(stripped_cell)
-            end
-
-            # Process the row with "short names"
-            if row.index_in_collection == 1
-              put_warning "Warning! Assignment key '#{stripped_cell}' contains whitespace." if stripped_cell =~ /\s+/
-              short_names.append(stripped_cell.to_sym)
-            end
-
-            # Process the rows containing student grades
-            if row.index_in_collection > 1
-              # add 1 row so it matches the row number in the spreadsheet
-              student = students[row.index_in_collection + 1]
-
-              if student.nil?
-                puts "Don't have student for #{row.index_in_collection}"
-              end
-
-              # skip to next student row if inactive
-              break unless student.active?
-
-              # don't process data in assignments that are marked with 'x'
-
-              if short_names[index - first_assignment_column].nil?
-                puts "There is data in column #{index}, but no header."
-              end
-
-              if !short_names[index - first_assignment_column].start_with?("x")
-
-                # QQQQ info contains mark and late days
-                info = parse_mark_cell(cell.value)
-                if (info[:mark].nil?)
-                  put_warning "Warning! grade for #{student.full_name} on row #{row.index_in_collection + 1} index #{index}: #{info[:message]}"
-                end
-                student.set_mark(sheet.sheet_name.to_sym, short_names[index - first_assignment_column], info[:mark])
-                student.set_late_days(sheet.sheet_name.to_sym, short_names[index - first_assignment_column], info[:late])
-              end
-            end
+          # Complain if there is a value in a column that does not have a short name
+          if !value.nil? && !has_short_name
+            puts_warning "WARNING: There is grade data in cell #{cell_location(cell)} for #{sheet.sheet_name}, but this column doesn't have a short name."
           end
-        end
-      end
+
+          # Finally, a valid grade in a valid column!
+          if !value.nil? && process_this_column
+            info = parse_mark_cell(value)
+            if (info[:mark].nil?)
+              put_warning "Warning! grade for #{student.full_name} on row #{row.index_in_collection + 1} index #{index}: #{info[:message]}"
+            end
+            student.set_mark(sheet.sheet_name.to_sym, short_names[index], info[:mark])
+            student.set_late_days(sheet.sheet_name.to_sym, short_names[index], info[:late])
+          end # if process this grade.
+        end # foreach column
+      end # foreach row
+
       # create hash from long and short name arrays
-      long_names.each_with_index do |value, index|
-        next if short_names[index].start_with?("x")
-        assignment_names[short_names[index].to_sym] = value.to_sym
+      assignment_short_names = short_names.drop(num_info_columns)
+      long_names.drop(num_info_columns).each_with_index do |value, index|
+        next if assignment_short_names[index].start_with?("x")
+        assignment_names[assignment_short_names[index].to_sym] = value.to_sym
       end
       return assignment_names
-    end
+    end # load_gradesheet
 
     #
     # parse_mark_cell

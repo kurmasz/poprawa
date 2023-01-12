@@ -91,7 +91,6 @@ elsif options[:debug_config].nil?
   exit Poprawa::ExitValues::SUCCESS
 end
 
-
 g = Poprawa::Gradebook.new(config, verbose: options[:verbose])
 
 setup_report = lambda do |student|

@@ -37,6 +37,10 @@ module Poprawa
     # Keys required to be present in @info
     REQUIRED_KEYS = [:fname, :lname]
 
+    # Index should return the **Spreadsheet's** row index for this student.
+    # Debugging *much* easier when the index value reported corresponds to the
+    # row number displayed in the spreadsheet (as opposed to the 0-indexed row
+    # number used internally)
     attr_reader :info, :index
 
     #
@@ -49,7 +53,7 @@ module Poprawa
       end
 
       @info = info_map
-      @index = index
+      @index = index  # see comment above about 1-based indexing.
       @marks = {}
       @late_days = {}
     end
@@ -102,6 +106,9 @@ module Poprawa
     # get_mark
     #
     def get_mark(type, assignment)
+      unless @marks.has_key?(type)
+        raise "Student #{full_name} has no marks of type #{type.inspect} (assignment requested: #{assignment.inspect})"
+      end
       @marks[type][assignment]
     end
 
