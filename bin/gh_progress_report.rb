@@ -26,6 +26,8 @@ def run_and_log(command, log)
   $?.exitstatus == 0
 end
 
+report_dir = "demo/progressReports"
+
 options = {
   create: false,
   suppress_github: false,
@@ -60,34 +62,12 @@ log = File.open("log.txt", "w+")
 config_file_name = ARGV[0]
 g = Poprawa::Gradebook.new(config_file_name, verbose: options[:verbose])
 
-setup_report = lambda do |student|
-  puts "Processing #{student.full_name}" if options[:verbose]
-  filename = g.config[:output_file].call(student.info[:github])
-
-  dirname = File.dirname(filename)
-  if (options[:create] && !File.exist?(dirname))
-    puts "Creating report directory for #{student.full_name} --- #{dirname}"
-    Dir.mkdir(dirname)
-  end
-
-  begin
-    File.open(filename, "w+")
-  rescue Errno::ENOENT => e
-    puts "#{student.full_name}" unless options[:verbose]
-    puts "\tUnable to open output file #{filename} (Make sure the directory exists.)"
-    nil
-  rescue => e
-    puts "#{student.full_name}" unless options[:verbose]
-    puts "\tUnable to open output file: #{e.message}"  
-  end # end begin/rescue
-end # setup_report
-
 push_report = lambda do |student|
   directory =  File.dirname(g.config[:output_file].call(student.info[:github]))
   if (File.exist?(directory) && !options[:suppress])
     log.puts "*********************"
     puts student.info[:github]
-    commands = ["git -C #{directory} add .", "git -C #{directory} commit -m 'Updated grade report'", "git -C #{directory} push"]
+    commands = ["git -C #{directory} add . --quiet", "git -C #{directory} commit -m 'Updated grade report' --quiet", "git -C #{directory} push --quiet"]
     success = commands.map {|command| run_and_log(command, log)}
     if success.include?(false)
       puts "Problem updating repo for #{student.full_name} (#{student.info[:github]})"
@@ -97,6 +77,5 @@ push_report = lambda do |student|
   end
 end
 
-
-Poprawa::ReportGenerator.generate_reports(g, before: setup_report, after: push_report)
+Poprawa::ReportGenerator.generate_reports(g, report_dir, after: push_report)
 log.close
