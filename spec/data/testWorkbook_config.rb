@@ -1,8 +1,6 @@
-OUTPUT_BASE = "#{File.dirname(__FILE__)}/../output/tw_clean"
-
 {
   gradebook_file: "#{File.dirname(__FILE__)}/testWorkbook_noNil.xlsx",
-  output_file: lambda {|github_dir| "#{OUTPUT_BASE}/#{github_dir}/README.md" },
+  output_dir: OUTPUT_BASE = "#{File.dirname(__FILE__)}/../output/tw_clean",
 
   info_sheet_name: "info",
   info_sheet_config: [

@@ -16,8 +16,9 @@ require 'helpers/gradebook_runner'
 RSpec.configure do |config|
   config.include GradebookRunner
 
-  # By default, don't run the interactive specs
-  config.filter_run_excluding interactive: true
+  # By default, don't run the GitHub specs
+  # Add --tag github to command line to include these tests
+  config.filter_run_excluding github: true
 
   # Exclude these tests when running on windows.
   config.filter_run_excluding exclude_windows: true if EnvHelper.windows?

@@ -107,6 +107,7 @@ module Poprawa
     #
     def get_mark(type, assignment)
       unless @marks.has_key?(type)
+        p self
         raise "Student #{full_name} has no marks of type #{type.inspect} (assignment requested: #{assignment.inspect})"
       end
       @marks[type][assignment]

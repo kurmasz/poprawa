@@ -72,6 +72,10 @@ module Poprawa
       "#{COLUMN_INDEX_HASH[cell.column]}#{cell.row}"
     end
 
+    def self.cell_location_by_index(row, column)
+      "#{COLUMN_INDEX_HASH[column]}#{row}"
+    end
+
     #
     # load
     #
@@ -259,7 +263,7 @@ module Poprawa
         end
 
         # skip to next student row if inactive
-        break unless student.active?
+        next unless student.active?
 
         # Handle the grade columns 
         # (We use the for .. in syntax using the length of short_names 
@@ -278,12 +282,12 @@ module Poprawa
           # Complain if we are processing this column but there is no value
           if value.nil? && process_this_column
             # TODO Test me
-            puts_warning "WARNING: #{sheet.sheet_name} #{long_names[index]} (#{short_names[index]}) Grade missing for #{student.full_name} (Cell #{cell_location(cell)})"
+            put_warning "WARNING: #{sheet.sheet_name} #{long_names[index]} (#{short_names[index]}) Grade missing for #{student.full_name} (Cell #{cell_location_by_index(row.index_in_collection ,index)})"
           end
 
           # Complain if there is a value in a column that does not have a short name
           if !value.nil? && !has_short_name
-            puts_warning "WARNING: There is grade data in cell #{cell_location(cell)} for #{sheet.sheet_name}, but this column doesn't have a short name."
+            put_warning "WARNING: There is grade data in cell #{cell_location(cell)} for #{sheet.sheet_name}, but this column doesn't have a short name."
           end
 
           # Finally, a valid grade in a valid column!
