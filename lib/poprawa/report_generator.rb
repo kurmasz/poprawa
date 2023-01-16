@@ -22,10 +22,10 @@ module Poprawa
     # after: is a lambda that does any necessary post-processing
     # (e.g., delivering the report to the target location)
     #
-    def self.generate_reports(gradebook, students = gradebook.students, report_dir, after: nil)
+    def self.generate_reports(gradebook, students = gradebook.students, create_dir: false, after: nil)
       students.select { |s| s.active? }.each do |student|
-        out = setup_student_dir(student, gradebook)
-        generate_report(student, gradebook, out, report_dir) unless out.nil?
+        locations = setup_student_dir(student, gradebook, create_dir: create_dir)
+        generate_report(student, gradebook, locations[:report_file], locations[:report_dir]) unless locations.nil?
         after.(student) unless after.nil?
       end
     end
@@ -34,26 +34,33 @@ module Poprawa
     # setup_student_dir
     #
     # loads a student directory and creates an output file
-    # 
-    def self.setup_student_dir(student, g)
-      filename = g.config[:output_file].call(student.info[:github])
+    #
+    def self.setup_student_dir(student, g, create_dir: false)
+      base_dir = g.config[:output_dir]
+      student_dir = "#{base_dir}/#{student.info[:github]}"
+      filename = "#{student_dir}/README.md"
 
-      dirname = File.dirname(filename)
+      if (create_dir && !File.exist?(student_dir))
+        puts "Creating directory for #{student.full_name}"
+        Dir.mkdir(student_dir)
+      end
+
+
       # warn about nonexistent directory
-      if !File.exist?(dirname)
-        puts "Report directory doesn't exist for #{student.full_name} --- #{dirname}"
+      if !File.exist?(student_dir)
+        puts "Report directory doesn't exist for #{student.full_name} --- #{student_dir}."
         return nil
       end
 
       begin
-        File.open(filename, "w+")
+        { report_file: File.open(filename, "w+"), report_dir: student_dir }
       rescue Errno::ENOENT => e
         puts "#{student.full_name}"
         puts "\tUnable to open output file #{filename} (Make sure the directory exists.)"
         return nil
       rescue => e
         puts "#{student.full_name}"
-        puts "\tUnable to open output file: #{e.message}"  
+        puts "\tUnable to open output file: #{e.message}"
       end
     end
 
@@ -148,11 +155,13 @@ HERE
       out.puts
       out.puts "#{mark_count[:e] + mark_count[:m]} at 'm' or better."
 
-      imagePath = "#{report_dir}/#{student.info[:github]}/#{category[:title].delete(" ")}.png"
-      system("node lib/generate_graph.js #{imagePath} #{category[:title].delete(" ")} #{mark_count[:m] + mark_count[:e]} #{assigned}")
-
-      out.puts
-      out.puts "![#{category[:title]}](#{category[:title].delete(" ")}.png)"
+      # Idea: Instead of using :title, use :short_name.  It won't have any spaces.
+      if category[:type] == :empn
+        imagePath = "#{report_dir}/#{category[:title].delete(" ")}.png"
+        system("node lib/generate_graph.js #{imagePath} #{category[:title].delete(" ")} #{mark_count[:m] + mark_count[:e]} #{assigned}")
+        out.puts
+        out.puts "![#{category[:title]}](#{category[:title].delete(" ")}.png)"
+      end
     end
 
     def self.generate_legend(out)
