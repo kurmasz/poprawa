@@ -11,7 +11,20 @@ require "spec_helper"
 
 describe "resulting workbook" do
 
-  it "generates file specified by config" do
+  before(:each) do
+    puts "Cleaning test output"
+    clean_test_output
+  end
 
+  it "generates file specified by config" do
+    result = run_workbook_builder(test_data('workbook_builder_config.rb'))
+
+    expect(result[:out]).to include_line_matching(/^Workbook written to .*testWorkbook.xlsx/)
+
+    expect(result[:err].length).to be 0
+    expect(result[:out].length).to be 1
+
+    output_file = test_output('testWorkbook.xlsx')
+    expect(File.exist?(output_file)).to be true
   end
 end
