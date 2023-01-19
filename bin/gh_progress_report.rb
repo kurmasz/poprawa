@@ -21,29 +21,31 @@ require "optparse"
 require "poprawa/gradebook"
 require "poprawa/report_generator"
 
-def run_and_log(command, log)
-  output = `#{command}`
-  log.puts "#{command} --- #{$?.exitstatus}"
-  log.puts output
-  $?.exitstatus == 0
-end
+def new_run_and_log(working_dir, log, student) 
+  git_dir = working_dir
 
-def new_run_and_log(working_dir, log) 
-  # current = working_dir
+  # loop through file system until git root is found
+  while !File.exist?("#{git_dir}/.git")
+    git_dir = File.dirname(git_dir)
 
-  while !File.exist?("#{working_dir}/.git")
-    working_dir = File.dirname(working_dir)
-    puts working_dir
-    if working_dir.empty?
-      "Unable to locate git repo"
+    if git_dir == '/'
+      puts "Unable to locate git repo for #{student.info[:github]}"
       return
     end
   end
 
-  g = Git.open("#{working_dir}/../../..", :log => Logger.new($stdout))
-  g.add
-  g.commit('Updated grade report')
-  g.push
+  begin
+    g = Git.open("#{git_dir}", :raise => true)
+    
+    if g.status.changed.any?
+      g.add
+      g.commit('Updated grade report')
+      g.push()
+    end
+  rescue Git::GitExecuteError => e
+    puts "Problem updating repo for #{student.full_name}, (#{student.info[:github]})"
+    puts "error: #{e.message}"
+  end
 end
 
 options = {
@@ -145,13 +147,8 @@ push_report = lambda do |student|
   directory = "#{output_dir}/#{student.info[:github]}"
   if (File.exist?(directory) && !options[:suppress])
     log.puts "*********************"
-    puts student.info[:github]
-    # commands = ["git -C #{directory} add .", "git -C #{directory} commit -m 'Updated grade report' --quiet", "git -C #{directory} push --quiet"]
-    # success = commands.map { |command| run_and_log(command, log) }
-    # if success.include?(false)
-    #   puts "Problem updating repo for #{student.full_name} (#{student.info[:github]})"
-    # end
-    new_run_and_log(directory, log)
+    puts "updating repo for #{student.info[:github]}"
+    new_run_and_log(directory, log, student)
   else
     puts "Skipping GitHub for #{student.full_name}" if options[:verbose]
   end
