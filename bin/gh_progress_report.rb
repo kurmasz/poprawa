@@ -21,7 +21,12 @@ require "optparse"
 require "poprawa/gradebook"
 require "poprawa/report_generator"
 
-def new_run_and_log(working_dir, log, student) 
+#
+# update_repo
+#
+# add/commit/push updated grade report to student repo
+#
+def update_repo(working_dir, student) 
   git_dir = working_dir
 
   # loop through file system until git root is found
@@ -148,7 +153,7 @@ push_report = lambda do |student|
   if (File.exist?(directory) && !options[:suppress])
     log.puts "*********************"
     puts "updating repo for #{student.info[:github]}"
-    new_run_and_log(directory, log, student)
+    update_repo(directory, student)
   else
     puts "Skipping GitHub for #{student.full_name}" if options[:verbose]
   end
