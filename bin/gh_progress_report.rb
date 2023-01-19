@@ -15,15 +15,42 @@
 # Temporary hack to run scripts in development
 $LOAD_PATH.unshift File.dirname(__FILE__) + "/../lib"
 
+require 'git'
+require 'logger'
 require "optparse"
 require "poprawa/gradebook"
 require "poprawa/report_generator"
 
-def run_and_log(command, log)
-  output = `#{command}`
-  log.puts "#{command} --- #{$?.exitstatus}"
-  log.puts output
-  $?.exitstatus == 0
+#
+# update_repo
+#
+# add/commit/push updated grade report to student repo
+#
+def update_repo(working_dir, student) 
+  git_dir = working_dir
+
+  # loop through file system until git root is found
+  while !File.exist?("#{git_dir}/.git")
+    git_dir = File.dirname(git_dir)
+
+    if git_dir == '/'
+      puts "Unable to locate git repo for #{student.info[:github]}"
+      return
+    end
+  end
+
+  begin
+    g = Git.open("#{git_dir}", :raise => true)
+    
+    if g.status.changed.any?
+      g.add
+      g.commit('Updated grade report')
+      g.push()
+    end
+  rescue Git::GitExecuteError => e
+    puts "Problem updating repo for #{student.full_name}, (#{student.info[:github]})"
+    puts "error: #{e.message}"
+  end
 end
 
 options = {
@@ -125,12 +152,8 @@ push_report = lambda do |student|
   directory = "#{output_dir}/#{student.info[:github]}"
   if (File.exist?(directory) && !options[:suppress])
     log.puts "*********************"
-    puts student.info[:github]
-    commands = ["git -C #{directory} add .", "git -C #{directory} commit -m 'Updated grade report' --quiet", "git -C #{directory} push --quiet"]
-    success = commands.map { |command| run_and_log(command, log) }
-    if success.include?(false)
-      puts "Problem updating repo for #{student.full_name} (#{student.info[:github]})"
-    end
+    puts "updating repo for #{student.info[:github]}"
+    update_repo(directory, student)
   else
     puts "Skipping GitHub for #{student.full_name}" if options[:verbose]
   end
