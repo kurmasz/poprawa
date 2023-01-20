@@ -22,7 +22,7 @@ describe "workbook_builder command line" do
   end
 
   it "displays helpful message if config file not found" do
-    result = run_workbook_builder('no_such_file.rb')
+    result = run_workbook_builder("no_such_file.rb")
     expect(result[:err]).to include('Config file "no_such_file.rb" not found.')
 
     expect(result[:err].length).to eq 1
@@ -42,5 +42,30 @@ describe "workbook_builder command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_PARAMETER
   end
 
-  # TODO verify the correct behavior of the output
+  context do
+    before(:each) do
+      clean_test_output
+    end
+
+    it "generates file specified by config" do
+      result = run_workbook_builder(test_data("workbook_builder_config.rb"))
+
+      expect(result[:out]).to include_line_matching(/^Workbook written to .*testWorkbook.xlsx/)
+
+      expect(result[:err].length).to be 0
+      expect(result[:out].length).to be 1
+
+      output_file = test_output("testWorkbook.xlsx")
+      expect(File.exist?(output_file)).to be true
+    end
+
+    it "asks before overwriting the output file (when specified by config file)"
+
+    it "exits without writing if the user declines to overwrite"
+
+    # TODO verify the correct behavior of the output
+    it "generates file specified by --output"
+
+    it "asks before overwriting the output file (when specified by --output)"
+  end # context
 end
