@@ -41,11 +41,12 @@ def update_repo(working_dir, student)
 
   begin
     g = Git.open("#{git_dir}", :raise => true)
-    
     if g.status.changed.any?
       g.add
       g.commit('Updated grade report')
-      g.push()
+      g.push('origin', 'main')
+    else
+      $stderr.puts "No changes for #{student.full_name}"
     end
   rescue Git::GitExecuteError => e
     puts "Problem updating repo for #{student.full_name}, (#{student.info[:github]})"
@@ -152,7 +153,7 @@ push_report = lambda do |student|
   directory = "#{output_dir}/#{student.info[:github]}"
   if (File.exist?(directory) && !options[:suppress])
     log.puts "*********************"
-    puts "updating repo for #{student.info[:github]}"
+    # puts "Updating repo for #{student.full_name} (#{student.info[:github]})"
     update_repo(directory, student)
   else
     puts "Skipping GitHub for #{student.full_name}" if options[:verbose]
