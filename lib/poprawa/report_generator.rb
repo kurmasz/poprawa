@@ -97,7 +97,7 @@ HERE
           out.printf "|%s (%s)|%s|%s|\n", value, key, marks, late_days
         end # each item
 
-        if !category.has_key?(:empx) || category[:empx]
+        if !category.has_key?(:empn) || category[:empn]
           #puts "Generating breakdown for #{category.inspect}"
           generate_mark_breakdown(student, category, out, report_dir)
         else
@@ -163,15 +163,12 @@ HERE
       out.puts
       out.puts "#{mark_count[:e] + mark_count[:m]} at 'm' or better."
 
-      # Idea: Instead of using :title, use :short_name.  It won't have any spaces.
-      if category[:type] == :empn && assigned > 0
-        js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
-        imagePath = "#{report_dir}/#{category[:title].delete(" ")}.png"
-        command = "node #{js_path} #{imagePath} #{category[:title].delete(" ")} #{mark_count[:m] + mark_count[:e]} #{assigned}"
-        system(command)
-        out.puts
-        out.puts "![#{category[:title]}](#{category[:title].delete(" ")}.png)"
-      end
+      js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
+      imagePath = "#{report_dir}/#{category[:short_name]}.png"
+      command = "node #{js_path} #{imagePath} #{category[:short_name]} #{mark_count[:m] + mark_count[:e]} #{assigned}"
+      system(command)
+      out.puts
+      out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
     end
 
     def self.generate_legend(out)
