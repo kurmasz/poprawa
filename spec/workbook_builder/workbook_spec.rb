@@ -12,10 +12,10 @@ require "spec_helper"
 describe "resulting workbook" do
 
   before(:each) do
-    puts "Cleaning test output"
     clean_test_output
   end
 
+  # TODO: Change this to actually look at the workbook
   it "generates file specified by config" do
     result = run_workbook_builder(test_data('workbook_builder_config.rb'))
 

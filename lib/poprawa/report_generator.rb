@@ -25,8 +25,10 @@ module Poprawa
     def self.generate_reports(gradebook, students = gradebook.students, create_dir: false, after: nil)
       students.select { |s| s.active? }.each do |student|
         locations = setup_student_dir(student, gradebook, create_dir: create_dir)
-        generate_report(student, gradebook, locations[:report_file], locations[:report_dir]) unless locations.nil?
-        after.(student) unless after.nil?
+        unless locations.nil?
+          generate_report(student, gradebook, locations[:report_file], locations[:report_dir])
+          after.(student) unless after.nil?
+        end
       end
     end
 
@@ -36,15 +38,21 @@ module Poprawa
     # loads a student directory and creates an output file
     #
     def self.setup_student_dir(student, g, create_dir: false)
+
+      student_github = student.info[:github]&.strip
+      if student_github.nil? || student_github.empty? 
+        puts "GitHub account not specified for #{student.full_name}."
+        return nil
+      end
+
       base_dir = g.config[:output_dir]
-      student_dir = "#{base_dir}/#{student.info[:github]}"
+      student_dir = "#{base_dir}/#{student_github}"
       filename = "#{student_dir}/README.md"
 
       if (create_dir && !File.exist?(student_dir))
         puts "Creating directory for #{student.full_name}"
         Dir.mkdir(student_dir)
       end
-
 
       # warn about nonexistent directory
       if !File.exist?(student_dir)
@@ -156,9 +164,11 @@ HERE
       out.puts "#{mark_count[:e] + mark_count[:m]} at 'm' or better."
 
       # Idea: Instead of using :title, use :short_name.  It won't have any spaces.
-      if category[:type] == :empn
+      if category[:type] == :empn && assigned > 0
+        js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
         imagePath = "#{report_dir}/#{category[:title].delete(" ")}.png"
-        system("node lib/generate_graph.js #{imagePath} #{category[:title].delete(" ")} #{mark_count[:m] + mark_count[:e]} #{assigned}")
+        command = "node #{js_path} #{imagePath} #{category[:title].delete(" ")} #{mark_count[:m] + mark_count[:e]} #{assigned}"
+        system(command)
         out.puts
         out.puts "![#{category[:title]}](#{category[:title].delete(" ")}.png)"
       end
@@ -170,12 +180,13 @@ HERE
       out.puts "* `e`: Exceeds expectations"
       out.puts "* `m`: Meets expectations"
       out.puts "* `p`: Progressing"
-      out.puts "* `x`: Not Yet"
-      out.puts "* `.`: Missing"
+      out.puts "* `n`: Not Yet"
+      out.puts "* `x`: Missing"
+      out.puts "* `.`: Waiting for submission"
       out.puts "* `d`: Demonstrated but not yet graded"
       out.puts "* `r`: Received but not yet graded"
       out.puts "* `?`: Received; Grading in progress"
-      out.puts "* `!`: Error in gradesheet"
+      out.puts "* `!`: Error in grade sheet"
     end
   end # class ReportGenerator
 end # module Poprawa

@@ -1,11 +1,27 @@
 #! /usr/bin/env ruby
+
+# TODO: Remove me before production
+# Temporary hack to run scripts in development
+$LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
+
 #####################################################################################
 #
 # workbook_builder
 #
 # Builds a new Excel workbook for tracking grades.
 #
-# Takes as input a ruby file that returns a hash with the following items:
+# Specifically, the generated Excel Workbook will contain 
+#  * an "information" worksheet  
+#  * a worksheet for each category, and 
+#  * an attendance worksheet
+# 
+# The first several columns of each category and attendance worksheet will contain
+# references to the user data in the information worksheet. These cells will be 
+# protected (i.e., "locked") to prevent accidental modification. (If you want to 
+# modify user data, do it on the information worksheet.)
+# 
+#
+# This script takes as input a Ruby file that returns a Hash with the following items:
 # {
 #    roster_file:       name of .csv file that contains student data
 #    gradebook_file:    name of .xlsx file to be generated
@@ -19,40 +35,21 @@
 # full name of the category that will appear in grade reports.
 #
 # Each category is a hash.  The following items are required for the workbook builder
-#    key:                 the Ruby symbol used to identify this category
-#    title:               the "full text" title used in reports
-#    hidden_info_columns: an array listing the user info columns to be hidden
-#                         (The values in this array should be symbols that appear in
-#                          the info_sheet_config)
+#    key:                   the Ruby symbol used to identify this category
+#    title:                 the "full text" title used in reports
+#    hidden_info_columns:   an array listing the user info columns to be hidden
+#                           (The values in this array should be symbols that appear in
+#                           the info_sheet_config)
+#
+#
+
+#  
 #
 # (c) 2022 Zachary Kurmas
 ######################################################################################
 
-# TODO: Remove me before production
-# Temporary hack to run scripts in development
-$LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
-
-require "csv"
-require "date"
-require "optparse"
-require "rubyXL"
-require "rubyXL/convenience_methods"
-require "poprawa/config_loader"
-
-COLUMNS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-
-DAY_ABBREV = {
-  u: 0,
-  m: 1,
-  t: 2,
-  w: 3,
-  r: 4,
-  f: 5,
-  s: 6,
-}
-
 #
-# Sample configuration
+# Sample configuration (not used by the script)
 #
 sample_config = {
 
@@ -106,6 +103,32 @@ sample_config = {
     },
   ],
 }
+
+#####################################################################################
+#
+# start of actual code
+#
+#####################################################################################
+require "csv"
+require "date"
+require "optparse"
+require "rubyXL"
+require "rubyXL/convenience_methods"
+require "poprawa/config_loader"
+
+COLUMNS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+DAY_ABBREV = {
+  u: 0,
+  m: 1,
+  t: 2,
+  w: 3,
+  r: 4,
+  f: 5,
+  s: 6,
+}
+
+
 
 #################################################################
 #
@@ -215,13 +238,13 @@ def add_headers(sheet, headers)
   end
 end
 
-#################################################################
+#########################################################################################################
 #
 # add_gradesheet
 #
 # Add a worksheet for the given category.
 #
-#################################################################
+#########################################################################################################
 def add_gradesheet(workbook, category, config, protected_xf_id, unprotected_xf_id, section: nil)
   base_name = category[:key].to_s
   name = section.nil? ? base_name : "#{base_name}_s#{section}"
@@ -276,20 +299,19 @@ def add_gradesheet(workbook, category, config, protected_xf_id, unprotected_xf_i
   )
 
   # Add a freeze
-  worksheetviews = RubyXL::WorksheetViews.new
+  worksheet_views = RubyXL::WorksheetViews.new
   pane = RubyXL::Pane.new(:top_left_cell => RubyXL::Reference.new(2, num_info_columns),
                           :x_split => num_info_columns, :y_split => 2, :state => "frozenSplit")
-  worksheetviews << RubyXL::WorksheetView.new(:pane => pane)
-  sheet.sheet_views = worksheetviews
-
+  worksheet_views << RubyXL::WorksheetView.new(:pane => pane)
+  sheet.sheet_views = worksheet_views
   sheet
 end
 
-#################################################################
+#########################################################################################################
 #
 # add_attendance_sheet
 #
-#################################################################
+#########################################################################################################
 def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
   category = {
     key: :attendance,
@@ -337,11 +359,11 @@ def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
   end
 end
 
-#################################################################
+#########################################################################################################
 #
 # main
 #
-#################################################################
+#########################################################################################################
 
 options = {}
 
@@ -350,7 +372,7 @@ parser = OptionParser.new do |opts|
 
   opts.on("-h", "--help", "Prints this help") do
     puts opts
-    exit
+    exit Poprawa::ExitValues::SUCCESS
   end
 
   opts.on("-oFILE", "--output=FILE", "Output file") do |name|
