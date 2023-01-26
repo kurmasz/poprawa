@@ -6,6 +6,8 @@
 # (c) 2022 Zachary Kurmas
 #####################################################################################
 
+require 'json'
+
 module Poprawa
   class ReportGenerator
     MARK_ORDER = ["e", "m", "p", "x"]
@@ -146,6 +148,18 @@ HERE
     # generate_mark_breakdown
     #
     def self.generate_mark_breakdown(student, category, out, report_dir)
+      lo = {
+        "mastered": { "A": 10, "B": 9, "C": 9, "D": 8 },
+        "total": 11
+      }
+      h = {
+        "mastered": { "A": 10, "B": 10, "C": 9, "D": 9 },
+        "total": 11
+      }
+      
+      grades = lo if category[:short_name] == "LO"
+      grades = h if category[:short_name] == "H"
+
       assigned = category[:assignment_names].length
       mark_count = { e: 0, m: 0, p: 0, x: 0 }
 
@@ -165,7 +179,7 @@ HERE
 
       js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
       imagePath = "#{report_dir}/#{category[:short_name]}.png"
-      command = "node #{js_path} #{imagePath} #{category[:short_name]} #{mark_count[:m] + mark_count[:e]} #{assigned}"
+      command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{assigned} '#{grades.to_json}'"
       system(command)
       out.puts
       out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
