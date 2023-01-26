@@ -179,7 +179,7 @@ HERE
 
       js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
       imagePath = "#{report_dir}/#{category[:short_name]}.png"
-      command = "node #{js_path} #{imagePath} #{category[:short_name]} #{mark_count[:m] + mark_count[:e]} #{assigned} '#{grades.to_json}'"
+      command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{assigned} '#{grades.to_json}'"
       system(command)
       out.puts
       out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
