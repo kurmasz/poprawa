@@ -99,7 +99,7 @@ HERE
           out.printf "|%s (%s)|%s|%s|\n", value, key, marks, late_days
         end # each item
 
-        if !category.has_key?(:empn) || category[:empn]
+        if category.has_key?(:empn) || category[:type] == :empn
           #puts "Generating breakdown for #{category.inspect}"
           generate_mark_breakdown(student, category, out, report_dir)
         else
@@ -180,6 +180,7 @@ HERE
       js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
       imagePath = "#{report_dir}/#{category[:short_name]}.png"
       command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{assigned} '#{grades.to_json}'"
+      # $stderr.puts command
       system(command)
       out.puts
       out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
