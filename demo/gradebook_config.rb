@@ -27,11 +27,13 @@ grade_info = {
     key: :learningObjectives,
     title: "Learning Objectives",
     short_name: "LO",
+    type: :empn
   },
                {
     key: :homework,
     title: "Homework",
     short_name: "H",
+    type: :empn
   }],
 
   # very dumb algorithm as proof of concept.
