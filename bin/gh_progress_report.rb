@@ -44,7 +44,7 @@ def update_repo(working_dir, student)
     if g.status.changed.any?
       g.add
       g.commit('Updated grade report')
-      g.push('origin', 'main')
+      g.push('origin', g.current_branch)
     else
       $stderr.puts "No changes for #{student.full_name}"
     end
