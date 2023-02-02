@@ -1,7 +1,7 @@
-OUTPUT_BASE = "#{File.dirname(__FILE__)}/../spec/output/poprawa_test/tw_clean"
+#  OUTPUT_BASE = "#{File.dirname(__FILE__)}/../spec/output/poprawa_test/tw_clean"
 
 {
-  gradebook_file: "#{File.dirname(__FILE__)}/../output/testWorkbook.xlsx",
+  gradebook_file: "#{File.dirname(__FILE__)}/../output/builder/testWorkbook.xlsx",
   roster_file: "#{File.dirname(__FILE__)}/testStudentInfo.csv",
 
   info_sheet_name: "info",

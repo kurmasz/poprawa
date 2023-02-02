@@ -43,8 +43,10 @@ describe "workbook_builder command line" do
   end
 
   context do
+    let(:output_dir) { test_output("builder") }
+
     before(:each) do
-      clean_test_output
+      clean_dir(output_dir)
     end
 
     it "generates file specified by config" do
@@ -55,17 +57,28 @@ describe "workbook_builder command line" do
       expect(result[:err].length).to be 0
       expect(result[:out].length).to be 1
 
-      output_file = test_output("testWorkbook.xlsx")
+      output_file = "#{output_dir}/testWorkbook.xlsx"
       expect(File.exist?(output_file)).to be true
     end
 
     it "asks before overwriting the output file (when specified by config file)"
+     # create a file with the name of the output file (builder/textWorkbook.xlsx)
+     # Then run the builder. (Need to put a "y" on stdin)
+     # Verify that it asks if you want to overwrite
+     # Verify that the file is created (and is different from the one that was there.)
 
     it "exits without writing if the user declines to overwrite"
+     # create a file with the name of the output file (builder/textWorkbook.xlsx)
+     # Then run the builder. (Need to put a "n" on stdin)
+     # Verify that it asks if you want to overwrite
+     # Verify that the file is created (and is different from the one that was there.)
 
-    # TODO verify the correct behavior of the output
     it "generates file specified by --output"
+    # Add "--output" to the command line with a different name for the output file.
+    # Run the builder
+    # verify that the correct file is created.
 
     it "asks before overwriting the output file (when specified by --output)"
+    # Same as above, just provide --output on the command line.
   end # context
 end
