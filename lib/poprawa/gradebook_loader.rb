@@ -210,8 +210,9 @@ module Poprawa
         stripped_value = strip_to_nil(cell&.value&.to_s)
 
         # TODO: Test Me
+        put_warning "Warning! Missing assignment key in #{sheet_name}" if stripped_value.nil?
         put_warning "Warning! Assignment key '#{stripped_value}' contains whitespace." if stripped_value =~ /\s+/
-        stripped_value.to_sym
+        stripped_value&.to_sym
       end
     end # load_short_name_header
 
@@ -305,7 +306,7 @@ module Poprawa
       # create hash from long and short name arrays
       assignment_short_names = short_names.drop(num_info_columns)
       long_names.drop(num_info_columns).each_with_index do |value, index|
-        next if assignment_short_names[index].start_with?("x")
+        next if assignment_short_names[index].nil? || assignment_short_names[index].start_with?("x")
         assignment_names[assignment_short_names[index].to_sym] = value.to_sym
       end
       return assignment_names

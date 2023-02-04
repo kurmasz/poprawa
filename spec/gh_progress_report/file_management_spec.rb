@@ -28,8 +28,8 @@ describe "gh_progress_report file management" do
 
     dirs.each do |dir|
       expect(File.exist?("#{output_dir}/#{dir}/README.md")).to be true
-      expect(File.exist?("#{output_dir}/#{dir}/LearningObjectives.png")).to be true
-      expect(File.exist?("#{output_dir}/#{dir}/Homework.png")).to be true
+      expect(File.exist?("#{output_dir}/#{dir}/LO.png")).to be true
+      expect(File.exist?("#{output_dir}/#{dir}/H.png")).to be true
     end
 
     expect(result[:exit]).to eq Poprawa::ExitValues::SUCCESS

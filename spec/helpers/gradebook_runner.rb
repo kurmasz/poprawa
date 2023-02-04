@@ -37,10 +37,11 @@ module GradebookRunner
   end
 
   def clean_test_output
-    $stderr.puts "CLEANING TEST OUTPUT"
+    $stderr.puts "Cleaning test output: #{TEST_OUTPUT}"
+    $stderr.puts "This isn't ready yet.  I don't think we want to unlink the github helper!"
     exit
-
     Dir.children(TEST_OUTPUT).reject {|f| f.start_with?('.')}.each do |f|
+      $stderr.puts "About to unlink #{f} -- #{f.inspect}"
       File.unlink(test_output(f))
     end
   end

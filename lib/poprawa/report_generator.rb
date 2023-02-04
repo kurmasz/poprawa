@@ -6,6 +6,8 @@
 # (c) 2022 Zachary Kurmas
 #####################################################################################
 
+require 'json'
+
 module Poprawa
   class ReportGenerator
     MARK_ORDER = ["e", "m", "p", "x"]
@@ -97,7 +99,7 @@ HERE
           out.printf "|%s (%s)|%s|%s|\n", value, key, marks, late_days
         end # each item
 
-        if !category.has_key?(:empx) || category[:empx]
+        if category.has_key?(:empn) || category[:type] == :empn
           #puts "Generating breakdown for #{category.inspect}"
           generate_mark_breakdown(student, category, out, report_dir)
         else
@@ -146,6 +148,23 @@ HERE
     # generate_mark_breakdown
     #
     def self.generate_mark_breakdown(student, category, out, report_dir)
+      lo = {
+        "mastered": { "A": 10, "B": 9, "C": 9, "D": 8 },
+        "total": 11
+      }
+      h = {
+        "mastered": { "A": 10, "B": 10, "C": 9, "D": 9 },
+        "total": 11
+      }
+      p = {
+        "mastered": { "A": 4, "B": 4, "C": 4, "D": 3 },
+        "total": 4
+      }
+      
+      grades = lo if category[:short_name] == "LO"
+      grades = h if category[:short_name] == "H"
+      grades = p if category[:short_name] == "P"
+
       assigned = category[:assignment_names].length
       mark_count = { e: 0, m: 0, p: 0, x: 0 }
 
@@ -163,15 +182,13 @@ HERE
       out.puts
       out.puts "#{mark_count[:e] + mark_count[:m]} at 'm' or better."
 
-      # Idea: Instead of using :title, use :short_name.  It won't have any spaces.
-      if category[:type] == :empn && assigned > 0
-        js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
-        imagePath = "#{report_dir}/#{category[:title].delete(" ")}.png"
-        command = "node #{js_path} #{imagePath} #{category[:title].delete(" ")} #{mark_count[:m] + mark_count[:e]} #{assigned}"
-        system(command)
-        out.puts
-        out.puts "![#{category[:title]}](#{category[:title].delete(" ")}.png)"
-      end
+      js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
+      imagePath = "#{report_dir}/#{category[:short_name]}.png"
+      command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{assigned} '#{grades.to_json}'"
+      # $stderr.puts command
+      system(command)
+      out.puts
+      out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
     end
 
     def self.generate_legend(out)
