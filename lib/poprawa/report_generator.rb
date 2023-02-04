@@ -156,9 +156,14 @@ HERE
         "mastered": { "A": 10, "B": 10, "C": 9, "D": 9 },
         "total": 11
       }
+      p = {
+        "mastered": { "A": 4, "B": 4, "C": 4, "D": 3 },
+        "total": 4
+      }
       
       grades = lo if category[:short_name] == "LO"
       grades = h if category[:short_name] == "H"
+      grades = p if category[:short_name] == "P"
 
       assigned = category[:assignment_names].length
       mark_count = { e: 0, m: 0, p: 0, x: 0 }
