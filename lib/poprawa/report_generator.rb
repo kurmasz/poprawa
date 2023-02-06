@@ -7,6 +7,7 @@
 #####################################################################################
 
 require 'json'
+require 'tempfile'
 
 module Poprawa
   class ReportGenerator
@@ -165,6 +166,10 @@ HERE
       grades = h if category[:short_name] == "H"
       grades = p if category[:short_name] == "P"
 
+      temp_file = Tempfile.new("grades", Dir.pwd)
+      temp_file.write(grades.to_json)
+      temp_file.close
+
       assigned = category[:assignment_names].length
       mark_count = { e: 0, m: 0, p: 0, x: 0 }
 
@@ -184,8 +189,7 @@ HERE
 
       js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
       imagePath = "#{report_dir}/#{category[:short_name]}.png"
-      command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{assigned} '#{grades.to_json}'"
-      # $stderr.puts command
+      command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{assigned} #{temp_file.path}"
       system(command)
       out.puts
       out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
