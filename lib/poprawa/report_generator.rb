@@ -106,12 +106,13 @@ HERE
         else
           #puts "*NOT* Generating breakdown for #{category[:key]}"
         end
-
+        
         current_grade = gradebook.calc_grade(student, category: category[:key])
         out.puts
         out.printf "Projected grade:  #{current_grade}\n" if current_grade
       end # each category
-
+      
+      generate_attendance(student, out)
       generate_legend(out)
 
       out.close
@@ -195,6 +196,21 @@ HERE
       out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
     end
 
+    #
+    # generate_attendance
+    #
+    def self.generate_attendance(student, out)
+      days_absent = 0
+      student.get_attendance.values.each { |status| days_absent += 1 if %w(x s a).include?(status) }
+
+      out.puts
+      out.puts "## Attendance "
+      out.puts "Days Absent: #{days_absent}"
+    end
+
+    #
+    # generate_legend
+    #
     def self.generate_legend(out)
       out.puts
       out.puts "## Legend "
