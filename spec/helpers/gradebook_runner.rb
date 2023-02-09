@@ -50,9 +50,10 @@ module GradebookRunner
   # (2) Split the resulting standard output and standard error into an array of lines.
   # (3) Verify that the standard error and standard error end with a newline
   # (5) Verify that there aren't any extra newlines.
-  def run_helper(command_line, allow_trailing_blank_lines)
+  def run_helper(command_line, allow_trailing_blank_lines, input=nil)
     puts "Running command =>#{command_line}<=" if EnvHelper.debug_mode?
-    result = ExternalRunner.run(command_line)
+    puts "(with input =>#{input})" if EnvHelper.debug_mode? && !input.nil?
+    result = ExternalRunner.run(command_line, input)
 
     if (EnvHelper.debug_mode?)
       puts "Stdout: "
@@ -87,13 +88,13 @@ module GradebookRunner
     { out: output, err: error, exit: result[:exit] }
   end
 
-  def run_workbook_builder(*args)
+  def run_workbook_builder(*args, input: nil)
     command = "#{WORKBOOK_BUILDER_COMMAND} #{args.join(" ")}"
-    run_helper(command, false)
+    run_helper(command, false, input)
   end
 
-  def run_ghpr(*args)
+  def run_ghpr(*args, input: nil)
     command = "#{GHPR_COMMAND} #{args.join(" ")}"
-    run_helper(command, false)
+    run_helper(command, false, input)
   end
 end

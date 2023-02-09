@@ -13,8 +13,9 @@ module ExternalRunner
 
   # Launch the external process specified by the command_line, then return a hash containing
   # the contents of the process's standard output, standard error, and the return value.
-  def self.run(command_line)
+  def self.run(command_line, input=nil)
     Open3.popen3(command_line) do |i, o, e, t|
+      i.puts input unless input.nil?
       i.close # this implementation assumes that the external process does not use the standard input
       out_reader = Thread.new { o.read }
       err_reader = Thread.new { e.read }
