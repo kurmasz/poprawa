@@ -54,6 +54,13 @@ module GradebookRunner
     puts "Running command =>#{command_line}<=" if EnvHelper.debug_mode?
     result = ExternalRunner.run(command_line)
 
+    if (EnvHelper.debug_mode?)
+      puts "Stdout: "
+      puts result[:out]
+      puts "\nStderr: "
+      puts result[:err]
+    end
+
     # The split method normally discards trailing empty items (i.e., the empty strings created by a trailing
     # newline).  The -1 parameter suppresses this behavior, allowing us to verify (1) that the output and error always
     # end with a newline, and (2) that there aren't any extra newlines.
