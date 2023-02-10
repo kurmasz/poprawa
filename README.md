@@ -40,7 +40,7 @@ As written, Poprawa expects marks to be stored in an Excel workbook (.xlsx) form
 * A worksheet for attendance
 * The first several columns of each "category" and attendance worksheet are references to the info worksheet
   * (Clearly, the names are needed on each worksheet. We have found that other information is also often helpful.  Users can hide info columns that are not needed on a worksheet-by-worksheet basis.)
-* Each worksheet has _two_ header rows:  A "long", meaningful description, and a "short", abbreviated description.  
+* Each worksheet has _two_ header rows:  A "long", meaningful description, and a "short", abbreviated description.  The "short" description is the Ruby symbol that is used to reference the item.
 
 The `workbook_builder` script will generate a correctly-formatted workbook from a Ruby config file and a `.csv` file containing student information.
 
