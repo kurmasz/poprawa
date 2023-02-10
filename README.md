@@ -1,8 +1,9 @@
 Poprawa (Polish for "improvement") is a Ruby library for generating progress reports from 
-Excel-based gradebooks.  
+Excel-based gradebooks. It is designed for instructors who use mastery-based grading (or other
+forms of alternative grading) and find that their LMS's gradebook doesn't meet their needs. ()
 
-The idea is that this code can serve as a starting point for writing your own progress reports.  
-But, if you don't mind using our conventions to format your spreadsheet and progress report, you can 
+The idea is that this code can serve as a starting point for writing your own progress reports. But, 
+if you don't mind using our conventions to format your spreadsheet and progress report, you can 
 use this code "out of the box".
 
 

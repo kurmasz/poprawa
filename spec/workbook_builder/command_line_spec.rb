@@ -110,5 +110,9 @@ describe "workbook_builder command line" do
 
     it "asks before overwriting the output file (when specified by --output)"
     # Same as above, just provide --output on the command line.
+
+
+    it "exits without writing if the user declines to overwrite (when specified by --output)" 
+    
   end # context
 end
