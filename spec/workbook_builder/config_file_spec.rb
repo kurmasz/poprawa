@@ -11,7 +11,8 @@ require "spec_helper"
 
 describe "workbook_builder command line" do
   it "displays a helpful error message if the config file contains a syntax error" do
-    result = run_workbook_builder(test_data("testStudentInfo.csv"))
+    # The syntax error will be that we are passing a .csv file instead of an .rb file
+    result = run_workbook_builder(test_data("test_csv_student_roster.csv"))
     expect(result[:err]).to include("Syntax error in config file:")
 
     expect(result[:err].length).to be >= 2
@@ -43,4 +44,30 @@ describe "workbook_builder command line" do
 
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
+
+  it "displays a helpful message and uses a default when info_sheet_name not specified"
+
+  it "displays a helpful message and uses a default when info_sheet_config not specified"
+
+  it "displays a helpful message exits if roster_config is not specified"
+
+  ["bb_classic", 14, {type: :bb_classic}, lambda {puts "Hi"}].each do |c| 
+    it "displays a helpful message and exits if roster_config has type #{c.class}"
+  end
+
+  it "displays a helpful message and exits if roster_config is a symbol, but unrecognized"
+
+  it "displays a helpful message and uses a default when info_sheet_config not specified"
+
+
+  it "displays a helpful message and exists when categories not specified"
+
+  it "displays a helpful message and exists when categories is present but empty"
+
+  it "displays a helpful message and exits if any category has no key"
+  
+  it "displays a helpful message and exits if attendance has no first_sunday"
+
+  it "displays a helpful message and exits if attendance has no last_sunday"
+
 end

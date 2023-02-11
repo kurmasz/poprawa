@@ -1,3 +1,5 @@
+# Poprawa
+
 Poprawa (Polish for "improvement") is a Ruby library for generating progress reports from 
 Excel-based gradebooks. It is designed for instructors who use mastery-based grading (or other
 forms of alternative grading) and find that their LMS's gradebook doesn't meet their needs.
@@ -13,12 +15,12 @@ This is what your high-level workflow would look like if you use our code withou
 
 1. Edit a Ruby config file so that it describes the desired gradebook structure (e.g., assignment categories).
 2. Obtain/prepare a .csv file containing student names and other information.
-3. Run the `workbook_builder` script which takes these config and `.csv` files as input then generates an empty `.xlsx` gradebook.
+3. Run the `workbook_builder` script which takes the config and `.csv` files as input then generates an empty `.xlsx` workbook.
 4. Enter marks in the grade workbook.
 5. Periodically run the `gh_progress_report` script to generate a progress report for each student in markdown format.
 
 We use GitHub to make the progress reports available to the students. Specifically, 
-1. Students use (GitHub Classroom)[https://classroom.github.com/] to create a precisely-named GitHub repository to which the instructor has write access.
+1. Students use [https://classroom.github.com/](GitHub Classroom) to create a precisely-named GitHub repository to which the instructor has write access.
 2. Instructors add each student's GitHub account name to the gradebook's "info" section.  
    * This is a manual process because our courses are typically 25 to 40 students. (Not big enough to need automation.)
 3. The script `gh-progress_report` writes each progress report to the `README.md` file in the student's GitHub repository, 

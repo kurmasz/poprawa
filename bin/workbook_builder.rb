@@ -20,14 +20,17 @@ $LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
 # protected (i.e., "locked") to prevent accidental modification. (If you want to 
 # modify user data, do it on the information worksheet.)
 # 
+# See demo/demo_workbook_builder_config.rb for a sample config file.
 #
 # This script takes as input a Ruby file that returns a Hash with the following items:
 # {
 #    roster_file:       name of .csv file that contains student data
+#    roster_config:     description of how .csv file is organized
 #    gradebook_file:    name of .xlsx file to be generated
 #    info_sheet_name:   name to be given to the worksheet that will hold student info
 #    info_sheet_config: array specifying columns in the info sheet. See details below.
 #    categories:        array containing the details of each grading category.
+#    attendance:        description of the days class is in session.
 # }
 #
 # The info_sheet_config is an array.  Each item of the array is a hash containing exactly
@@ -36,79 +39,23 @@ $LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
 #
 # Each category is a hash.  The following items are required for the workbook builder
 #    key:                   the Ruby symbol used to identify this category
-#    title:                 the "full text" title used in reports
 #    hidden_info_columns:   an array listing the user info columns to be hidden
 #                           (The values in this array should be symbols that appear in
 #                           the info_sheet_config)
 #
+# The attendance field is a hash that describes when class meets.  The keys include
+#    first_sunday:      the Sunday before the first day of class (format: yyyy-mm-dd)
+#    last_saturday:     the Saturday after the last day of class
+#    meeting_days:      a String containing the days classes meet (e.g., "MWF", "TR")
+#                       (Use "R" for Thursday, "S" for Saturday, and "U" for Sunday)
+#    skip_weeks:        an array containing the Sunday beginning a week to skip
+#    skip_days:         an array of days to skip.
 #
-
-#  
+#  See demo/demo_workbook_builder_config.rb for a sample config file.
 #
 # (c) 2022 Zachary Kurmas
 ######################################################################################
 
-#
-# Sample configuration (not used by the script)
-#
-sample_config = {
-
-  # input .csv file containing user information. (Using __FILE__ means that this
-  # input file is expected to be placed in the same directory as this config file.)
-  roster_file: "#{File.dirname(__FILE__)}/studentInfo_343w23.csv",
-
-  # output spreadsheet file.
-  gradebook_file: "#{File.dirname(__FILE__)}/cis343_W23.xlsx",
-
-  # name of the student info worksheet in the resulting Excel workbook.
-  info_sheet_name: "info",
-
-  # The list of columns to be added to the student info sheet.
-  # (Notice that each column is described by a Hash with exactly one key.)
-  info_sheet_config: [
-    { lname: "Last Name" },
-    { fname: "First Name" },
-    { username: "Username" },
-    { section: "Section" },
-    { github: "GitHub" },
-    { major: "Major" },
-  ],
-
-  # Descriptions of the various grading categories.
-  # Not all info here will be used by the workbook builder.  Some fields
-  # are used by the grade report generator.
-  categories: [
-    {
-      key: :learningObjectives,
-      title: "Learning Objectives",
-      short_name: "LO",
-      type: :empn,
-
-      # The elements of this array must be keys in the info_sheet_config above.
-      hidden_info_columns: [:username, :github, :major],
-    },
-    {
-      key: :homework,
-      title: "Homework",
-      short_name: "H",
-      type: :empn,
-      hidden_info_columns: [:username, :major],
-    },
-    {
-      key: :projects,
-      title: "Projects",
-      short_name: "P",
-      type: :letter,
-      hidden_info_columns: [:major],
-    },
-  ],
-}
-
-#####################################################################################
-#
-# start of actual code
-#
-#####################################################################################
 require "csv"
 require "date"
 require "optparse"
@@ -128,13 +75,50 @@ DAY_ABBREV = {
   s: 6,
 }
 
+#####################################################################
+#
+# parse_csv_userinfo
+#
+# Read the student info data from an arbitrary .csv
+#
+# input_file: The name of the .csv file
+# columns:    The symbol for the corresponding column in the info
+#             table (or nil if this .csv column should be ignored)
+#
+# Note: .csv file is assumed to have a header row.  However, we 
+# still require the config file to specify the .csv column to 
+# info table column mapping in the config file so that (1) users 
+# need not edit the header row if it is generated automatically by 
+# an LMS or other export, and (2) users can specify that a column
+# in the .csv file not be included in the info table without 
+# removing the header information from the .csv file itself.
+#
+#####################################################################
+def parse_csv_userinfo(input_file, columns)
+  students = []
 
+  CSV.foreach(input_file, headers: :first_row, encoding: "bom|utf-8") do |row|
+    student = {}
+    columns.each_with_index do |key, index|
+      student[key] = row[index] unless key.nil?
+    end
+    
+    student.each do |key, value|
+      if value.nil? || value.to_s.strip.empty?
+        puts "WARNING: Field #{key} in row \"#{row}\" is empty."
+      end
+    end
+    # p student
+    students << student
+  end
+  students
+end
 
 #################################################################
 #
-# parse_blackboard_userinfo
+# parse_blackboard_classic_userinfo
 #
-# Read the data from a Blackboard-exported .csv
+# Read the data from a .csv exported by Blackboard Classic
 #
 # Specifically, this method maps each non-header row in the CSV
 # to the following keys:
@@ -148,7 +132,7 @@ DAY_ABBREV = {
 # component is the section number: GVCIS343.01.202320
 #
 #################################################################
-def parse_blackboard_userinfo(input_file)
+def parse_blackboard_classic_userinfo(input_file)
   students = []
 
   # TODO: Also handle header row and make sure the expected headers are present.
@@ -361,11 +345,37 @@ end
 
 #########################################################################################################
 #
+# load_student_info
+#
+#########################################################################################################
+
+def load_student_info(config)
+  if config[:roster_config].kind_of?(Array)
+    students = parse_csv_userinfo(config[:roster_file], config[:roster_config])
+  elsif config[:roster_config].kind_of?(Symbol) 
+    case config[:roster_config]
+    when :bb_classic
+      students = parse_blackboard_classic_userinfo(config[:roster_file])
+    else
+      puts "Roster config symbol '#{config[:roster_config]}' not recognized"
+      exit
+    end # case
+  else
+    puts "Roster config of type #{config[:roster_config].class} not recognized."
+    exit
+  end # roster config type.
+  students
+end
+
+#########################################################################################################
+#
 # main
 #
 #########################################################################################################
 
-options = {}
+options = {
+  merge: []
+}
 
 parser = OptionParser.new do |opts|
   opts.banner = "Usage: workbook_builder.rb config_file [options]"
@@ -378,6 +388,12 @@ parser = OptionParser.new do |opts|
   opts.on("-oFILE", "--output=FILE", "Output file") do |name|
     options[:output] = name
   end
+
+  # Used primarily for testing. (So we don't end up with an unmanageable
+  # number of config files that only differ by a line or two.)
+  opts.on("-mFILE", "--merge=FILE", "Merge additional config file") do |name|
+    options[:merge] << name
+  end
 end
 
 parser.parse!
@@ -389,7 +405,18 @@ if ARGV.length < 1
 end
 config_file = ARGV[0]
 
-config = Poprawa::ConfigLoader::load_config(config_file)
+main_config = Poprawa::ConfigLoader::load_config(config_file)
+
+# Merge additional config files.  (Values in subsequent files override
+# values from previous files.)
+config = options[:merge].inject(main_config) do |partial, merge_file| 
+  merge_config = Poprawa::ConfigLoader::load_config(merge_file)
+  partial.merge(merge_config)
+end
+
+#
+# Set up output file
+#
 
 if options.has_key?(:output)
   output_file = options[:output]
@@ -408,7 +435,13 @@ if (File.exists?(output_file))
   end
 end
 
-students = parse_blackboard_userinfo(config[:roster_file])
+unless config.has_key?(:roster_config)
+  puts "Config must include a :roster_config item specifying the format of the .csv file."
+  exit
+end
+
+students = load_student_info(config)
+
 
 # https://www.rubydoc.info/gems/rubyXL/1.1.2
 workbook = RubyXL::Workbook.new

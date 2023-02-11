@@ -17,8 +17,8 @@ describe "resulting workbook" do
   COLS = "ABCDEFG"
 
 
-  def run_builder(config, workbook_filename)
-    result = run_workbook_builder(test_data(config))
+  def run_builder(config, *merge, workbook_filename:)
+    result = run_workbook_builder(test_data(config), merge.map {|f| "--merge #{test_data(f)}"})
     expect(result[:out]).to include_line_matching(/^Workbook written to .*\.xlsx/)
     expect(result[:err].length).to be 0
     expect(result[:out].length).to be 1
@@ -39,8 +39,18 @@ describe "resulting workbook" do
     clean_dir(output_dir)
   end
 
-  it "contains an info sheet with student data" do
-    workbook = run_builder("workbook_builder_config.rb", "builder/testWorkbook.xlsx")
+  def verify_student_info(workbook, input_type) 
+
+    case input_type
+    when :csv
+        cast = lambda {|x| x}
+        unique_student = ["Kim", "Justin", "kimj", "3"]
+    when :bb_classic
+          cast = lambda {|x| x.to_i}
+          unique_student = ["Kim", "Justin", "kimj", 4]
+    else 
+      fail "Unknown input_type #{input_type}"
+    end 
 
     # There should be a Worksheet named "info" (as specified in the config)
     info_sheet = workbook["info"]
@@ -64,14 +74,28 @@ describe "resulting workbook" do
     # Pick three rows to check carefully:
 
     first_student = info_sheet[2].cells.map { |c| c&.value }
-    expect(first_student).to eq(["Anderson", "Leila", "andersol", 1])
+    expect(first_student).to eq(["Anderson", "Leila", "andersol", cast.call("1")])
     
     middle_student = info_sheet[9].cells.map { |c| c&.value }
-    expect(middle_student).to eq(["Jackson", "Rohan", "jacksonr", 1])
+    expect(middle_student).to eq(["Jackson", "Rohan", "jacksonr", cast.call("1")])
+
+    observed_unique_student = info_sheet[10].cells.map { |c| c&.value }
+    expect(observed_unique_student).to eq(unique_student)
 
     last_student = info_sheet[16].cells.map { |c| c&.value}
-    expect(last_student).to eq(["Quinn", "Allison", "quinna", 2])
+    expect(last_student).to eq(["Quinn", "Allison", "quinna", cast.call("2")])
   end
+
+  it "contains an info sheet with student data (built from arbitrary CSV)" do
+    workbook = run_builder("workbook_builder_config.rb", workbook_filename: "builder/testWorkbook.xlsx")
+    verify_student_info(workbook, :csv)
+  end
+
+  it "contains an info sheet with student data (built from bb-classic CSV)" do
+    workbook = run_builder("workbook_builder_config.rb", "wb_merge_bb_classic.rb", workbook_filename: "builder/testWorkbook.xlsx")
+    verify_student_info(workbook, :bb_classic)
+  end
+
 
   def verify_category(workbook, category)
     sheet = workbook[category]
@@ -95,7 +119,7 @@ describe "resulting workbook" do
 
 
   it "contains categories that link to info" do 
-    workbook = run_builder("workbook_builder_config.rb", "builder/testWorkbook.xlsx")
+    workbook = run_builder("workbook_builder_config.rb",  workbook_filename: "builder/testWorkbook.xlsx")
 
     verify_category(workbook, "learningObjectives")
     verify_category(workbook, "homework")

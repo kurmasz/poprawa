@@ -103,6 +103,8 @@ describe "workbook_builder command line" do
       expect(File.read(output_file)).to eq('Existing test xlsx')
     end
 
+    it "overwrites without asking with --force"
+
     it "generates file specified by --output"
     # Add "--output" to the command line with a different name for the output file.
     # Run the builder
@@ -114,5 +116,11 @@ describe "workbook_builder command line" do
 
     it "exits without writing if the user declines to overwrite (when specified by --output)" 
     
+    it "overwrites without asking with --force (when specified by --output)"
+
+    it "Saves original in ~ file when overwriting"
+
+    it "Saves original in ~ file when overwriting (when specified by --output)"
+
   end # context
 end

@@ -1,7 +1,13 @@
+# This file can be used as a config for both the workbook_builder and gh_progress_report scripts.
+# The two scripts have considerable overlap in their configurations, so combining the two scripts 
+# simplifies the process and avoids duplication.
 {
-  gradebook_file: "#{File.dirname(__FILE__)}/../output/builder/testWorkbook.xlsx",
-  roster_file: "#{File.dirname(__FILE__)}/test_csv_student_roster.csv",
-  roster_config: [:lname, :fname, :username, :section],
+
+  # The name of the .xlsx file produced by workbook_builder and read by gh_progress_report
+  gradebook_file: "#{File.dirname(__FILE__)}/demo_empty_workbook.xlsx",
+
+  # The name of the .csv file containing user data.
+  roster_file: "#{File.dirname(__FILE__)}/testStudentInfo.csv",
 
   info_sheet_name: "info",
   info_sheet_config: [
