@@ -151,12 +151,14 @@ HERE
     #
     def self.generate_mark_breakdown(student, category, out, report_dir)
       lo = {
-        "mastered": { "A": 10, "B": 9, "C": 9, "D": 8 },
+        "mastered": { "A": 10, "B": 9, "C": 8, "D": 6 },
+        "progressing": { "A": 11, "B": 10, "C": 9, "D": 7 },
         "total": 11
       }
       h = {
-        "mastered": { "A": 10, "B": 10, "C": 9, "D": 9 },
-        "total": 11
+        "mastered": { "A": 8, "B": 6, "C": 4, "D": 2 },
+        "progressing": { "A": 9, "B": 7, "C": 5, "D": 3 },
+        "total": 10
       }
       p = {
         "mastered": { "A": 4, "B": 4, "C": 4, "D": 3 },
@@ -190,7 +192,7 @@ HERE
 
       js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
       imagePath = "#{report_dir}/#{category[:short_name]}.png"
-      command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{assigned} #{temp_file.path}"
+      command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{mark_count[:p]} #{temp_file.path}"
       system(command)
       out.puts
       out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
