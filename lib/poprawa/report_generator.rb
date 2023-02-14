@@ -150,52 +150,34 @@ HERE
     # generate_mark_breakdown
     #
     def self.generate_mark_breakdown(student, category, out, report_dir)
-      lo = {
-        "mastered": { "A": 10, "B": 9, "C": 8, "D": 6 },
-        "progressing": { "A": 11, "B": 10, "C": 9, "D": 7 },
-        "total": 11
-      }
-      h = {
-        "mastered": { "A": 8, "B": 6, "C": 4, "D": 2 },
-        "progressing": { "A": 9, "B": 7, "C": 5, "D": 3 },
-        "total": 10
-      }
-      p = {
-        "mastered": { "A": 4, "B": 4, "C": 4, "D": 3 },
-        "total": 4
-      }
-      
-      grades = lo if category[:short_name] == "LO"
-      grades = h if category[:short_name] == "H"
-      grades = p if category[:short_name] == "P"
-
-      temp_file = Tempfile.new("grades", Dir.pwd)
-      temp_file.write(grades.to_json)
-      temp_file.close
-
-      assigned = category[:assignment_names].length
       mark_count = { e: 0, m: 0, p: 0, x: 0 }
-
+      
       category[:assignment_names].each do |key, value|
         marks = student.get_mark(category[:key], key)
         next if marks.nil?
-
+        
         mark_count[highest_mark(marks)] += 1
       end
-
+      
       out.puts
       out.puts "|E|M|P|X|"
       out.puts "|------|-------|-------|-------|"
       out.puts "|#{mark_count[:e]}|#{mark_count[:m]}|#{mark_count[:p]}|#{mark_count[:x]}|"
       out.puts
       out.puts "#{mark_count[:e] + mark_count[:m]} at 'm' or better."
+      
+      if !category[:progress_thresholds].nil?
+        temp_file = Tempfile.new("grades", Dir.pwd)
+        temp_file.write(category[:progress_thresholds].to_json)
+        temp_file.close
 
-      js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
-      imagePath = "#{report_dir}/#{category[:short_name]}.png"
-      command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{mark_count[:p]} #{temp_file.path}"
-      system(command)
-      out.puts
-      out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
+        js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
+        imagePath = "#{report_dir}/#{category[:short_name]}.png"
+        command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{mark_count[:p]} #{temp_file.path}"
+        system(command)
+        out.puts
+        out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
+      end
     end
 
     #
