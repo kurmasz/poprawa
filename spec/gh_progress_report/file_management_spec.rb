@@ -12,16 +12,22 @@ require "spec_helper"
 
 describe "gh_progress_report file management" do
   it "places reports and images in each student's github repo", slow: true do
-    output_dir = test_output("tw_clean")
 
+    # Note: The output is the directory where the student repos are.
+    # In production, this directory is often named "progress-report", 
+    # but it doesn't have to be.
+    output_dir = test_output("FilePlacementClean")
+    
     # Clean the output directory
     clean_dir(output_dir)
 
+    FileUtils.mkdir(base_output_dir) unless File.exist?(output_dir)
+    
     # Create necessary student directories
     dirs = %w(lellaAnderson brodieb davisc Ahmed734 flocar macg Issac93 Rohan JustinKim elee pam3 nelsonm ortizzz JaggerP quinna)
     dirs.each { |dir| FileUtils.mkdir("#{output_dir}/#{dir}") }
 
-    result = run_ghpr("--suppress-github", test_data("testWorkbook_config.rb"))
+    result = run_ghpr("--suppress-github", "--output=#{output_dir}", test_data("testWorkbook_config.rb"))
 
 
     expect(result[:err].length).to eq 0
@@ -47,10 +53,12 @@ describe "gh_progress_report file management" do
   
     it "pushes updated reports to github", :github do
 
-      output_dir = gh_output("tw_clean")
+      output_dir = gh_output("PushGitHubReports")
 
       # Clean the output directory
       clean_dir(output_dir)
+
+      FileUtils.mkdir(base_output_dir) unless File.exist?(output_dir)
 
       # Create necessary student directories
       dirs = %w(lellaAnderson brodieb davisc Ahmed734 flocar macg Issac93 Rohan JustinKim elee pam3 nelsonm ortizzz JaggerP quinna)

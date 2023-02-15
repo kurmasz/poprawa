@@ -92,6 +92,8 @@ module Poprawa
         sheet_name = category[:key].to_s
         category[:assignment_names] = self.load_gradesheet(workbook[sheet_name], student_map, num_info_columns)
       end
+      
+      self.load_attendance(workbook[config[:attendance_sheet_name]], student_map, num_info_columns)
 
       yield student_map.values
     end # load method
@@ -311,6 +313,62 @@ module Poprawa
       end
       return assignment_names
     end # load_gradesheet
+
+    #
+    # load_date_header
+    #
+    # Row 1 (the second row) contains the dates
+    #
+    def self.load_date_header(row, sheet_name)
+      if row.nil?
+        put_error "ERROR: Worksheet #{sheet_name} is missing the date header row."
+        exit Poprawa::ExitValues::SPREADSHEET_ERROR
+      end
+
+      row.cells.map do |cell|
+        stripped_value = strip_to_nil(cell&.value&.to_s)
+        stripped_value&.to_sym
+      end
+    end
+
+    #
+    # load_attendance
+    #
+    # Load student attendance data into a hash (date : status)
+    #
+    def self.load_attendance(sheet, students, num_info_columns)
+      dates = load_date_header(sheet[1], sheet.sheet_name)
+      
+      sheet.each do |row|
+        next if row.nil?
+
+        # We already handled the first two rows
+        next if row.index_in_collection < 2
+
+        # Collect the values in each cell.
+        cell_values = row.cells.map { |cell| strip_to_nil(cell&.value)}
+
+        # If every cell in the row is empty / nil, then move on.
+        next if cell_values.reject { |item| item.nil?}.length == 0
+
+        # Get Student object for this row.
+        # (add 1 row so it matches the row number in the spreadsheet)
+        student = students[row.index_in_collection + 1]
+
+        if student.nil?
+          put_error "ERROR: Attendance worksheet doesn't have a student on row #{row.index_in_collection + 1}."
+          exit Poprawa::ExitValues::SPREADSHEET_ERROR
+          return
+        end
+        
+        # skip to next student row if inactive
+        next unless student.active?
+
+        for index in num_info_columns..dates.length
+          student.set_attendance(dates[index], cell_values[index])
+        end
+      end
+    end
 
     #
     # parse_mark_cell

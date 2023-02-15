@@ -106,14 +106,16 @@ HERE
         else
           #puts "*NOT* Generating breakdown for #{category[:key]}"
         end
-
+        
         current_grade = gradebook.calc_grade(student, category: category[:key])
         out.puts
         out.printf "Projected grade:  #{current_grade}\n" if current_grade
       end # each category
-
+      
+      generate_attendance(student, out)
       generate_legend(out)
 
+      out.puts Time.now
       out.close
     end
 
@@ -149,52 +151,52 @@ HERE
     # generate_mark_breakdown
     #
     def self.generate_mark_breakdown(student, category, out, report_dir)
-      lo = {
-        "mastered": { "A": 10, "B": 9, "C": 9, "D": 8 },
-        "total": 11
-      }
-      h = {
-        "mastered": { "A": 10, "B": 10, "C": 9, "D": 9 },
-        "total": 11
-      }
-      p = {
-        "mastered": { "A": 4, "B": 4, "C": 4, "D": 3 },
-        "total": 4
-      }
-      
-      grades = lo if category[:short_name] == "LO"
-      grades = h if category[:short_name] == "H"
-      grades = p if category[:short_name] == "P"
-
-      temp_file = Tempfile.new("grades", Dir.pwd)
-      temp_file.write(grades.to_json)
-      temp_file.close
-
       assigned = category[:assignment_names].length
       mark_count = { e: 0, m: 0, p: 0, x: 0 }
-
+      
       category[:assignment_names].each do |key, value|
         marks = student.get_mark(category[:key], key)
         next if marks.nil?
-
+        
         mark_count[highest_mark(marks)] += 1
       end
-
+      
       out.puts
       out.puts "|E|M|P|X|"
       out.puts "|------|-------|-------|-------|"
       out.puts "|#{mark_count[:e]}|#{mark_count[:m]}|#{mark_count[:p]}|#{mark_count[:x]}|"
       out.puts
       out.puts "#{mark_count[:e] + mark_count[:m]} at 'm' or better."
+      
+      if !category[:progress_thresholds].nil?
+        temp_file = Tempfile.new("grades", Dir.pwd)
+        temp_file.write(category[:progress_thresholds].to_json)
+        temp_file.close
 
-      js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
-      imagePath = "#{report_dir}/#{category[:short_name]}.png"
-      command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{assigned} #{temp_file.path}"
-      system(command)
-      out.puts
-      out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
+        js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
+        imagePath = "#{report_dir}/#{category[:short_name]}.png"
+        command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{mark_count[:p]} #{temp_file.path} #{assigned}"
+        system(command)
+        out.puts
+        out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
+      end
     end
 
+    #
+    # generate_attendance
+    #
+    def self.generate_attendance(student, out)
+      days_absent = 0
+      student.get_attendance.values.each { |status| days_absent += 1 if %w(x s a).include?(status) }
+
+      out.puts
+      out.puts "## Attendance "
+      out.puts "Days Absent: #{days_absent}"
+    end
+
+    #
+    # generate_legend
+    #
     def self.generate_legend(out)
       out.puts
       out.puts "## Legend "
