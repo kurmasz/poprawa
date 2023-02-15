@@ -150,6 +150,7 @@ HERE
     # generate_mark_breakdown
     #
     def self.generate_mark_breakdown(student, category, out, report_dir)
+      assigned = category[:assignment_names].length
       mark_count = { e: 0, m: 0, p: 0, x: 0 }
       
       category[:assignment_names].each do |key, value|
@@ -173,7 +174,7 @@ HERE
 
         js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
         imagePath = "#{report_dir}/#{category[:short_name]}.png"
-        command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{mark_count[:p]} #{temp_file.path}"
+        command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{mark_count[:p]} #{temp_file.path} #{assigned}"
         system(command)
         out.puts
         out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
