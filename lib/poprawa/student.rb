@@ -56,6 +56,7 @@ module Poprawa
       @index = index  # see comment above about 1-based indexing.
       @marks = {}
       @late_days = {}
+      @attendance = {}
     end
 
     #
@@ -91,6 +92,20 @@ module Poprawa
     #
     def active?
       @active
+    end
+
+    #
+    # set_attendance
+    #
+    def set_attendance(date, status)
+      @attendance[date] = status
+    end
+
+    #
+    # get_attendance
+    #
+    def get_attendance()
+      @attendance
     end
 
     # set_mark
