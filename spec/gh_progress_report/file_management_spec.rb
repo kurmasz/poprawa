@@ -11,7 +11,7 @@
 require "spec_helper"
 
 describe "gh_progress_report file management" do
-  it "places reports and images in each student's github repo" do
+  it "places reports and images in each student's github repo", slow: true do
     output_dir = test_output("tw_clean")
 
     # Clean the output directory
@@ -22,6 +22,7 @@ describe "gh_progress_report file management" do
     dirs.each { |dir| FileUtils.mkdir("#{output_dir}/#{dir}") }
 
     result = run_ghpr("--suppress-github", test_data("testWorkbook_config.rb"))
+
 
     expect(result[:err].length).to eq 0
     expect(result[:out].length).to eq 0
@@ -45,6 +46,7 @@ describe "gh_progress_report file management" do
     end
   
     it "pushes updated reports to github", :github do
+
       output_dir = gh_output("tw_clean")
 
       # Clean the output directory

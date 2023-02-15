@@ -29,6 +29,7 @@
     title: "Homework",
     short_name: "H",
     type: :empn,
+
     progress_thresholds: {
       meets_expectations: {a: 8, b: 6, c: 4, d: 2}, 
       progressing: {a: 9, b: 7, c: 5, d: 3},

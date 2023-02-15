@@ -1,5 +1,3 @@
-#  OUTPUT_BASE = "#{File.dirname(__FILE__)}/../spec/output/poprawa_test/tw_clean"
-
 {
   gradebook_file: "#{File.dirname(__FILE__)}/../output/builder/testWorkbook.xlsx",
   roster_file: "#{File.dirname(__FILE__)}/testStudentInfo.csv",
@@ -21,14 +19,14 @@
     type: :empn,
     hidden_info_columns: [:username, :github, :major],
   },
-               {
+  {
     key: :homework,
     title: "Homework",
     short_name: "H",
     type: :empn,
     hidden_info_columns: [:username, :major],
   },
-               {
+  {
     key: :projects,
     title: "Projects",
     short_name: "P",

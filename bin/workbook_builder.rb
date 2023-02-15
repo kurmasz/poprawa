@@ -257,7 +257,7 @@ def add_gradesheet(workbook, category, config, protected_xf_id, unprotected_xf_i
   info_sheet.each_with_index do |row, row_index|
     # (three dots "..." in a range excludes ending value)
     (0...num_info_columns).each do |col_index|
-      cell = sheet.add_cell(row_index, col_index, "", formula = "=#{config[:info_sheet_name]}!#{COLUMNS[col_index]}#{row_index + 1}")
+      cell = sheet.add_cell(row_index, col_index, "", formula = "#{config[:info_sheet_name]}!#{COLUMNS[col_index]}#{row_index + 1}")
 
       # Protect these references so they can't be modified.
       # (Any changes should be made on the info sheet only.)
@@ -431,8 +431,8 @@ end
 add_headers(info_sheet, config[:info_sheet_config])
 students.each_with_index do |student, index|
   adj_index = index + 2
-  header_keys(config[:info_sheet_config]).each_with_index do |header_key, col_index|
-    info_sheet.add_cell(adj_index, col_index, student[header_key])
+  header_keys(config[:info_sheet_config]).each_with_index do |header_key, col_index|    
+    info_sheet.add_cell(adj_index, col_index, student[header_key]) if (student.has_key?(header_key))
   end
 end
 

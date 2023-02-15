@@ -61,17 +61,47 @@ describe "workbook_builder command line" do
       expect(File.exist?(output_file)).to be true
     end
 
-    it "asks before overwriting the output file (when specified by config file)"
-     # create a file with the name of the output file (builder/textWorkbook.xlsx)
-     # Then run the builder. (Need to put a "y" on stdin)
-     # Verify that it asks if you want to overwrite
-     # Verify that the file is created (and is different from the one that was there.)
+    it "asks before overwriting the output file (when specified by config file)" do
+      output_file = "#{output_dir}/testWorkbook.xlsx"
+      File.open(output_file, "w") { |f| f.write("Existing test xlsx") }
+      orig_size = File.size(output_file)
 
-    it "exits without writing if the user declines to overwrite"
-     # create a file with the name of the output file (builder/textWorkbook.xlsx)
-     # Then run the builder. (Need to put a "n" on stdin)
-     # Verify that it asks if you want to overwrite
-     # Verify that the file is created (and is different from the one that was there.)
+      result = run_workbook_builder(test_data("workbook_builder_config.rb"), input: "yes")
+      expect(File.exist?(output_file)).to be true
+
+      # Make sure we asked
+      expect(result[:out]).to include_line_matching(/^Output file.*Overwrite\?$/)
+      expect(result[:out]).to include_line_matching(/^Overwriting\.$/)
+
+      # Make sure the current output file is different from the "dummy"
+      expect(File.size(output_file)).to be > orig_size
+
+      # Make sure the newly generated file is an xlsx file (check the "magic number")
+      # https://stackoverflow.com/questions/60491746/how-to-check-if-the-browsed-file-is-xlsx-or-csv
+      File.open(output_file, "r") do |f|
+        magic_number = (1..4).map { f.getbyte }
+        expect(magic_number).to eq [0x50, 0x4b, 0x03, 0x04]
+      end
+    end
+
+    it "exits without writing if the user declines to overwrite" do
+      output_file = "#{output_dir}/testWorkbook.xlsx"
+      File.open(output_file, "w") { |f| f.write("Existing test xlsx") }
+      orig_size = File.size(output_file)
+
+      result = run_workbook_builder(test_data("workbook_builder_config.rb"), input: "no")
+      expect(File.exist?(output_file)).to be true
+
+      # Make sure we asked
+      expect(result[:out]).to include_line_matching(/^Output file.*Overwrite\?$/)
+      expect(result[:out]).to include_line_matching(/^Exiting without overwriting\.$/)
+
+      # Make sure the current output file is different from the "dummy"
+      expect(File.size(output_file)).to eq orig_size
+
+      # Make sure current output file hasn't changed.
+      expect(File.read(output_file)).to eq('Existing test xlsx')
+    end
 
     it "generates file specified by --output"
     # Add "--output" to the command line with a different name for the output file.
@@ -80,5 +110,9 @@ describe "workbook_builder command line" do
 
     it "asks before overwriting the output file (when specified by --output)"
     # Same as above, just provide --output on the command line.
+
+
+    it "exits without writing if the user declines to overwrite (when specified by --output)" 
+    
   end # context
 end
