@@ -152,8 +152,8 @@ g = Poprawa::Gradebook.new(config, verbose: options[:verbose])
 push_report = lambda do |student|
   directory = "#{output_dir}/#{student.info[:github]}"
   if (File.exist?(directory) && !options[:suppress])
-    log.puts "*********************"
-    # puts "Updating repo for #{student.full_name} (#{student.info[:github]})"
+    log.puts "*********************."
+    log.puts "Updating repo for #{student.full_name} (#{student.info[:github]})"
     update_repo(directory, student)
   else
     puts "Skipping GitHub for #{student.full_name}" if options[:verbose]

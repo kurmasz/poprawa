@@ -115,6 +115,7 @@ HERE
       generate_attendance(student, out)
       generate_legend(out)
 
+      out.puts Time.now
       out.close
     end
 
