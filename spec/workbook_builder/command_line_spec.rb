@@ -106,22 +106,22 @@ describe "workbook_builder command line" do
     it "overwrites without asking with --force" do
       output_file = "#{output_dir}/testWorkbook.xlsx"
       File.open(output_file, "w") { |f| f.write("Existing test xlsx") }
-      orig_size = File.size(output_file)
+      
+      # Store the original content of the output file
+      orig_content = File.read(output_file)
     
-      result = run_workbook_builder(test_data("workbook_builder_config.rb"), input: "", options: "--force --output #{output_file}")
+      result = run_workbook_builder(test_data("workbook_builder_config.rb"), input: "", options: "--force")
       expect(File.exist?(output_file)).to be true
     
       # Make sure we didn't ask
       expect(result[:out]).not_to include_line_matching(/^Output file.*Overwrite\?$/)
+      expect(result[:out]).not_to include_line_matching(/^Exiting without overwriting\.$/)
     
-      # Make sure we overwrote
-      expect(result[:out]).to include_line_matching(/^Overwriting\.$/)
-    
-      # Make sure the current output file is different from the "dummy"
-      expect(File.size(output_file)).to eq orig_size
+      # Make sure the output file was actually overwritten
+      expect(File.read(output_file)).not_to eq orig_content
     
       # Make sure current output file has changed.
-      expect(File.read(output_file)).to eq('Generated workbook content')
+      expect(File.read(output_file)).not_to eq('Existing test xlsx')
     end
 
     it "generates file specified by --output" do
@@ -131,17 +131,115 @@ describe "workbook_builder command line" do
       expect(File.exist?(output_file)).to be true
     end
 
-    it "asks before overwriting the output file (when specified by --output)"
-    # Same as above, just provide --output on the command line.
-
-
-    it "exits without writing if the user declines to overwrite (when specified by --output)" 
+    it "asks before overwriting the output file (when specified by --output)" do
+      output_file = "#{output_dir}/testWorkbook.xlsx"
+      File.open(output_file, "w") { |f| f.write("Existing test xlsx") }
+      
+      # Store the original content of the output file
+      orig_content = File.read(output_file)
     
-    it "overwrites without asking with --force (when specified by --output)"
+      result = run_workbook_builder(test_data("workbook_builder_config.rb"), input: "yes", options: "--output #{output_file}")
+      expect(File.exist?(output_file)).to be true
+    
+      # Make sure we asked
+      expect(result[:out]).to include_line_matching(/^Output file.*Overwrite\?$/)
+      expect(result[:out]).to include_line_matching(/^Overwriting\.$/)
+    
+      # Make sure the output file was actually overwritten
+      expect(File.read(output_file)).not_to eq orig_content
+    
+      # Make sure the newly generated file is an xlsx file (check the "magic number")
+      File.open(output_file, "r") do |f|
+        magic_number = (1..4).map { f.getbyte }
+        expect(magic_number).to eq [0x50, 0x4b, 0x03, 0x04]
+      end
+    end    
+    
+    it "exits without writing if the user declines to overwrite (when specified by --output)" do
+      output_file = "#{output_dir}/testWorkbook.xlsx"
+      File.open(output_file, "w") { |f| f.write("Existing test xlsx") }
+      
+      # Store the original content of the output file
+      orig_content = File.read(output_file)
+    
+      result = run_workbook_builder(test_data("workbook_builder_config.rb"), input: "no", options: "--output #{output_file}")
+      expect(File.exist?(output_file)).to be true
+    
+      # Make sure we asked
+      expect(result[:out]).to include_line_matching(/^Output file.*Overwrite\?$/)
+      expect(result[:out]).to include_line_matching(/^Exiting without overwriting\.$/)
+    
+      # Make sure the output file wasn't overwritten
+      expect(File.read(output_file)).to eq orig_content
+    
+      # Make sure current output file hasn't changed.
+      expect(File.read(output_file)).to eq('Existing test xlsx')
+    end 
+    
+    it "overwrites without asking with --force (when specified by --output)" do
+      output_file = "#{output_dir}/testWorkbook.xlsx"
+      File.open(output_file, "w") { |f| f.write("Existing test xlsx") }
+      
+      # Store the original content of the output file
+      orig_content = File.read(output_file)
+    
+      result = run_workbook_builder(test_data("workbook_builder_config.rb"), input: "", options: "--force --output #{output_file}")
+      expect(File.exist?(output_file)).to be true
+    
+      # Make sure we didn't ask
+      expect(result[:out]).not_to include_line_matching(/^Output file.*Overwrite\?$/)
+      expect(result[:out]).not_to include_line_matching(/^Exiting without overwriting\.$/)
+    
+      # Make sure the output file was actually overwritten
+      expect(File.read(output_file)).not_to eq orig_content
+    
+      # Make sure current output file has changed.
+      expect(File.read(output_file)).not_to eq('Existing test xlsx')
+    end
 
-    it "Saves original in ~ file when overwriting"
+    it "saves original file in ~ file when overwriting" do
+      output_file = "#{output_dir}/testWorkbook.xlsx"
+      File.open(output_file, "w") { |f| f.write("Existing test xlsx") }
 
-    it "Saves original in ~ file when overwriting (when specified by --output)"
+      # Store the original content of the output file
+      orig_content = File.read(output_file)
+    
+      result = run_workbook_builder(test_data("workbook_builder_config.rb"), input: "yes")
+      expect(File.exist?(output_file)).to be true
+
+      # Make sure the backup file exists and has the original content
+      backup_file = "#{output_file}~"
+      expect(File.exist?(backup_file)).to be true
+      expect(File.read(backup_file)).to eq orig_content
+    
+      # Make sure the output file was actually overwritten
+      expect(File.read(output_file)).not_to eq orig_content
+    
+      # Make sure current output file has changed.
+      expect(File.read(output_file)).not_to eq('Existing test xlsx')
+    end
+
+    it "Saves original in ~ file when overwriting (when specified by --output)" do
+      output_file = "#{output_dir}/testWorkbook.xlsx"
+      File.open(output_file, "w") { |f| f.write("Existing test xlsx") }
+
+      # Store the original content of the output file
+      orig_content = File.read(output_file)
+    
+      result = run_workbook_builder(test_data("workbook_builder_config.rb"), input: "yes", options: "--output #{output_file}")
+      expect(File.exist?(output_file)).to be true
+
+      # Make sure the backup file exists and has the original content
+      backup_file = "#{output_file}~"
+      expect(File.exist?(backup_file)).to be true
+      expect(File.read(backup_file)).to eq orig_content
+    
+      # Make sure the output file was actually overwritten
+      expect(File.read(output_file)).not_to eq orig_content
+    
+      # Make sure current output file has changed.
+      expect(File.read(output_file)).not_to eq('Existing test xlsx')
+    end
 
   end # context
 end
