@@ -103,12 +103,33 @@ describe "workbook_builder command line" do
       expect(File.read(output_file)).to eq('Existing test xlsx')
     end
 
-    it "overwrites without asking with --force"
+    it "overwrites without asking with --force" do
+      output_file = "#{output_dir}/testWorkbook.xlsx"
+      File.open(output_file, "w") { |f| f.write("Existing test xlsx") }
+      orig_size = File.size(output_file)
+    
+      result = run_workbook_builder(test_data("workbook_builder_config.rb"), input: "", options: "--force --output #{output_file}")
+      expect(File.exist?(output_file)).to be true
+    
+      # Make sure we didn't ask
+      expect(result[:out]).not_to include_line_matching(/^Output file.*Overwrite\?$/)
+    
+      # Make sure we overwrote
+      expect(result[:out]).to include_line_matching(/^Overwriting\.$/)
+    
+      # Make sure the current output file is different from the "dummy"
+      expect(File.size(output_file)).to eq orig_size
+    
+      # Make sure current output file has changed.
+      expect(File.read(output_file)).to eq('Generated workbook content')
+    end
 
-    it "generates file specified by --output"
-    # Add "--output" to the command line with a different name for the output file.
-    # Run the builder
-    # verify that the correct file is created.
+    it "generates file specified by --output" do
+      output_file = "#{output_dir}/my_test_output.xlsx"
+      run_workbook_builder(test_data("workbook_builder_config.rb"), input: "", options: "--output #{output_file}")
+    
+      expect(File.exist?(output_file)).to be true
+    end
 
     it "asks before overwriting the output file (when specified by --output)"
     # Same as above, just provide --output on the command line.
