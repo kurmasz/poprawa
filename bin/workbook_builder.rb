@@ -374,7 +374,8 @@ end
 #########################################################################################################
 
 options = {
-  merge: []
+  merge: [],
+  force: false
 }
 
 parser = OptionParser.new do |opts|
@@ -387,6 +388,10 @@ parser = OptionParser.new do |opts|
 
   opts.on("-oFILE", "--output=FILE", "Output file") do |name|
     options[:output] = name
+  end
+
+  opts.on("-f", "--force", "Force overwrite") do |f|
+    options[:force] = f
   end
 
   # Used primarily for testing. (So we don't end up with an unmanageable
@@ -424,7 +429,7 @@ else
   output_file = config[:gradebook_file]
 end
 
-if (File.exists?(output_file))
+if (File.exists?(output_file) && !options[:force])
   puts "Output file #{output_file} exists.  Overwrite?"
   answer = $stdin.gets.downcase.strip
   if answer == "y" || answer == "yes"
@@ -433,6 +438,8 @@ if (File.exists?(output_file))
     puts "Exiting without overwriting."
     exit
   end
+elsif (File.exists?(output_file) && options[:force])
+  puts "Overwriting output file by --force."
 end
 
 unless config.has_key?(:roster_config)
@@ -484,3 +491,5 @@ add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
 #
 workbook.write(output_file)
 $stdout.puts "Workbook written to #{output_file}"
+
+
