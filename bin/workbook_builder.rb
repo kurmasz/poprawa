@@ -429,17 +429,22 @@ else
   output_file = config[:gradebook_file]
 end
 
-if (File.exists?(output_file) && !options[:force])
-  puts "Output file #{output_file} exists.  Overwrite?"
-  answer = $stdin.gets.downcase.strip
-  if answer == "y" || answer == "yes"
-    puts "Overwriting."
+if File.exists?(output_file) 
+  if options[:force]
+    puts "Overwriting output file by --force."
   else
-    puts "Exiting without overwriting."
-    exit
-  end
-elsif (File.exists?(output_file) && options[:force])
-  puts "Overwriting output file by --force."
+    puts "Output file #{output_file} exists.  Overwrite?"
+    answer = $stdin.gets.downcase.strip
+    if answer == "y" || answer == "yes"
+      puts "Overwriting."
+    else
+      puts "Exiting without overwriting."
+     exit
+    end # if answer
+  end # if --force
+
+  # Make a "backup" of the file being overwritten
+  FileUtils.cp(output_file, "#{output_file}~")
 end
 
 unless config.has_key?(:roster_config)
