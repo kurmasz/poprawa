@@ -75,6 +75,8 @@ DAY_ABBREV = {
   s: 6,
 }
 
+# add default hash
+
 #####################################################################
 #
 # parse_csv_userinfo
@@ -374,7 +376,8 @@ end
 #########################################################################################################
 
 options = {
-  merge: []
+  merge: [],
+  force: false
 }
 
 parser = OptionParser.new do |opts|
@@ -387,6 +390,10 @@ parser = OptionParser.new do |opts|
 
   opts.on("-oFILE", "--output=FILE", "Output file") do |name|
     options[:output] = name
+  end
+
+  opts.on("-f", "--force", "Force overwrite") do |f|
+    options[:force] = f
   end
 
   # Used primarily for testing. (So we don't end up with an unmanageable
@@ -424,15 +431,22 @@ else
   output_file = config[:gradebook_file]
 end
 
-if (File.exists?(output_file))
-  puts "Output file #{output_file} exists.  Overwrite?"
-  answer = $stdin.gets.downcase.strip
-  if answer == "y" || answer == "yes"
-    puts "Overwriting."
+if File.exists?(output_file) 
+  if options[:force]
+    puts "Overwriting output file by --force."
   else
-    puts "Exiting without overwriting."
-    exit
-  end
+    puts "Output file #{output_file} exists.  Overwrite?"
+    answer = $stdin.gets.downcase.strip
+    if answer == "y" || answer == "yes"
+      puts "Overwriting."
+    else
+      puts "Exiting without overwriting."
+     exit
+    end # if answer
+  end # if --force
+
+  # Make a "backup" of the file being overwritten
+  FileUtils.cp(output_file, "#{output_file}~")
 end
 
 unless config.has_key?(:roster_config)
@@ -484,3 +498,5 @@ add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
 #
 workbook.write(output_file)
 $stdout.puts "Workbook written to #{output_file}"
+
+

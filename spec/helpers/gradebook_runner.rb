@@ -88,8 +88,9 @@ module GradebookRunner
     { out: output, err: error, exit: result[:exit] }
   end
 
-  def run_workbook_builder(*args, input: nil)
+  def run_workbook_builder(*args, input: nil, options: nil)
     command = "#{WORKBOOK_BUILDER_COMMAND} #{args.join(" ")}"
+    command += " #{options}" if options
     run_helper(command, false, input)
   end
 
