@@ -3,14 +3,7 @@
   roster_file: "#{File.dirname(__FILE__)}/../test_csv_student_roster.csv",
   roster_config: [:lname, :fname, :username, :section],
 
-  info_sheet_config: [
-    { lname: "Last Name" },
-    { fname: "First Name" },
-    { username: "Username" },
-    { section: "Section" },
-    { github: "GitHub" },
-    { major: "Major" },
-  ],
+  info_sheet_name: "info",
 
   categories: [{
     key: :learningObjectives,

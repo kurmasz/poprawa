@@ -1,6 +1,7 @@
 {
   gradebook_file: "#{File.dirname(__FILE__)}/testWorkbook_noNil.xlsx",
-  output_dir: OUTPUT_BASE = "#{File.dirname(__FILE__)}/../output/tw_clean/progressReports",
+  # output_dir: OUTPUT_BASE = "#{File.dirname(__FILE__)}/../output/tw_clean/progressReports",
+  output_dir: OUTPUT_BASE = "#{File.dirname(__FILE__)}/../output/poprawa-github-test/demo/progressReports",
 
   info_sheet_name: "info",
   info_sheet_config: [

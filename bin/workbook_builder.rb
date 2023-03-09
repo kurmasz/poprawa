@@ -75,7 +75,17 @@ DAY_ABBREV = {
   s: 6,
 }
 
-# add default hash
+default_config = {  
+  info_sheet_name: "info",
+  info_sheet_config: [
+    { lname: "Last Name" },
+    { fname: "First Name" },
+    { username: "Username" },
+    { section: "Section" },
+    { github: "GitHub" },
+    { major: "Major" },
+  ],
+}
 
 #####################################################################
 #
@@ -299,6 +309,16 @@ end
 #
 #########################################################################################################
 def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
+  unless config[:attendance].has_key?(:first_sunday)
+    $stderr.puts "Config must include a :first_sunday item specifying the date of the first sunday."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  unless config[:attendance].has_key?(:last_saturday)
+    $stderr.puts "Config must include a :last_saturday item specifying the date of the last saturday."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
+
   category = {
     key: :attendance,
     title: "Attendance",
@@ -359,12 +379,12 @@ def load_student_info(config)
     when :bb_classic
       students = parse_blackboard_classic_userinfo(config[:roster_file])
     else
-      puts "Roster config symbol '#{config[:roster_config]}' not recognized"
-      exit
+      $stderr.puts "Roster config symbol '#{config[:roster_config]}' not recognized."
+      exit Poprawa::ExitValues::INVALID_CONFIG
     end # case
   else
-    puts "Roster config of type #{config[:roster_config].class} not recognized."
-    exit
+    $stderr.puts "Roster config of type #{config[:roster_config].class} not recognized."
+    exit Poprawa::ExitValues::INVALID_CONFIG
   end # roster config type.
   students
 end
@@ -414,9 +434,12 @@ config_file = ARGV[0]
 
 main_config = Poprawa::ConfigLoader::load_config(config_file)
 
+# Merge config_file over default_config
+config = default_config.merge(main_config)
+
 # Merge additional config files.  (Values in subsequent files override
 # values from previous files.)
-config = options[:merge].inject(main_config) do |partial, merge_file| 
+config = options[:merge].inject(config) do |partial, merge_file| 
   merge_config = Poprawa::ConfigLoader::load_config(merge_file)
   partial.merge(merge_config)
 end
@@ -450,8 +473,8 @@ if File.exists?(output_file)
 end
 
 unless config.has_key?(:roster_config)
-  puts "Config must include a :roster_config item specifying the format of the .csv file."
-  exit
+  $stderr.puts "Config must include a :roster_config item specifying the format of the .csv file."
+  exit Poprawa::ExitValues::INVALID_CONFIG
 end
 
 students = load_student_info(config)
@@ -487,7 +510,21 @@ end
 # Add category sheets
 #
 
+unless config.has_key?(:categories)
+  $stderr.puts "Config must include a :categories item."
+  exit Poprawa::ExitValues::INVALID_CONFIG
+end
+
+if config[:categories].empty?
+  $stderr.puts "Config must include a :categories item that is not empty."
+  exit Poprawa::ExitValues::INVALID_CONFIG
+end
+
 config[:categories].each do |category|
+  unless category.has_key?(:key)
+    category[:key] = category[:title].gsub(/\s+/, "_").downcase.to_sym
+  end
+
   add_gradesheet(workbook, category, config, protected_xf_id, unprotected_xf_id)
 end
 
