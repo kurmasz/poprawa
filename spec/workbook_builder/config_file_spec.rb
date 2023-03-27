@@ -161,16 +161,32 @@ describe "workbook_builder command line" do
       workbook = RubyXL::Parser.parse('spec/output/builder/testConfig.xlsx')
   
       first_row = workbook['info'][0]
-  
+
       expect(first_row.cells[0].value).to eq "Last Name"
       expect(first_row.cells[1].value).to eq "First Name"
-  
-      puts result[:err]
     
       expect(result[:err].length).to eq(0)
       expect(result[:out].length).to be > 0
     
       expect(result[:exit]).to eq Poprawa::ExitValues::SUCCESS
+    end
+
+    it "doesn't create attendance sheet if attendance item is missing" do
+      result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_config.rb'))
+
+      workbook = RubyXL::Parser.parse('spec/output/builder/testConfig.xlsx')
+
+      attendance_sheet = workbook['attendance']
+      expect(attendance_sheet).to be_nil
+    end
+
+    it "creates attendance sheet if attendance item is present" do
+      result = run_workbook_builder(test_data('valid_configs/config_attendance.rb'))
+
+      workbook = RubyXL::Parser.parse('spec/output/builder/testConfig.xlsx')
+
+      attendance_sheet = workbook['attendance']
+      expect(attendance_sheet).to_not be_nil
     end
   end
 end

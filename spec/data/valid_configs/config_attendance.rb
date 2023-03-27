@@ -10,6 +10,7 @@
   ],
 
   categories: [{
+    key: :learningObjectives,
     title: "Learning Objectives",
     short_name: "LO",
     },
@@ -25,7 +26,10 @@
   }],
 
   attendance: {
-    # missing first_sunday
-    last_saturday: "2023-4-29"
-  }
+    first_sunday: "2023-1-8",
+    last_saturday: "2023-4-29",
+    meeting_days: "TR",
+    skip_weeks: ["2023-3-5"],
+    skip_days: ["2023-1-24"],
+  },
 }
