@@ -376,11 +376,6 @@ end
 #
 #########################################################################################################
 def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
-  # skip if no attendance 
-  if config[:attendance].nil?
-    return
-  end
-
   category = {
     key: :attendance,
     title: "Attendance",
@@ -572,7 +567,7 @@ config[:categories].each do |category|
   add_gradesheet(workbook, category, config, protected_xf_id, unprotected_xf_id)
 end
 
-add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
+add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id) if config.has_key?(:attendance)
 
 #
 # Write the new workbook.
