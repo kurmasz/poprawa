@@ -46,13 +46,26 @@ describe "workbook_builder command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
-  it "uses default info_sheet_name when not specified" do
-    result = run_workbook_builder(test_data('valid_configs/config_with_no_info_sheet_name.rb'), input: "yes")
+  it "displays a helpful message if no gradebook_file is specified" do
+    result = run_workbook_builder(test_data('bad_configs/config_no_gradebook_file.rb'), input: "yes")
 
-    workbook = RubyXL::Parser.parse('spec/data/testConfig.xlsx')
+    expect(result[:err]).to include('Config must include a gradebook_file item.')
+
+    expect(result[:err].length).to eq 1
+    expect(result[:out].length).to eq 0
+
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  it "uses default info_sheet_name when not specified" do
+    result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_name.rb'), input: "yes")
+
+    workbook = RubyXL::Parser.parse('spec/output/builder/testConfig.xlsx')
 
     info_sheet = workbook['info']
     expect(info_sheet).not_to be_nil
+
+    puts result[:err]
 
     expect(result[:err].length).to eq(0)
     expect(result[:out].length).to be > 0
@@ -61,18 +74,16 @@ describe "workbook_builder command line" do
   end
 
   it "uses default info_sheet_config when not specified" do
-    result = run_workbook_builder(test_data('valid_configs/config_with_no_info_sheet_config.rb'), input: "yes")
+    result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_config.rb'), input: "yes")
   
-    workbook = RubyXL::Parser.parse('spec/data/testConfig.xlsx')
+    workbook = RubyXL::Parser.parse('spec/output/builder/testConfig.xlsx')
 
     first_row = workbook['info'][0]
 
     expect(first_row.cells[0].value).to eq "Last Name"
     expect(first_row.cells[1].value).to eq "First Name"
-    expect(first_row.cells[2].value).to eq "Username"
-    expect(first_row.cells[3].value).to eq "Section"
-    expect(first_row.cells[4].value).to eq "GitHub"
-    expect(first_row.cells[5].value).to eq "Major"
+
+    puts result[:err]
   
     expect(result[:err].length).to eq(0)
     expect(result[:out].length).to be > 0
@@ -80,10 +91,8 @@ describe "workbook_builder command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::SUCCESS
   end
 
-  it "generates a new category key if not specified"
-
   it "displays a helpful message and exists when categories not specified" do
-    result = run_workbook_builder(test_data('bad_configs/config_with_no_categories.rb'), input: "yes")
+    result = run_workbook_builder(test_data('bad_configs/config_no_categories.rb'), input: "yes")
 
     expect(result[:err]).to include('Config must include a :categories item.')
 
@@ -93,7 +102,7 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exists when categories is present but empty" do
-    result = run_workbook_builder(test_data('bad_configs/config_with_empty_categories.rb'), input: "yes")
+    result = run_workbook_builder(test_data('bad_configs/config_empty_categories.rb'), input: "yes")
 
     expect(result[:err]).to include('Config must include a :categories item that is not empty.')
 
@@ -101,9 +110,19 @@ describe "workbook_builder command line" do
 
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
+
+  it "displays a helpful message and exits when category title not specified" do
+    result = run_workbook_builder(test_data('bad_configs/config_no_category_title.rb'), input: "yes")
+
+    expect(result[:err]).to include('Config must include a :title item for each category.')
+
+    expect(result[:err].length).to eq 1
+
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
   
   it "displays a helpful message and exits if attendance has no first_sunday" do
-    result = run_workbook_builder(test_data('bad_configs/config_with_no_first_sunday.rb'), input: "yes")
+    result = run_workbook_builder(test_data('bad_configs/config_no_first_sunday.rb'), input: "yes")
 
     expect(result[:err]).to include('Config must include a :first_sunday item specifying the date of the first sunday.')
 
@@ -113,7 +132,7 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exits if attendance has no last_saturday" do
-    result = run_workbook_builder(test_data('bad_configs/config_with_no_last_saturday.rb'), input: "yes")
+    result = run_workbook_builder(test_data('bad_configs/config_no_last_saturday.rb'), input: "yes")
 
     expect(result[:err]).to include('Config must include a :last_saturday item specifying the date of the last saturday.')
 
@@ -123,7 +142,7 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exits if roster_config is not specified" do
-    result = run_workbook_builder(test_data('bad_configs/config_with_no_roster_config.rb'), input: "yes")
+    result = run_workbook_builder(test_data('bad_configs/config_no_roster_config.rb'), input: "yes")
 
     expect(result[:err]).to include('Config must include a :roster_config item specifying the format of the .csv file.')
 
@@ -132,12 +151,13 @@ describe "workbook_builder command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
-  ["bb_classic", 14, {type: :bb_classic}, lambda {puts "Hi"}].each do |c| 
-    it "displays a helpful message and exits if roster_config has type #{c.class}"
-  end
+  # write one test that complains if it's a string (not an array)
+  # ["bb_classic", 14, {type: :bb_classic}, lambda {puts "Hi"}].each do |c| 
+  #   it "displays a helpful message and exits if roster_config has type #{c.class}"
+  # end
 
   it "displays a helpful message and exits if roster_config is a symbol, but unrecognized" do
-    result = run_workbook_builder(test_data('bad_configs/config_with_invalid_roster_symbol.rb'), input: "yes")
+    result = run_workbook_builder(test_data('bad_configs/config_invalid_roster_symbol.rb'), input: "yes")
 
     expect(result[:err]).to include('Roster config symbol \'invalid_symbol\' not recognized.')
 

@@ -80,10 +80,6 @@ default_config = {
   info_sheet_config: [
     { lname: "Last Name" },
     { fname: "First Name" },
-    { username: "Username" },
-    { section: "Section" },
-    { github: "GitHub" },
-    { major: "Major" },
   ],
 }
 
@@ -266,8 +262,10 @@ def add_gradesheet(workbook, category, config, protected_xf_id, unprotected_xf_i
   # Hide unneeded columns.
   keys = header_keys(config[:info_sheet_config])
   (0...num_info_columns).each do |col_index|
-    if (category[:hidden_info_columns].include?(keys[col_index]))
-      sheet.cols.get_range(col_index).hidden = true
+    if not category[:hidden_info_columns].nil?
+      if category[:hidden_info_columns].include?(keys[col_index])
+        sheet.cols.get_range(col_index).hidden = true
+      end
     end
   end
 
@@ -309,6 +307,11 @@ end
 #
 #########################################################################################################
 def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
+  # skip if no attendance 
+  if config[:attendance].nil?
+    return
+  end
+
   unless config[:attendance].has_key?(:first_sunday)
     $stderr.puts "Config must include a :first_sunday item specifying the date of the first sunday."
     exit Poprawa::ExitValues::INVALID_CONFIG
@@ -330,6 +333,7 @@ def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
   start_date = Date.parse(config[:attendance][:first_sunday])
   end_date = Date.parse(config[:attendance][:last_saturday])
 
+  # TODO: Add tests for meeting_days, skip_weeks, and skip_days
   meeting_days = config[:attendance][:meeting_days].to_s.downcase.chars.map { |day_char| "umtwrfs".index(day_char) }
   skip_weeks = config[:attendance][:skip_weeks].map { |week| Date.parse(week.to_s)}
   skip_days = config[:attendance][:skip_days].map { |day| Date.parse(day.to_s)}
@@ -451,6 +455,10 @@ end
 if options.has_key?(:output)
   output_file = options[:output]
 else
+  if config[:gradebook_file].nil?
+    $stderr.puts "Config must include a gradebook_file item."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
   output_file = config[:gradebook_file]
 end
 
@@ -521,6 +529,10 @@ if config[:categories].empty?
 end
 
 config[:categories].each do |category|
+  unless category.has_key?(:title)
+    $stderr.puts "Config must include a :title item for each category."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
   unless category.has_key?(:key)
     category[:key] = category[:title].gsub(/\s+/, "_").downcase.to_sym
   end
