@@ -57,6 +57,31 @@ describe "workbook_builder command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
+  it "displays a helpful message and exits if roster_config is not specified" do
+    result = run_workbook_builder(test_data('bad_configs/config_no_roster_config.rb'), input: "yes")
+
+    expect(result[:err]).to include('Config must include a :roster_config item specifying the format of the .csv file.')
+
+    expect(result[:err].length).to eq 1
+
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  # write one test that complains if it's a string (not an array)
+  # ["bb_classic", 14, {type: :bb_classic}, lambda {puts "Hi"}].each do |c| 
+  #   it "displays a helpful message and exits if roster_config has type #{c.class}"
+  # end
+
+  it "displays a helpful message and exits if roster_config is a symbol, but unrecognized" do
+    result = run_workbook_builder(test_data('bad_configs/config_invalid_roster_symbol.rb'), input: "yes")
+
+    expect(result[:err]).to include('Roster config symbol \'invalid_symbol\' not recognized.')
+
+    expect(result[:err].length).to eq 1
+
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
+
   it "displays a helpful message and exists when categories not specified" do
     result = run_workbook_builder(test_data('bad_configs/config_no_categories.rb'), input: "yes")
 
@@ -104,31 +129,6 @@ describe "workbook_builder command line" do
 
     expect(result[:err].length).to eq 1
     
-    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
-  end
-
-  it "displays a helpful message and exits if roster_config is not specified" do
-    result = run_workbook_builder(test_data('bad_configs/config_no_roster_config.rb'), input: "yes")
-
-    expect(result[:err]).to include('Config must include a :roster_config item specifying the format of the .csv file.')
-
-    expect(result[:err].length).to eq 1
-
-    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
-  end
-
-  # write one test that complains if it's a string (not an array)
-  # ["bb_classic", 14, {type: :bb_classic}, lambda {puts "Hi"}].each do |c| 
-  #   it "displays a helpful message and exits if roster_config has type #{c.class}"
-  # end
-
-  it "displays a helpful message and exits if roster_config is a symbol, but unrecognized" do
-    result = run_workbook_builder(test_data('bad_configs/config_invalid_roster_symbol.rb'), input: "yes")
-
-    expect(result[:err]).to include('Roster config symbol \'invalid_symbol\' not recognized.')
-
-    expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
