@@ -57,40 +57,6 @@ describe "workbook_builder command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
-  it "uses default info_sheet_name when not specified" do
-    result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_name.rb'), input: "yes")
-
-    workbook = RubyXL::Parser.parse('spec/output/builder/testConfig.xlsx')
-
-    info_sheet = workbook['info']
-    expect(info_sheet).not_to be_nil
-
-    puts result[:err]
-
-    expect(result[:err].length).to eq(0)
-    expect(result[:out].length).to be > 0
-
-    expect(result[:exit]).to eq Poprawa::ExitValues::SUCCESS
-  end
-
-  it "uses default info_sheet_config when not specified" do
-    result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_config.rb'), input: "yes")
-  
-    workbook = RubyXL::Parser.parse('spec/output/builder/testConfig.xlsx')
-
-    first_row = workbook['info'][0]
-
-    expect(first_row.cells[0].value).to eq "Last Name"
-    expect(first_row.cells[1].value).to eq "First Name"
-
-    puts result[:err]
-  
-    expect(result[:err].length).to eq(0)
-    expect(result[:out].length).to be > 0
-  
-    expect(result[:exit]).to eq Poprawa::ExitValues::SUCCESS
-  end
-
   it "displays a helpful message and exists when categories not specified" do
     result = run_workbook_builder(test_data('bad_configs/config_no_categories.rb'), input: "yes")
 
@@ -164,5 +130,47 @@ describe "workbook_builder command line" do
     expect(result[:err].length).to eq 1
 
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  context do
+    let(:output_dir) { test_output("builder")}
+
+    before(:each) do
+      clean_dir(output_dir)
+    end
+
+    it "uses default info_sheet_name when not specified" do
+      result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_name.rb'))
+  
+      workbook = RubyXL::Parser.parse('spec/output/builder/testConfig.xlsx')
+  
+      info_sheet = workbook['info']
+      expect(info_sheet).not_to be_nil
+  
+      puts result[:err]
+  
+      expect(result[:err].length).to eq(0)
+      expect(result[:out].length).to be > 0
+  
+      expect(result[:exit]).to eq Poprawa::ExitValues::SUCCESS
+    end
+  
+    it "uses default info_sheet_config when not specified" do
+      result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_config.rb'))
+    
+      workbook = RubyXL::Parser.parse('spec/output/builder/testConfig.xlsx')
+  
+      first_row = workbook['info'][0]
+  
+      expect(first_row.cells[0].value).to eq "Last Name"
+      expect(first_row.cells[1].value).to eq "First Name"
+  
+      puts result[:err]
+    
+      expect(result[:err].length).to eq(0)
+      expect(result[:out].length).to be > 0
+    
+      expect(result[:exit]).to eq Poprawa::ExitValues::SUCCESS
+    end
   end
 end
