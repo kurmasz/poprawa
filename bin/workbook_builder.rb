@@ -75,7 +75,82 @@ DAY_ABBREV = {
   s: 6,
 }
 
-# add default hash
+default_config = {  
+  info_sheet_name: "info",
+  info_sheet_config: [
+    { lname: "Last Name" },
+    { fname: "First Name" },
+  ],
+}
+
+#################################################################
+#
+# verify_config
+#
+# Verify that the config file contains all of the necessary
+# information.
+#################################################################
+def verify_config(config, options)
+  # verify that output file exists
+  if not options.has_key?(:output)
+    if config[:gradebook_file].nil?
+      $stderr.puts "Config must include a gradebook_file item."
+      exit Poprawa::ExitValues::INVALID_CONFIG
+    end
+  end
+
+  # verify that roster config exists
+  unless config.has_key?(:roster_config)
+    $stderr.puts "Config must include a :roster_config item specifying the format of the .csv file."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  # verify that roster config is either an array or a valid symbol
+  if not config[:roster_config].kind_of?(Array)
+    if config[:roster_config].kind_of?(Symbol)
+      case config[:roster_config]
+      when :bb_classic
+      else
+        $stderr.puts "Roster config symbol '#{config[:roster_config]}' not recognized."
+        exit Poprawa::ExitValues::INVALID_CONFIG
+      end
+    end
+    $stderr.puts "Roster config of type #{config[:roster_config].class} not recognized."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
+  
+  # verify that categories item exists and isn't empty
+  if config.has_key?(:categories)
+    if config[:categories].empty?
+      $stderr.puts "Config must include a :categories item that is not empty."
+      exit Poprawa::ExitValues::INVALID_CONFIG
+    end
+  else
+    $stderr.puts "Config must include a :categories item."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  # verify that each category has a title
+  config[:categories].each do |category|
+    unless category.has_key?(:title)
+      $stderr.puts "Config must include a :title item for each category."
+      exit Poprawa::ExitValues::INVALID_CONFIG
+    end
+  end
+
+  # if attendance exists, verify that it contains a first sunday and last saturday item
+  if config.has_key?(:attendance)
+    unless config[:attendance].has_key?(:first_sunday)
+      $stderr.puts "Config must include a :first_sunday item specifying the date of the first sunday."
+      exit Poprawa::ExitValues::INVALID_CONFIG
+    end
+  
+    unless config[:attendance].has_key?(:last_saturday)
+      $stderr.puts "Config must include a :last_saturday item specifying the date of the last saturday."
+      exit Poprawa::ExitValues::INVALID_CONFIG
+    end
+  end
+end
 
 #####################################################################
 #
@@ -256,8 +331,10 @@ def add_gradesheet(workbook, category, config, protected_xf_id, unprotected_xf_i
   # Hide unneeded columns.
   keys = header_keys(config[:info_sheet_config])
   (0...num_info_columns).each do |col_index|
-    if (category[:hidden_info_columns].include?(keys[col_index]))
-      sheet.cols.get_range(col_index).hidden = true
+    if not category[:hidden_info_columns].nil?
+      if category[:hidden_info_columns].include?(keys[col_index])
+        sheet.cols.get_range(col_index).hidden = true
+      end
     end
   end
 
@@ -310,6 +387,7 @@ def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
   start_date = Date.parse(config[:attendance][:first_sunday])
   end_date = Date.parse(config[:attendance][:last_saturday])
 
+  # TODO: Add tests for meeting_days, skip_weeks, and skip_days
   meeting_days = config[:attendance][:meeting_days].to_s.downcase.chars.map { |day_char| "umtwrfs".index(day_char) }
   skip_weeks = config[:attendance][:skip_weeks].map { |week| Date.parse(week.to_s)}
   skip_days = config[:attendance][:skip_days].map { |day| Date.parse(day.to_s)}
@@ -358,13 +436,7 @@ def load_student_info(config)
     case config[:roster_config]
     when :bb_classic
       students = parse_blackboard_classic_userinfo(config[:roster_file])
-    else
-      puts "Roster config symbol '#{config[:roster_config]}' not recognized"
-      exit
     end # case
-  else
-    puts "Roster config of type #{config[:roster_config].class} not recognized."
-    exit
   end # roster config type.
   students
 end
@@ -414,12 +486,17 @@ config_file = ARGV[0]
 
 main_config = Poprawa::ConfigLoader::load_config(config_file)
 
+# Merge config_file over default_config
+config = default_config.merge(main_config)
+
 # Merge additional config files.  (Values in subsequent files override
 # values from previous files.)
-config = options[:merge].inject(main_config) do |partial, merge_file| 
+config = options[:merge].inject(config) do |partial, merge_file| 
   merge_config = Poprawa::ConfigLoader::load_config(merge_file)
   partial.merge(merge_config)
 end
+
+verify_config(config, options)
 
 #
 # Set up output file
@@ -449,13 +526,7 @@ if File.exists?(output_file)
   FileUtils.cp(output_file, "#{output_file}~")
 end
 
-unless config.has_key?(:roster_config)
-  puts "Config must include a :roster_config item specifying the format of the .csv file."
-  exit
-end
-
 students = load_student_info(config)
-
 
 # https://www.rubydoc.info/gems/rubyXL/1.1.2
 workbook = RubyXL::Workbook.new
@@ -488,10 +559,19 @@ end
 #
 
 config[:categories].each do |category|
+  # generate category key if missing
+  unless category.has_key?(:key)
+    category[:key] = category[:title].gsub(/\s+/, "_").downcase.to_sym
+  end
+
+  unless category.has_key?(:short_name)
+    category[:short_name] = category[:title].split.map(&:chr).join.upcase
+  end
+
   add_gradesheet(workbook, category, config, protected_xf_id, unprotected_xf_id)
 end
 
-add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
+add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id) if config.has_key?(:attendance)
 
 #
 # Write the new workbook.
