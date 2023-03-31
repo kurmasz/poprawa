@@ -74,9 +74,7 @@ describe "workbook_builder command line" do
   # end
 
   it "displays a helpful message and exits if roster_config is a symbol, but unrecognized" do
-    result = run_workbook_builder(test_data('bad_configs/config_invalid_roster_symbol.rb'), input: "yes")
-
-    puts result[:out]
+    result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_config.rb'), options: "--merge=\"{roster_config: :invalid_symbol}\"")
 
     expect(result[:err]).to include('Roster config symbol \'invalid_symbol\' not recognized.')
 
@@ -106,7 +104,20 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exits when category title not specified" do
-    result = run_workbook_builder(test_data('bad_configs/config_no_category_title.rb'), input: "yes")
+    result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_config.rb'), options: "--merge=\"{categories: [{
+      key: :learningObjectives,
+      short_name: \\\"LO\\\",
+      },
+      {
+      key: :homework,
+      title: \\\"Homework\\\",
+      short_name: \\\"H\\\",
+      },
+      {
+      key: :projects,
+      title: \\\"Projects\\\",
+      short_name: \\\"P\\\",
+    }]}\"")
 
     expect(result[:err]).to include('Config must include a :title item for each category.')
 
