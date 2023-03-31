@@ -21,15 +21,19 @@ module Poprawa
     def self.load_config(filename)
       b = {}.instance_eval { binding }
 
-      begin
-        content = File.read(filename)
-      rescue Errno::ENOENT => e
-        $stderr.puts "Config file \"#{filename}\" not found."
-        exit Poprawa::ExitValues::INVALID_PARAMETER
-      rescue => ioe
-        $stderr.puts "Could not open config file \"#{filename}\" because"
-        $stderr.puts ioe.message
-        exit Poprawa::ExitValues::INVALID_PARAMETER
+      if filename.strip.start_with?("{")
+        content = filename
+      else
+        begin
+          content = File.read(filename)
+        rescue Errno::ENOENT => e
+          $stderr.puts "Config file \"#{filename}\" not found."
+          exit Poprawa::ExitValues::INVALID_PARAMETER
+        rescue => ioe
+          $stderr.puts "Could not open config file \"#{filename}\" because"
+          $stderr.puts ioe.message
+          exit Poprawa::ExitValues::INVALID_PARAMETER
+        end
       end
 
       begin
