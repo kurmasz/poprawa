@@ -149,6 +149,11 @@ def verify_config(config, options)
       $stderr.puts "Config must include a :last_saturday item specifying the date of the last saturday."
       exit Poprawa::ExitValues::INVALID_CONFIG
     end
+
+    unless config[:attendance].has_key?(:meeting_days)
+      $stderr.puts "Config must include a :meeting_days item specifying which days of the week the class meets."
+      exit Poprawa::ExitValues::INVALID_CONFIG
+    end
   end
 end
 
@@ -389,8 +394,8 @@ def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
 
   # TODO: Add tests for meeting_days, skip_weeks, and skip_days
   meeting_days = config[:attendance][:meeting_days].to_s.downcase.chars.map { |day_char| "umtwrfs".index(day_char) }
-  skip_weeks = config[:attendance][:skip_weeks].map { |week| Date.parse(week.to_s)}
-  skip_days = config[:attendance][:skip_days].map { |day| Date.parse(day.to_s)}
+  skip_weeks = config[:attendance][:skip_weeks]&.map { |week| Date.parse(week.to_s)} if config[:attendance].has_key?(:skip_weeks)
+  skip_days = config[:attendance][:skip_days]&.map { |day| Date.parse(day.to_s)} if config[:attendance].has_key?(:skip_days)
 
   left = false
   col_index = config[:info_sheet_config].count
@@ -400,11 +405,11 @@ def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
     next unless meeting_days.include?(current_date.wday)
 
     # Skip any days explicitly listed in config.
-    next if skip_days.include?(current_date)
+    next if skip_days && skip_days.include?(current_date) 
 
     # Skip any weeks explicitly listed in config.
     prev_sunday = current_date - current_date.wday
-    next if skip_weeks.include?(prev_sunday)
+    next if skip_weeks && skip_weeks.include?(prev_sunday)
 
     c = sheet.add_cell(1, col_index)
     c.set_number_format("d-mmm-yy")
