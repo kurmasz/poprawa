@@ -9,7 +9,11 @@ In theory, you can use this code "out of the box" -- if you don't mind doing thi
 we do. However, rather than expecting you to conform your practices to our code, our goal is to
 document this code well enough that you can customize it to conform to your preferred workflow.
 
-## Basic "Out-of-the-Box" Workflow
+* [Basic Workflow](#basicWorkflow)
+* [Overview of Major Components](#overview)
+* Setting up your [First Course](#firstCourse)
+
+## [Basic "Out-of-the-Box" Workflow][basicWorkflow]
 
 This is what your high-level workflow would look like if you use our code without modifications:
 
@@ -34,7 +38,7 @@ The current version of `gh_progress_report` assumes that each GitHub repository 
 
 The current version only supports report dissemination through GitHub.  However, if you wanted, you could simply make a hard copy of each report and pass them out in class. (There are tools that will convert markdown to Postscript, html, or pdf.) It should also be straightforward to add code to email each student his or her progress report (either as markdown, or converted into a different format) --- provided there is a email library that will work with your institution's email server.
 
-## Overview of the Major Components
+## [Overview of the Major Components][overview]
 
 ### Grading Workbook
 Begin by opening this sample, populated grading workbook [demo_populated_workbook.xlsx](demo_populated_workbook.xlsx)
@@ -110,7 +114,7 @@ This syntax is a bit unusual: `info_sheet_config` is an array. Each item in the 
 Each category describes one worksheet in the workbook. Typically each worksheet contains a different category of marks (homework, project, learning objective, etc.)  Each category is described by:
   * `key`:         the name of the worksheet (both programmatically and as displayed on the tabs)
   * `title`:       the full name displayed in reports
-  * `short_name`:  an abbreviation occasionally used in reports
+  * `short_title`:  an abbreviation occasionally used in reports
   * `type`:        the "type" of grade (letter, `empn`, etc.) Used to (1) style the display in
                     reports, and (2) calculate final grades.  All entries in a given category must be the same type.
   * `hidden_info_columns`: These columns are hidden in the workbook. (You can "unhide" them later
@@ -135,7 +139,7 @@ entry if you don't want an attendance sheet.
 
 (Use "U" if you want an attendance column for Sunday.)
 
-## Getting Started
+## [First Course][firstCourse]
 
 To set up your first course using Poprawa:
 

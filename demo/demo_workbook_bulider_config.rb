@@ -51,9 +51,6 @@
   # set roster_config to :bb_classic
   # roster_config: :bb_classic
 
-
-
-
   # Each category describes one worksheet in the workbook.
   #   * key:         the name of the worksheet (both programmatically and as displayed on the tabs)
   #   * title:       the full name displayed in reports
