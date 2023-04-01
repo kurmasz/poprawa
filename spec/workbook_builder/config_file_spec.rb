@@ -108,15 +108,15 @@ describe "workbook_builder command line" do
       categories: [
         {
           key: :learningObjectives,
-          short_name: "LO",
+          short_title: "LO",
         },
         {
           key: :homework,
-          short_name: "HI",
+          short_title: "HI",
         },
         {
           key: :projects,
-          short_name: "P",
+          short_title: "P",
         },
       ],
     }

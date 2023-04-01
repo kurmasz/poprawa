@@ -31,7 +31,7 @@ Here is a sample config file:
   categories: [{
     key: :learningObjectives,
     title: "Learning Objectives",
-    short_name: "LO",
+    short_title: "LO",
     type: :empn,
     hidden_info_columns: [:username, :github, :major],
   },

@@ -25,13 +25,13 @@ describe 'workbook_builder' do
 
     it "generates a new category short name if not specified" do
         config[:categories].each do |category|
-            unless category.has_key?(:short_name)
-                category[:short_name] = category[:title].split.map(&:chr).join.upcase
+            unless category.has_key?(:short_title)
+                category[:short_title] = category[:title].split.map(&:chr).join.upcase
               end
         end
 
-        expect(config[:categories][0][:short_name]).to eq "LO"
-        expect(config[:categories][1][:short_name]).to eq "H"
-        expect(config[:categories][2][:short_name]).to eq "P"
+        expect(config[:categories][0][:short_title]).to eq "LO"
+        expect(config[:categories][1][:short_title]).to eq "H"
+        expect(config[:categories][2][:short_title]).to eq "P"
     end
 end

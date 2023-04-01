@@ -54,7 +54,7 @@
   #   * key:         the name of the worksheet (both programmatically and as displayed on the tabs)
   #   * title:       the full name displayed in reports
   #   "TODO" Are we still using "short_name"? 
-  #   * short_name:  an abbreviation occasionally used in reports
+  #   * short_title:  an abbreviation occasionally used in reports
   #   * type:        the "type" of grade (letter, empn, etc.) Used to (1) style the display in
   #                  reports, and (2) calculate final grades.
   #   * hidden_info_columns: These columns are hidden in the workbook. (You can "unhide" them later
@@ -62,21 +62,21 @@
   categories: [{
     key: :learningObjectives,
     title: "Learning Objectives",
-    short_name: "LO",
+    short_title: "LO",
     type: :empn,
     hidden_info_columns: [:username, :github, :major],
   },
   {
     key: :homework,
     title: "Homework",
-    short_name: "H",
+    short_title: "H",
     type: :empn,
     hidden_info_columns: [:username, :major],
   },
   {
     key: :projects,
     title: "Projects",
-    short_name: "P",
+    short_title: "P",
     type: :letter,
     hidden_info_columns: [:major],
   }],

@@ -174,11 +174,11 @@ HERE
         temp_file.close
 
         js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
-        imagePath = "#{report_dir}/#{category[:short_name]}.png"
+        imagePath = "#{report_dir}/#{category[:short_title]}.png"
         command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{mark_count[:p]} #{temp_file.path} #{assigned}"
         system(command)
         out.puts
-        out.puts "![#{category[:title]}](#{category[:short_name]}.png)"
+        out.puts "![#{category[:title]}](#{category[:short_title]}.png)"
       end
     end
 

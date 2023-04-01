@@ -12,16 +12,16 @@
   categories: [{
     key: :learningObjectives,
     title: "Learning Objectives",
-    short_name: "LO",
+    short_title: "LO",
     },
     {
     key: :homework,
     title: "Homework",
-    short_name: "H",
+    short_title: "H",
     },
     {
     key: :projects,
     title: "Projects",
-    short_name: "P",
+    short_title: "P",
   }]
 }

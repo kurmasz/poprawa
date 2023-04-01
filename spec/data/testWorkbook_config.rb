@@ -16,7 +16,7 @@
   categories: [{
     key: :learningObjectives,
     title: "Learning Objectives",
-    short_name: "LO",
+    short_title: "LO",
     type: :empn,
     progress_thresholds: {
       meets_expectations: {a: 10, b: 9, c: 8, d: 6}, 
@@ -28,7 +28,7 @@
                {
     key: :homework,
     title: "Homework",
-    short_name: "H",
+    short_title: "H",
     type: :empn,
 
     progress_thresholds: {
@@ -41,7 +41,7 @@
                {
     key: :projects,
     title: "Projects",
-    short_name: "P",
+    short_title: "P",
     type: :letter,
     hidden_info_columns: [:major],
   }],

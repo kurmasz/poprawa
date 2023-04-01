@@ -585,8 +585,8 @@ config[:categories].each do |category|
     category[:key] = category[:title].gsub(/\s+/, "_").downcase.to_sym
   end
 
-  unless category.has_key?(:short_name)
-    category[:short_name] = category[:title].split.map(&:chr).join.upcase
+  unless category.has_key?(:short_title)
+    category[:short_title] = category[:title].split.map(&:chr).join.upcase
   end
 
   add_gradesheet(workbook, category, config, protected_xf_id, unprotected_xf_id)

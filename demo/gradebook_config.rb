@@ -26,13 +26,13 @@ grade_info = {
   categories: [{
     key: :learningObjectives,
     title: "Learning Objectives",
-    short_name: "LO",
+    short_title: "LO",
     type: :empn
   },
                {
     key: :homework,
     title: "Homework",
-    short_name: "H",
+    short_title: "H",
     type: :empn
   }],
 
