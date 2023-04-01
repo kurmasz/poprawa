@@ -34,9 +34,9 @@ The current version of `gh_progress_report` assumes that each GitHub repository 
 
 The current version only supports report dissemination through GitHub.  However, if you wanted, you could simply make a hard copy of each report and pass them out in class. (There are tools that will convert markdown to Postscript, html, or pdf.) It should also be straightforward to add code to email each student his or her progress report (either as markdown, or converted into a different format) --- provided there is a email library that will work with your institution's email server.
 
-## Getting Started
+## Overview of the Major Components
 
-### Grading Workbook Overview
+### Grading Workbook
 Begin by opening this sample, populated grading workbook [demo_populated_workbook.xlsx](demo_populated_workbook.xlsx)
 
 Look at the worksheet labeled `info`. 
@@ -48,6 +48,24 @@ Now look at the worksheet labeled `learningObjectives`.
 * The remaining columns record grades/marks. The items on this worksheet are marked using the "empn" metric; but, each worksheet can be configured 
 for a different type of mark/grade (including simply recording text).  
 * Again, there are two header rows: a long, descriptive name and a short name used internally.
+
+#### Marks
+
+Each mark (cell in a "non-info" column) can contain three components:
+1. The mark/grade
+2. The number of late days
+3. A comment (private to the instructor)
+
+The mark and late days are separated by a pipe (`|`) and the late days and comment are separated by a semi-colon.  For example:
+
+`p | 4 ; almost correct, but some confusion in part 2`
+
+The mark can be any string (except that it can't contain the pipe or semi-colon). The progress report simply prints the mark as written.
+The only time the format of the mark matters is if you are using the script to calculate an overall grade.
+
+(If you prefer, you can certainly create separate columns for late days and/or comments.  I have found that 
+I have so few entries with late days or comments that these extra columns create a lot of visual clutter.
+If you make heavier use of comments, a separate column would probably be better.)
 
 ### Workbook Builder
 
@@ -68,7 +86,7 @@ Now, look at this sample workbook builder config file: [demo_workbook_builder_co
 
 
 
-
+### 
 
 
 
