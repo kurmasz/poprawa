@@ -1,6 +1,13 @@
 
-"a1c" =~ /.*(\d).*/
-puts $1
-nil =~ /.*(\d).*/
-puts $1
-puts $1.nil?
+
+h = {
+  name: 'bob'
+}
+
+hs = h.to_s
+
+puts hs
+
+h2 = eval hs
+
+puts h2[:name]
