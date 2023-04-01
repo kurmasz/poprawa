@@ -38,10 +38,15 @@ The current version only supports report dissemination through GitHub.  However,
 
 Begin by opening this sample, populated grading workbook [demo_populated_workbook.xlsx](demo_populated_workbook.xlsx)
 
-Look at the worksheet labeled `info`. Notice that, in addition to the students' first and last names, this sheet also contains other useful information like username, section number, etc. In general, users can configure which data the info sheet contains. To support this flexibility, notice that there are _two_ header rows. The first row contains nicer, longer names more suitable for using in reports.  The second row is a short, one-word name that is used internally. 
+Look at the worksheet labeled `info`. 
+* Notice that, in addition to the students' first and last names, this sheet also contains other useful information like username, section number, etc. In general, users can configure which data the info sheet contains. 
+* To support this flexibility, notice that there are _two_ header rows. The first row contains nicer, longer names more suitable for using in reports.  The second row is a short, one-word name that is used internally. 
 
-Now look at the worksheet labeled "learningObjectives".  Notice that the leftmost rows are links to the info sheet.  (If you click on one of these cells, you can see the Excel formula.)  The remaining columns record marks. The items on this worksheet are marked using the "empn" metric; but, each worksheet can be configured 
-for a different type of mark/grade (including simply recording text).  Again, there are two header rows: a long, descriptive name and a short name used internally.
+Now look at the worksheet labeled "learningObjectives".  
+* Notice that the leftmost rows are links to the info sheet.  (If you click on one of these cells, you can see the Excel formula.) Users can hide info columns that are not relevant to a given grading sheet.
+* The remaining columns record grades/marks. The items on this worksheet are marked using the "empn" metric; but, each worksheet can be configured 
+for a different type of mark/grade (including simply recording text).  
+* Again, there are two header rows: a long, descriptive name and a short name used internally.
 
 
 ## Workbook Format
