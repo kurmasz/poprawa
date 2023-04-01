@@ -108,47 +108,31 @@ This syntax is a bit unusual: `info_sheet_config` is an array. Each item in the 
 #### Catagories
 
 Each category describes one worksheet in the workbook. Typically each worksheet contains a different category of marks (homework, project, learning objective, etc.)  Each category is described by:
-  * key:         the name of the worksheet (both programmatically and as displayed on the tabs)
-  * title:       the full name displayed in reports
-  * short_name:  an abbreviation occasionally used in reports
-  * type:        the "type" of grade (letter, `empn`, etc.) Used to (1) style the display in
+  * `key`:         the name of the worksheet (both programmatically and as displayed on the tabs)
+  * `title`:       the full name displayed in reports
+  * `short_name`:  an abbreviation occasionally used in reports
+  * `type`:        the "type" of grade (letter, `empn`, etc.) Used to (1) style the display in
                     reports, and (2) calculate final grades.  All entries in a given category must be the same type.
-  * hidden_info_columns: These columns are hidden in the workbook. (You can "unhide" them later
+  * `hidden_info_columns`: These columns are hidden in the workbook. (You can "unhide" them later
                     using Excel if you change your mind.)
 
 All worksheets contain links to all student info columns.  However, not all of those columns may be relevant for each worksheet type.  For example, I find it helpful to have the section number displayed on each worksheet.  However, I only need to see a student's GitHub account name when I'm grading projects. The `hidden_info_columns` instructs `workbook_builder` to hide info columns that the user doesn't want displayed.
 
-
 #### Attendance 
 
+If desired, `workbook_builder` will create an attendance sheet for you. Simply omit this 
+entry if you don't want an attendance sheet.
 
+```ruby 
+  attendance: {
+    first_sunday: "2023-1-8",   # The Sunday that begins the first week of class.
+    last_saturday: "2023-4-29", # The Saturday that ends the last week of class.
+    meeting_days: "TR",         # Days for which an attendance column should be created.
+    skip_weeks: ["2023-3-5"],   # The Sunday that begins a week to skip entirely (e.g., Spring Break)
+    skip_days: ["2023-1-24"],   # An individual day to skip (e.g., Memorial day)
+  }
+```
 
-## Workbook Format
-
-Poprawa expects marks to be stored in an Excel workbook (.xlsx) formatted as follows:
-* An "info" worksheet containing two header rows followed by one row for each student
-  * Each student row contains information such as first name, last name, username, section, GitHub account name, etc.
-* One or more worksheets to contain marks (one worksheet per category --- homework, projects, quizzes, etc.)
-* A worksheet for attendance
-* The first several columns of each "category" and attendance worksheet are references to the info worksheet
-  * (Clearly, the names are needed on each worksheet. We have found that other information is also often helpful.  Users can hide info columns that are not needed on a worksheet-by-worksheet basis.)
-* Each worksheet has _two_ header rows:  A "long", meaningful description, and a "short", abbreviated description.  The "short" description is the Ruby symbol that is used to reference the item.
-
-[Here](demo/demo_grades.xlsx) is an example workbook.
-
-The `workbook_builder` script will generate a correctly-formatted workbook from a Ruby config file and a `.csv` file containing student information.
-
-Each mark in a category or assignment worksheet can have up to three components: 
-* The mark itself
-* The number of late days
-* A comment
-
-The mark and late days are separated by a pipe (`|`) and the late days and comment are separated by a semi-colon.  For example:
-
-`p | 4 ; almost correct, but some confusion in part 2`
-
-The mark can be any string (except that it can't contain the pipe or semi-colon). The progress report simply prints the mark as written.
-The only time the format of the mark matters is if you are using the script to calculate an overall grade.
 
 ## Notes to Developers
 

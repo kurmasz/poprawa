@@ -85,11 +85,12 @@
     hidden_info_columns: [:major],
   }],
 
+  # Create an attendance worksheet, if desired.  (Just delete this item if you don't want one.)
   attendance: {
-    first_sunday: "2023-1-8",
-    last_saturday: "2023-4-29",
-    meeting_days: "TR",
-    skip_weeks: ["2023-3-5"],
-    skip_days: ["2023-1-24"],
-  },
+    first_sunday: "2023-1-8",   # The Sunday that begins the first week of class.
+    last_saturday: "2023-4-29", # The Saturday that ends the last week of class.
+    meeting_days: "TR",         # Days for which an attendance column should be created.
+    skip_weeks: ["2023-3-5"],   # The Sunday that begins a week to skip entirely (e.g., Spring Break)
+    skip_days: ["2023-1-24"],   # An individual day to skip (e.g., Memorial day)
+  }
 }
