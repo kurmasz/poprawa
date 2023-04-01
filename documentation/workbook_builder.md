@@ -58,7 +58,8 @@ the script from any directory).
 </dd>
 
 <dt>roster_file</dt>
-<dd>The name of the `.csv` file containing student info. Prefixing the file with `File.dirname(__FILE__)` (as shown above) allows the user
+<dd>The name of the `.csv` file containing student info. Prefixing the file with 
+<code>File.dirname(__FILE__)</code> (as shown above) allows the user
 to specify the location of the file relative to the config file (and, thereby, makes it easier to run 
 the script from any directory).
 </dd>

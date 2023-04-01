@@ -13,22 +13,22 @@
 {
 
   # The name of the .xlsx file produced by workbook_builder 
+  # Prefixing with File.dirname(__FILE__) makes the location of this file relative to this config 
+  # file, rather than relative to the cwd of the workbook_builder process (which is usually the 
+  # desired behavior))
   gradebook_file: "#{File.dirname(__FILE__)}/demo_empty_workbook.xlsx",
 
-  # The name of the .csv file containing user data.
+  # The name of the .csv file containing user data.  (See note above about prefixing.)
   roster_file: "#{File.dirname(__FILE__)}/testStudentInfo.csv",
 
-  # The contents of an arbitrary .csv student roster file.
-  # (Each symbol must correspond to the "short name" of a column in the info_sheet_config below)
-  roster_config: [:lname, :fname, :username, :section]
-
-  # If your .csv file was exported from the BB Classic gradebook, then simply set 
-  # roster_config to :bb_classic
-  # roster_config: :bb_classic
-
-  # Each info_sheet_config key is the "short name" for that column (the symbol used internally to
-  # reference the data.  The value is the "long name" is the text displayed in the top row of each
-  # worksheet and in reports.)
+  # info_sheet specifies the name of the Worksheet within the Workbook that contains student info.
+  #
+  # This info worksheet contains two header columns. The first contains a "Long" name that 
+  # fully describes the data in that column.  THe second header row contains a "short" name 
+  # that is used internally to access that data.
+  #
+  # To describe the info worksheet, use an array of Hashes containing *exactly one* key/value pair.
+  # The key is the "short name" and the value is the "long name".  
   info_sheet_name: "info",
   info_sheet_config: [
     { lname: "Last Name" },
@@ -38,6 +38,17 @@
     { github: "GitHub" },
     { major: "Major" },
   ],
+
+  # The contents of an arbitrary .csv student roster file.
+  # (Each symbol must correspond to the "short name" of a column in the info_sheet_config below)
+  roster_config: [:lname, :fname, :username, :section]
+
+  # If your .csv file was exported from the BB Classic gradebook, then simply set 
+  # roster_config to :bb_classic
+  # roster_config: :bb_classic
+
+
+
 
   # Each category describes one worksheet in the workbook.
   #   * key:         the name of the worksheet (both programmatically and as displayed on the tabs)
