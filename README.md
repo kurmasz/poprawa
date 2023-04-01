@@ -99,6 +99,17 @@ There are a few other command-line options:
    * If a value passed to `merge` begins with `{` it is assumed to be Ruby code, not a file containing ruby code.  
    (Again, added primarily to simplify end-to-end testing.)
 
+Three notes about the generated workbook:
+
+1. The leftmost columns of the "grade" worksheets are links to the "info" columns. These linked columns are locked so that you 
+can only modify student info from the "info" worksheet.  (If they weren't locked, you could replace the link with direct data, which 
+would make the data inconsistent across worksheets.) You can manually unlock these cells, if desired.
+
+2. The info columns and the two header rows are "frozen" so they remain in view when the worksheet is scrolled. This can also be modified in Excel, if desired.
+
+3. Before printing the attendance sheet, go to "Page Layout" -> "Print Tiles" and set the name columns to be printed on every page. (If anybody knows how to write a script to automate this setup, please let me know.)
+
+
 #### Student Data Input
 
 Open this sample user info `.csv`: [demp/demo_student_roster.csv](demo_student_roster.csv)

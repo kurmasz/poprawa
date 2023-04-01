@@ -21,6 +21,8 @@ require "optparse"
 require "poprawa/gradebook"
 require "poprawa/report_generator"
 
+default_config = {}
+
 #
 # update_repo
 #
@@ -59,7 +61,7 @@ options = {
   create: false,
   suppress_github: false,
   verbose: false,
-  overrides: {},
+  merge: [],
 }
 
 parser = OptionParser.new do |opts|
@@ -77,6 +79,13 @@ parser = OptionParser.new do |opts|
     options[:output_dir] = o  
   end
 
+  # Used primarily for testing. (So we don't end up with an unmanageable
+  # number of config files that only differ by a line or two.)
+  opts.on("-mFILE", "--merge=FILE", "Merge additional config file") do |name|
+    options[:merge] << name
+  end
+
+  # TODO: Remove this after confirming that Merge works
   opts.on("--override VALUE", "Override a config value") do |o|
 
     # TODO Write tests
@@ -107,8 +116,20 @@ end
 log = File.open("log.txt", "w+")
 
 config_file_name = ARGV[0]
-config = Poprawa::ConfigLoader::load_config(config_file_name)
-options[:overrides].each { |key, value| config[key] = value }
+main_config = Poprawa::ConfigLoader::load_config(config_file_name)
+
+# Merge config_file over default_config
+config = default_config.merge(main_config)
+
+# Merge additional config files.  (Values in subsequent files override
+# values from previous files.)
+config = options[:merge].inject(config) do |partial, merge_file|
+  merge_config = Poprawa::ConfigLoader::load_config(merge_file)
+  partial.merge(merge_config)
+end
+
+# TODO: Remove this after we know merge works
+# options[:overrides].each { |key, value| config[key] = value }
 
 # Override the output directory (if specified)
 if (options.has_key?(:output_dir)) 

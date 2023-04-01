@@ -42,6 +42,9 @@ describe "workbook_builder command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_PARAMETER
   end
 
+
+  it "displays helpful message if a merge file cannot be found"
+
   context do
     let(:output_dir) { test_output("builder") }
 

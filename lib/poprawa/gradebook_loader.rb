@@ -84,6 +84,10 @@ module Poprawa
     def self.load(filename, config, verbose: false)
       workbook = RubyXL::Parser.parse(filename)
       info_sheet = student_info_worksheet(workbook, config[:info_sheet_name])
+      
+      # TODO:  Do we really need to use info_sheet_config here?
+      # (It is the only part of info_sheet used by the gradebook)
+      # If we do, add appropriate tests to gh_config_file_spec.
       num_info_columns = config[:info_sheet_config].count
 
       student_map = self.load_info(info_sheet)
