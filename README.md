@@ -12,6 +12,7 @@ document this code well enough that you can customize it to conform to your pref
 * [Basic Workflow](#basic-out-of-the-box-workflow)
 * [Overview of Major Components](#overview-of-the-major-components)
 * Setting up your [First Course](#first-course)
+* [Workbook Builder Details](#workbook-builder-details)
 
 ## Basic "Out-of-the-Box" Workflow]
 
@@ -161,6 +162,8 @@ If you are also using the GitHub workflow:
    4. Add each student's GitHub account name to the `github` user info column.
 
 Now, enter marks in your worksheet, and periodically run `gh_progress_report.rb name_of_config_file.rb`.
+
+## Workbook Builder Details
 
 
 ## Notes to Developers
