@@ -34,6 +34,16 @@ The current version of `gh_progress_report` assumes that each GitHub repository 
 
 The current version only supports report dissemination through GitHub.  However, if you wanted, you could simply make a hard copy of each report and pass them out in class. (There are tools that will convert markdown to Postscript, html, or pdf.) It should also be straightforward to add code to email each student his or her progress report (either as markdown, or converted into a different format) --- provided there is a email library that will work with your institution's email server.
 
+## Getting Started
+
+Begin by opening this sample, populated grading workbook [demo_populated_workbook.xlsx](demo_populated_workbook.xlsx)
+
+Look at the worksheet labeled `info`. Notice that, in addition to the students' first and last names, this sheet also contains other useful information like username, section number, etc. In general, users can configure which data the info sheet contains. To support this flexibility, notice that there are _two_ header rows. The first row contains nicer, longer names more suitable for using in reports.  The second row is a short, one-word name that is used internally. 
+
+Now look at the worksheet labeled "learningObjectives".  Notice that the leftmost rows are links to the info sheet.  (If you click on one of these cells, you can see the Excel formula.)  The remaining columns record marks. The items on this worksheet are marked using the "empn" metric; but, each worksheet can be configured 
+for a different type of mark/grade (including simply recording text).  Again, there are two header rows: a long, descriptive name and a short name used internally.
+
+
 ## Workbook Format
 
 Poprawa expects marks to be stored in an Excel workbook (.xlsx) formatted as follows:
@@ -69,3 +79,12 @@ So, each user that wants to run tests that push to GitHub must
 1. Choose/Create a separate repo to which she has write permissions
 2. Place that repo in `spec/output/poprawa-github-tests` 
    * You can specify the desired directory name when cloning a repo:  `git clone repo_url poprawa-github-tests`
+
+
+
+   --------
+
+Bitbucket:
+
+
+   relevant information like username (which I can use to deriver their email address), section number (which allows me to combine multiple sections into a single gradesheet), GitHub name (used to disseminate progress reports) and major (which I use to generate data for our accrediting body).  
