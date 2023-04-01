@@ -5,7 +5,7 @@ The `workbook_builder` script generates a correctly-formatted Excel Workbook (`.
 
 To run `workbook_builder` you need 
 1. A Ruby config file that that describes the gradebook structure (e.g., the different assignment categories).
-2. A `.csv` file that contains student info (e.g., names, sections, etc.).  
+2. A <code>.csv</code> file that contains student info (e.g., names, sections, etc.).  
 
 Then, simply run `workbook_builder name_of_config.rb`
 
@@ -51,7 +51,8 @@ Here is a sample config file:
 <dl>
 <dt>gradebook_file</dt>
 <dd>The name of the Excel workbook file to be created. By default, this filename will be relative to the 
-current working directory. Prefixing the file with `File.dirname(__FILE__)` (as shown above) allows the user
+current working directory. Prefixing the file with 
+<code>File.dirname(__FILE__)</code> (as shown above) allows the user
 to specify the location of the file relative to the config file (and, thereby, makes it easier to run 
 the script from any directory).
 </dd>
