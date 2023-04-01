@@ -36,17 +36,40 @@ The current version only supports report dissemination through GitHub.  However,
 
 ## Getting Started
 
+### Grading Workbook Overview
 Begin by opening this sample, populated grading workbook [demo_populated_workbook.xlsx](demo_populated_workbook.xlsx)
 
 Look at the worksheet labeled `info`. 
 * Notice that, in addition to the students' first and last names, this sheet also contains other useful information like username, section number, etc. In general, users can configure which data the info sheet contains. 
 * To support this flexibility, notice that there are _two_ header rows. The first row contains nicer, longer names more suitable for using in reports.  The second row is a short, one-word name that is used internally. 
 
-Now look at the worksheet labeled "learningObjectives".  
+Now look at the worksheet labeled `learningObjectives`.  
 * Notice that the leftmost rows are links to the info sheet.  (If you click on one of these cells, you can see the Excel formula.) Users can hide info columns that are not relevant to a given grading sheet.
 * The remaining columns record grades/marks. The items on this worksheet are marked using the "empn" metric; but, each worksheet can be configured 
 for a different type of mark/grade (including simply recording text).  
 * Again, there are two header rows: a long, descriptive name and a short name used internally.
+
+### Workbook Builder
+
+Most routines in the Poprawa library make assumptions about how the workbook is organized. Therefore, 
+although it is possible to simply creating a new Excel Workbook and populate it, using `workbook_builder`
+is much less error-prone.  In addition `workbook_builder` will 
+* populate the info worksheet with data from a `.csv` (so you don't have to type 
+your roster in by hand),
+* freeze the user info columns so they are always visible when entering grades, and 
+* lock the links to the user info columns in the grading worksheets so they aren't accidentally modified.
+
+Open this sample user info `.csv`: [demo_student_roster.csv](demo_student_roster.csv)
+* `workbook_builder` _ignores the header row_. Most data sources (e.g., LMS gradebook exports) produce 
+a header row, so `workbook_builder` assumes there is one, and ignores the first row. 
+
+Now, look at this sample workbook builder config file: [demo_workbook_builder_config.csv](demo_workbook_builder_config.csv). This file begins by specifying the location of both the `.csv` file used for input and the Excel file it should generate as output. Next, it describes the format if the `.csv` file.
+
+
+
+
+
+
 
 
 ## Workbook Format
