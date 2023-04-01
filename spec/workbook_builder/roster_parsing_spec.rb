@@ -104,5 +104,24 @@ describe "workbook parser roster parsing" do
       end
     end
 
+    it "Recognizes empty middle section as unparsable" do
+      test_parser(field: 'Child Course ID', id: 'garciam', config: :bb_classic, test_section: true) do |s| 
+        s.gsub(/garciam,,GVCIS343.01.202320/, "garciam,,GVCIS343..202320")
+      end
+    end
+
+    it "Recognizes non-numeric middle section as unparsable" do
+      test_parser(field: 'Child Course ID', id: 'garciam', config: :bb_classic, test_section: true) do |s| 
+        s.gsub(/garciam,,GVCIS343.01.202320/, "garciam,,GVCIS343.nope.202320")
+      end
+    end
+
+    it "Recognizes mixed middle section as unparsable" do
+      test_parser(field: 'Child Course ID', id: 'garciam', config: :bb_classic, test_section: true) do |s| 
+        s.gsub(/garciam,,GVCIS343.01.202320/, "garciam,,GVCIS343.3x.202320")
+      end
+    end
+
+
   end # BB classic
 end # describe workbook parser

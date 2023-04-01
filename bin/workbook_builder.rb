@@ -224,7 +224,7 @@ def parse_blackboard_classic_userinfo(input_file)
     if row[4].nil?
       puts "WARNING: Field Child Course ID in row \"#{row.to_s.chomp}\" is empty."
       sec_num = -1
-    elsif (row[4] =~ /[^.]+\.([^.]+)\.[^.]+/).nil?
+    elsif (row[4] =~ /[^.]+\.(\d+)\.[^.]+/).nil?
       puts "WARNING: Child Course ID in row \"#{row.to_s.chomp}\" does not have the expected format."
       sec_num = -1
     else
