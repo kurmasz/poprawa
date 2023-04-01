@@ -14,6 +14,7 @@ describe "workbook_builder command line" do
   it "displays a helpful error message if the config file contains a syntax error" do
     # The syntax error will be that we are passing a .csv file instead of an .rb file
     result = run_workbook_builder(test_data("test_csv_student_roster.csv"))
+
     expect(result[:err]).to include("Syntax error in config file:")
 
     expect(result[:err].length).to be >= 2
@@ -73,7 +74,7 @@ describe "workbook_builder command line" do
   # end
 
   it "displays a helpful message and exits if roster_config is a symbol, but unrecognized" do
-    result = run_workbook_builder(test_data('bad_configs/config_invalid_roster_symbol.rb'), input: "yes")
+    result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_config.rb'), options: "--merge=\"{roster_config: :invalid_symbol}\"")
 
     expect(result[:err]).to include('Roster config symbol \'invalid_symbol\' not recognized.')
 
@@ -93,7 +94,7 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exists when categories is present but empty" do
-    result = run_workbook_builder(test_data('bad_configs/config_empty_categories.rb'), input: "yes")
+    result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_config.rb'), options: "--merge=\"{categories: []}\"")
 
     expect(result[:err]).to include('Config must include a :categories item that is not empty.')
 
@@ -103,7 +104,20 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exits when category title not specified" do
-    result = run_workbook_builder(test_data('bad_configs/config_no_category_title.rb'), input: "yes")
+    result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_config.rb'), options: "--merge=\"{categories: [{
+      key: :learningObjectives,
+      short_name: \\\"LO\\\",
+      },
+      {
+      key: :homework,
+      title: \\\"Homework\\\",
+      short_name: \\\"H\\\",
+      },
+      {
+      key: :projects,
+      title: \\\"Projects\\\",
+      short_name: \\\"P\\\",
+    }]}\"")
 
     expect(result[:err]).to include('Config must include a :title item for each category.')
 
@@ -113,7 +127,10 @@ describe "workbook_builder command line" do
   end
   
   it "displays a helpful message and exits if attendance has no first_sunday" do
-    result = run_workbook_builder(test_data('bad_configs/config_no_first_sunday.rb'), input: "yes")
+    result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_config.rb'), options: "--merge=\"{attendance: {
+      last_saturday: \\\"2023-4-29\\\",
+      meeting_days: \\\"TR\\\"
+    }}\"")
 
     expect(result[:err]).to include('Config must include a :first_sunday item specifying the date of the first sunday.')
 
@@ -123,9 +140,25 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exits if attendance has no last_saturday" do
-    result = run_workbook_builder(test_data('bad_configs/config_no_last_saturday.rb'), input: "yes")
+    result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_config.rb'), options: "--merge=\"{attendance: {
+      first_sunday: \\\"2023-1-8\\\",
+      meeting_days: \\\"TR\\\"
+    }}\"")
 
     expect(result[:err]).to include('Config must include a :last_saturday item specifying the date of the last saturday.')
+
+    expect(result[:err].length).to eq 1
+    
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  it "displays a helpful message and exits if attendance has no meeting_days" do
+    result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_config.rb'), options: "--merge=\"{attendance: {
+      first_sunday: \\\"2023-1-8\\\",
+      last_saturday: \\\"2023-4-29\\\"
+    }}\"")
+
+    expect(result[:err]).to include('Config must include a :meeting_days item specifying which days of the week the class meets.')
 
     expect(result[:err].length).to eq 1
     
@@ -181,12 +214,18 @@ describe "workbook_builder command line" do
     end
 
     it "creates attendance sheet if attendance item is present" do
-      result = run_workbook_builder(test_data('valid_configs/config_attendance.rb'))
+      result = run_workbook_builder(test_data('valid_configs/config_no_info_sheet_config.rb'), options: "--merge=\"{attendance: {
+        first_sunday: \\\"2023-1-8\\\",
+        last_saturday: \\\"2023-4-29\\\",
+        meeting_days: \\\"TR\\\"
+      }}\"")
 
       workbook = RubyXL::Parser.parse('spec/output/builder/testConfig.xlsx')
 
       attendance_sheet = workbook['attendance']
+
       expect(attendance_sheet).to_not be_nil
+      expect(result[:exit]).to eq Poprawa::ExitValues::SUCCESS
     end
   end
 end
