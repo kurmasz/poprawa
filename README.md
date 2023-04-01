@@ -13,7 +13,7 @@ document this code well enough that you can customize it to conform to your pref
 
 This is what your high-level workflow would look like if you use our code without modifications:
 
-1. Edit a Ruby config file so that it describes the desired gradebook structure (e.g., assignment categories).
+1. Edit [a Ruby config](demo/demo_config.rb) file so that it describes the desired gradebook structure (e.g., assignment categories).
 2. Obtain/prepare a `.csv` file containing student names and other information.
 3. Run the `workbook_builder` script which takes the config and `.csv` files as input then generates an empty `.xlsx` workbook.
 4. Enter marks in the grade workbook.
@@ -35,9 +35,7 @@ The current version only supports report dissemination through GitHub.  However,
 
 ## Workbook Format
 
-[Example grading workbook](demo/demo_grades.xlsx)
-
-As written, Poprawa expects marks to be stored in an Excel workbook (.xlsx) formatted as follows:
+Poprawa expects marks to be stored in an Excel workbook (.xlsx) formatted as follows:
 * An "info" worksheet containing two header rows followed by one row for each student
   * Each student row contains information such as first name, last name, username, section, GitHub account name, etc.
 * One or more worksheets to contain marks (one worksheet per category --- homework, projects, quizzes, etc.)
@@ -45,6 +43,8 @@ As written, Poprawa expects marks to be stored in an Excel workbook (.xlsx) form
 * The first several columns of each "category" and attendance worksheet are references to the info worksheet
   * (Clearly, the names are needed on each worksheet. We have found that other information is also often helpful.  Users can hide info columns that are not needed on a worksheet-by-worksheet basis.)
 * Each worksheet has _two_ header rows:  A "long", meaningful description, and a "short", abbreviated description.  The "short" description is the Ruby symbol that is used to reference the item.
+
+[Here](demo/demo_grades.xlsx) is an example workbook.
 
 The `workbook_builder` script will generate a correctly-formatted workbook from a Ruby config file and a `.csv` file containing student information.
 
