@@ -133,6 +133,31 @@ entry if you don't want an attendance sheet.
   }
 ```
 
+(Use "U" if you want an attendance column for Sunday.)
+
+## Getting Started
+
+To set up your first course using Poprawa:
+
+1. Create a folder to contain all of your course's grading-related files. (For simplicity, I will assume all relevant files are in this one directory.)
+2. Obtain a `.csv` file containing your course roster. (Hopefully your LMS or registration system can export something that will work.)
+3. Make a copy of `demo_workbook_builder_config.rb` and customize it for your course.
+   * Choose a name for your Excel Workbook and set `gradebook_file` accordingly.
+   * Set `roster_file` to the name of the `.csv` you just obtained.
+   * Set `info_sheet_config` to describe the user data you wish to maintain. (If you are using the GitHub workflow, make sure one of those entries has a short name of `github`.)
+   * Set `roster_config` to map the `.csv` columns to your user data.
+   * Configure your categories
+   * Configure your attendance sheet (if desired).
+4. Run `workload_builder name_of_your_config_file.rb`
+
+If you are also using the GitHub workflow:
+   1. Create an assignment in GitHub Classroom (let's assume it is called `progress-report`) and have all of your students accept that assignment.
+   2. Create a directory and clone all of your student's `progress-report` repositories into that directory.
+   3. Edit your config file and add an `output_dir` entry pointing to the directory containing the progress report repositories.
+   4. Add each student's GitHub account name to the `github` user info column.
+
+Now, enter marks in your worksheet, and periodically run `gh_progress_report.rb name_of_config_file.rb`.
+
 
 ## Notes to Developers
 
