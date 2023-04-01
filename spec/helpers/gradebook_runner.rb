@@ -18,19 +18,24 @@ module GradebookRunner
   TEST_OUTPUT = "#{File.dirname(__FILE__)}/../output"
 
   def test_data(file)
-    "#{TEST_DATA}/#{file}"
+    # If the input is a Hash, convert it to a String
+    return "'#{file.to_s}'" if file.kind_of?(Hash)
+
+    # Otherwise, if "file" is a string description of a ruby hash, then pass it through
+    # untouched.
+    file.strip.start_with?("{") ? file : "#{TEST_DATA}/#{file}"
   end
 
   def test_output(file)
     "#{TEST_OUTPUT}/#{file}"
   end
 
-  def gh_output(file=nil)
+  def gh_output(file = nil)
     "#{TEST_OUTPUT}/poprawa-github-test/#{file}"
   end
 
-  def clean_dir(dirname) 
-    if File.exist?(dirname) 
+  def clean_dir(dirname)
+    if File.exist?(dirname)
       FileUtils.remove_entry_secure(dirname)
     end
     FileUtils.mkdir(dirname)
@@ -40,7 +45,7 @@ module GradebookRunner
     $stderr.puts "Cleaning test output: #{TEST_OUTPUT}"
     $stderr.puts "This isn't ready yet.  I don't think we want to unlink the github helper!"
     exit
-    Dir.children(TEST_OUTPUT).reject {|f| f.start_with?('.')}.each do |f|
+    Dir.children(TEST_OUTPUT).reject { |f| f.start_with?(".") }.each do |f|
       $stderr.puts "About to unlink #{f} -- #{f.inspect}"
       File.unlink(test_output(f))
     end
@@ -50,7 +55,7 @@ module GradebookRunner
   # (2) Split the resulting standard output and standard error into an array of lines.
   # (3) Verify that the standard error and standard error end with a newline
   # (5) Verify that there aren't any extra newlines.
-  def run_helper(command_line, allow_trailing_blank_lines, input=nil)
+  def run_helper(command_line, allow_trailing_blank_lines, input = nil)
     puts "Running command =>#{command_line}<=" if EnvHelper.debug_mode?
     puts "(with input =>#{input})" if EnvHelper.debug_mode? && !input.nil?
     result = ExternalRunner.run(command_line, input)

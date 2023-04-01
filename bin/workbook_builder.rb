@@ -2,7 +2,7 @@
 
 # TODO: Remove me before production
 # Temporary hack to run scripts in development
-$LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
+$LOAD_PATH.unshift File.dirname(__FILE__) + "/../lib"
 
 #####################################################################################
 #
@@ -10,16 +10,16 @@ $LOAD_PATH.unshift File.dirname(__FILE__) + '/../lib'
 #
 # Builds a new Excel workbook for tracking grades.
 #
-# Specifically, the generated Excel Workbook will contain 
-#  * an "information" worksheet  
-#  * a worksheet for each category, and 
+# Specifically, the generated Excel Workbook will contain
+#  * an "information" worksheet
+#  * a worksheet for each category, and
 #  * an attendance worksheet
-# 
+#
 # The first several columns of each category and attendance worksheet will contain
-# references to the user data in the information worksheet. These cells will be 
-# protected (i.e., "locked") to prevent accidental modification. (If you want to 
+# references to the user data in the information worksheet. These cells will be
+# protected (i.e., "locked") to prevent accidental modification. (If you want to
 # modify user data, do it on the information worksheet.)
-# 
+#
 # See demo/demo_workbook_builder_config.rb for a sample config file.
 #
 # This script takes as input a Ruby file that returns a Hash with the following items:
@@ -75,7 +75,7 @@ DAY_ABBREV = {
   s: 6,
 }
 
-default_config = {  
+default_config = {
   info_sheet_name: "info",
   info_sheet_config: [
     { lname: "Last Name" },
@@ -106,19 +106,19 @@ def verify_config(config, options)
   end
 
   # verify that roster config is either an array or a valid symbol
-  if not config[:roster_config].kind_of?(Array)
-    if config[:roster_config].kind_of?(Symbol)
-      case config[:roster_config]
-      when :bb_classic
-      else
-        $stderr.puts "Roster config symbol '#{config[:roster_config]}' not recognized."
-        exit Poprawa::ExitValues::INVALID_CONFIG
-      end
+  if config[:roster_config].kind_of?(Symbol)
+    case config[:roster_config]
+    when :bb_classic
+      # no problem.
+    else
+      $stderr.puts "Roster config symbol '#{config[:roster_config]}' not recognized."
+      exit Poprawa::ExitValues::INVALID_CONFIG
     end
+  elsif not config[:roster_config].kind_of?(Array)
     $stderr.puts "Roster config of type #{config[:roster_config].class} not recognized."
     exit Poprawa::ExitValues::INVALID_CONFIG
   end
-  
+
   # verify that categories item exists and isn't empty
   if config.has_key?(:categories)
     if config[:categories].empty?
@@ -144,7 +144,7 @@ def verify_config(config, options)
       $stderr.puts "Config must include a :first_sunday item specifying the date of the first sunday."
       exit Poprawa::ExitValues::INVALID_CONFIG
     end
-  
+
     unless config[:attendance].has_key?(:last_saturday)
       $stderr.puts "Config must include a :last_saturday item specifying the date of the last saturday."
       exit Poprawa::ExitValues::INVALID_CONFIG
@@ -162,12 +162,19 @@ end
 # columns:    The symbol for the corresponding column in the info
 #             table (or nil if this .csv column should be ignored)
 #
-# Note: .csv file is assumed to have a header row.  However, we 
-# still require the config file to specify the .csv column to 
-# info table column mapping in the config file so that (1) users 
-# need not edit the header row if it is generated automatically by 
+# For example, if columns is [:lname, :fname, :username, :section], 
+# then the data from the first column will be stored in the student
+# object with a key of :lname, the second in :fname, and so on.
+# In other words, the keys in this array refer to the keys used 
+# internally in this app *not* the values that appear in the CSV file's
+# header row.
+#
+# Note: .csv file is assumed to have a header row.  However, we
+# still require the config file to specify the .csv column to
+# info table column mapping in the config file so that (1) users
+# need not edit the header row if it is generated automatically by
 # an LMS or other export, and (2) users can specify that a column
-# in the .csv file not be included in the info table without 
+# in the .csv file not be included in the info table without
 # removing the header information from the .csv file itself.
 #
 #####################################################################
@@ -179,10 +186,10 @@ def parse_csv_userinfo(input_file, columns)
     columns.each_with_index do |key, index|
       student[key] = row[index] unless key.nil?
     end
-    
+
     student.each do |key, value|
       if value.nil? || value.to_s.strip.empty?
-        puts "WARNING: Field #{key} in row \"#{row}\" is empty."
+        puts "WARNING: Field #{key} in row \"#{row.chomp}\" is empty."
       end
     end
     # p student
@@ -214,7 +221,15 @@ def parse_blackboard_classic_userinfo(input_file)
 
   # TODO: Also handle header row and make sure the expected headers are present.
   CSV.foreach(input_file, headers: :first_row, encoding: "bom|utf-8") do |row|
-    row[4] =~ /[^.]+\.([^.]+)\.[^.]+/
+    if row[4].nil?
+      puts "WARNING: Field Child Course ID in row \"#{row.to_s.chomp}\" is empty."
+      sec_num = -1
+    elsif (row[4] =~ /[^.]+\.([^.]+)\.[^.]+/).nil?
+      puts "WARNING: Child Course ID in row \"#{row.to_s.chomp}\" does not have the expected format."
+      sec_num = -1
+    else
+      sec_num = $1.to_i
+    end
 
     student = {
       :lname => row[0],
@@ -225,7 +240,7 @@ def parse_blackboard_classic_userinfo(input_file)
 
     student.each do |key, value|
       if value.nil? || value.to_s.strip.empty?
-        puts "WARNING: Field #{key} in row \"#{row}\" is empty."
+        puts "WARNING: Field #{key} in row \"#{row.to_s.chomp}\" is empty."
       end
     end
     # p student
@@ -389,8 +404,8 @@ def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
 
   # TODO: Add tests for meeting_days, skip_weeks, and skip_days
   meeting_days = config[:attendance][:meeting_days].to_s.downcase.chars.map { |day_char| "umtwrfs".index(day_char) }
-  skip_weeks = config[:attendance][:skip_weeks].map { |week| Date.parse(week.to_s)}
-  skip_days = config[:attendance][:skip_days].map { |day| Date.parse(day.to_s)}
+  skip_weeks = config[:attendance][:skip_weeks].map { |week| Date.parse(week.to_s) }
+  skip_days = config[:attendance][:skip_days].map { |day| Date.parse(day.to_s) }
 
   left = false
   col_index = config[:info_sheet_config].count
@@ -432,7 +447,7 @@ end
 def load_student_info(config)
   if config[:roster_config].kind_of?(Array)
     students = parse_csv_userinfo(config[:roster_file], config[:roster_config])
-  elsif config[:roster_config].kind_of?(Symbol) 
+  elsif config[:roster_config].kind_of?(Symbol)
     case config[:roster_config]
     when :bb_classic
       students = parse_blackboard_classic_userinfo(config[:roster_file])
@@ -449,7 +464,7 @@ end
 
 options = {
   merge: [],
-  force: false
+  force: false,
 }
 
 parser = OptionParser.new do |opts|
@@ -491,7 +506,7 @@ config = default_config.merge(main_config)
 
 # Merge additional config files.  (Values in subsequent files override
 # values from previous files.)
-config = options[:merge].inject(config) do |partial, merge_file| 
+config = options[:merge].inject(config) do |partial, merge_file|
   merge_config = Poprawa::ConfigLoader::load_config(merge_file)
   partial.merge(merge_config)
 end
@@ -508,7 +523,7 @@ else
   output_file = config[:gradebook_file]
 end
 
-if File.exists?(output_file) 
+if File.exists?(output_file)
   if options[:force]
     puts "Overwriting output file by --force."
   else
@@ -518,7 +533,7 @@ if File.exists?(output_file)
       puts "Overwriting."
     else
       puts "Exiting without overwriting."
-     exit
+      exit
     end # if answer
   end # if --force
 
@@ -549,7 +564,7 @@ end
 add_headers(info_sheet, config[:info_sheet_config])
 students.each_with_index do |student, index|
   adj_index = index + 2
-  header_keys(config[:info_sheet_config]).each_with_index do |header_key, col_index|    
+  header_keys(config[:info_sheet_config]).each_with_index do |header_key, col_index|
     info_sheet.add_cell(adj_index, col_index, student[header_key]) if (student.has_key?(header_key))
   end
 end
@@ -578,5 +593,3 @@ add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id) if co
 #
 workbook.write(output_file)
 $stdout.puts "Workbook written to #{output_file}"
-
-
