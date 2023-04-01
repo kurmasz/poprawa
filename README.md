@@ -9,11 +9,11 @@ In theory, you can use this code "out of the box" -- if you don't mind doing thi
 we do. However, rather than expecting you to conform your practices to our code, our goal is to
 document this code well enough that you can customize it to conform to your preferred workflow.
 
-* [Basic Workflow](#basicWorkflow)
-* [Overview of Major Components](#overview)
-* Setting up your [First Course](#firstCourse)
+* [Basic Workflow](#basic-out-of-the-box-workflow)
+* [Overview of Major Components](#overview-of-the-major-components)
+* Setting up your [First Course](#first-course)
 
-## [Basic "Out-of-the-Box" Workflow][basicWorkflow]
+## Basic "Out-of-the-Box" Workflow]
 
 This is what your high-level workflow would look like if you use our code without modifications:
 
@@ -38,7 +38,7 @@ The current version of `gh_progress_report` assumes that each GitHub repository 
 
 The current version only supports report dissemination through GitHub.  However, if you wanted, you could simply make a hard copy of each report and pass them out in class. (There are tools that will convert markdown to Postscript, html, or pdf.) It should also be straightforward to add code to email each student his or her progress report (either as markdown, or converted into a different format) --- provided there is a email library that will work with your institution's email server.
 
-## [Overview of the Major Components][overview]
+## Overview of the Major Components
 
 ### Grading Workbook
 Begin by opening this sample, populated grading workbook [demo_populated_workbook.xlsx](demo_populated_workbook.xlsx)
@@ -139,7 +139,7 @@ entry if you don't want an attendance sheet.
 
 (Use "U" if you want an attendance column for Sunday.)
 
-## [First Course][firstCourse]
+## First Course
 
 To set up your first course using Poprawa:
 
