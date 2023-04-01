@@ -16,7 +16,7 @@ This is what your high-level workflow would look like if you use our code withou
 1. Edit a Ruby config file (similar to [this one](demo/demo_workbook_builder_config.rb)) so that it describes the desired gradebook structure (e.g., assignment categories).
 2. Obtain/prepare a `.csv` file (similar to [this one](demo/demo_student_roster.csv))containing student names and other information.
 3. Run the `workbook_builder` script which uses the config and `.csv` files as input then generates an empty `.xlsx` workbook.
-   * `workbook_builder demo_workbook_builder_config.rb`
+   * `workbook_builder demo_workbook_builder_config.rb` (The config file specifies the roster file.)
 4. Enter marks in the grade workbook.
 5. Periodically run the `gh_progress_report` script to generate a progress report for each student in markdown format.
 
