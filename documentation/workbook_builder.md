@@ -35,20 +35,8 @@ Here is a sample config file:
     type: :empn,
     hidden_info_columns: [:username, :github, :major],
   },
-  {
-    key: :homework,
-    title: "Homework",
-    short_name: "H",
-    type: :empn,
-    hidden_info_columns: [:username, :major],
-  },
-  {
-    key: :projects,
-    title: "Projects",
-    short_name: "P",
-    type: :letter,
-    hidden_info_columns: [:major],
-  }],
+  # ...
+  ],
 
   attendance: {
     first_sunday: "2023-1-8",
