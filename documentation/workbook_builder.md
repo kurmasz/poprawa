@@ -35,7 +35,7 @@ Here is a sample config file:
     type: :empn,
     hidden_info_columns: [:username, :github, :major],
   },
-  # ...
+  # ... (Other categories removed to save space.)
   ],
 
   attendance: {
@@ -48,4 +48,17 @@ Here is a sample config file:
 }
 ```
 
+<dl>
+<dt>gradebook_file</dt>
+<dd>The name of the Excel workbook file to be created. By default, this filename will be relative to the 
+current working directory. Prefixing the file with `File.dirname(__FILE__)` (as shown above) allows the user
+to specify the location of the file relative to the config file (and, thereby, makes it easier to run 
+the script from any directory).
+</dd>
 
+<dt>roster_file</dt>
+<dd>The name of the `.csv` file containing student info. Prefixing the file with `File.dirname(__FILE__)` (as shown above) allows the user
+to specify the location of the file relative to the config file (and, thereby, makes it easier to run 
+the script from any directory).
+</dd>
+</dl>
