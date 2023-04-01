@@ -14,14 +14,14 @@ document this code well enough that you can customize it to conform to your pref
 This is what your high-level workflow would look like if you use our code without modifications:
 
 1. Edit a Ruby config file so that it describes the desired gradebook structure (e.g., assignment categories).
-2. Obtain/prepare a .csv file containing student names and other information.
+2. Obtain/prepare a `.csv` file containing student names and other information.
 3. Run the `workbook_builder` script which takes the config and `.csv` files as input then generates an empty `.xlsx` workbook.
 4. Enter marks in the grade workbook.
 5. Periodically run the `gh_progress_report` script to generate a progress report for each student in markdown format.
 
 We use GitHub to make the progress reports available to the students. Specifically, 
-1. Students use [https://classroom.github.com/](GitHub Classroom) to create a precisely-named GitHub repository to which the instructor has write access.
-2. Instructors add each student's GitHub account name to the gradebook's "info" section.  
+1. Students use [GitHub Classroom](https://classroom.github.com/) to create a precisely-named GitHub repository to which the instructor has write access.
+2. Instructors add each student's GitHub account name to the gradebook's "info" worksheet.  
    * This is a manual process because our courses are typically 25 to 40 students. (Not big enough to need automation.)
 3. The script `gh-progress_report` writes each progress report to the `README.md` file in the student's GitHub repository, 
    then pushes the changes. 
@@ -34,6 +34,8 @@ The current version of `gh_progress_report` assumes that each GitHub repository 
 The current version only supports report dissemination through GitHub.  However, if you wanted, you could simply make a hard copy of each report and pass them out in class. (There are tools that will convert markdown to Postscript, html, or pdf.) It should also be straightforward to add code to email each student his or her progress report (either as markdown, or converted into a different format) --- provided there is a email library that will work with your institution's email server.
 
 ## Workbook Format
+
+[Example grading workbook](demo/demo_grades.xlsx)
 
 As written, Poprawa expects marks to be stored in an Excel workbook (.xlsx) formatted as follows:
 * An "info" worksheet containing two header rows followed by one row for each student
@@ -51,7 +53,9 @@ Each mark in a category or assignment worksheet can have up to three components:
 * The number of late days
 * A comment
 
-The mark and late days are separated by a pipe (`|`) and the late days and comment are separated by a semi-colon.
+The mark and late days are separated by a pipe (`|`) and the late days and comment are separated by a semi-colon.  For example:
+
+`p | 4 ; almost correct, but some confusion in part 2`
 
 The mark can be any string (except that it can't contain the pipe or semi-colon). The progress report simply prints the mark as written.
 The only time the format of the mark matters is if you are using the script to calculate an overall grade.
