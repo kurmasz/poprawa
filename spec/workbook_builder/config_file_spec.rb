@@ -83,8 +83,18 @@ describe "workbook_builder command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
+  it "displays a helpful message and exits if info_sheet_config is an empty array"
+
+  it "displays a helpful message and exits if info_sheet_config contains an item that is not a Hash"
+
+  it "displays a helpful message and exits if info_sheet_config contains a Hash with no items"
+
+  it "displays a helpful message and exits if info_sheet_config contains a Hash with more than one item"
+
+
+
   it "displays a helpful message and exists when categories not specified" do
-    result = run_workbook_builder(test_data("bad_configs/config_no_categories.rb"), input: "yes")
+    result = run_workbook_builder(test_data("bad_configs/config_no_categories.rb"))
 
     expect(result[:err]).to include("Config must include a :categories item.")
 
@@ -103,19 +113,23 @@ describe "workbook_builder command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
-  it "displays a helpful message and exits when category title not specified" do
+  it "displays a helpful message and exists when categories is not an array"
+
+  it "displays a helpful message and exits when category key not specified" do
     merge_hash = {
       categories: [
         {
           key: :learningObjectives,
+          title: "Learning Objectives",
           short_title: "LO",
         },
         {
-          key: :homework,
+          title: 'Homework',
           short_title: "HI",
         },
         {
           key: :projects,
+          title: "Project",
           short_title: "P",
         },
       ],
@@ -123,7 +137,7 @@ describe "workbook_builder command line" do
 
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
 
-    expect(result[:err]).to include("Config must include a :title item for each category.")
+    expect(result[:err]).to include("Config must include a :key for each category.")
 
     expect(result[:err].length).to eq 1
 
@@ -134,7 +148,7 @@ describe "workbook_builder command line" do
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"),
                                   merge_hash: { attendance: { last_saturday: "2023-4-29", meeting_days: "TR" } })
 
-    expect(result[:err]).to include("Config must include a :first_sunday item specifying the date of the first sunday.")
+    expect(result[:err]).to include("Attendance config must include a value for :first_sunday.")
 
     expect(result[:err].length).to eq 1
 
@@ -147,7 +161,7 @@ describe "workbook_builder command line" do
       meeting_days: \\\"TR\\\"
     }}\"")
 
-    expect(result[:err]).to include("Config must include a :last_saturday item specifying the date of the last saturday.")
+    expect(result[:err]).to include("Attendance config must include a value for :last_saturday.")
 
     expect(result[:err].length).to eq 1
 
@@ -160,7 +174,7 @@ describe "workbook_builder command line" do
       last_saturday: \\\"2023-4-29\\\"
     }}\"")
 
-    expect(result[:err]).to include("Config must include a :meeting_days item specifying which days of the week the class meets.")
+    expect(result[:err]).to include("Attendance config must include a value for :meeting_days.")
 
     expect(result[:err].length).to eq 1
 

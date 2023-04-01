@@ -20,38 +20,8 @@ $LOAD_PATH.unshift File.dirname(__FILE__) + "/../lib"
 # protected (i.e., "locked") to prevent accidental modification. (If you want to
 # modify user data, do it on the information worksheet.)
 #
-# See demo/demo_workbook_builder_config.rb for a sample config file.
-#
-# This script takes as input a Ruby file that returns a Hash with the following items:
-# {
-#    roster_file:       name of .csv file that contains student data
-#    roster_config:     description of how .csv file is organized
-#    gradebook_file:    name of .xlsx file to be generated
-#    info_sheet_name:   name to be given to the worksheet that will hold student info
-#    info_sheet_config: array specifying columns in the info sheet. See details below.
-#    categories:        array containing the details of each grading category.
-#    attendance:        description of the days class is in session.
-# }
-#
-# The info_sheet_config is an array.  Each item of the array is a hash containing exactly
-# one key.  The key is the Ruby symbol used to identify that category. The value is the
-# full name of the category that will appear in grade reports.
-#
-# Each category is a hash.  The following items are required for the workbook builder
-#    key:                   the Ruby symbol used to identify this category
-#    hidden_info_columns:   an array listing the user info columns to be hidden
-#                           (The values in this array should be symbols that appear in
-#                           the info_sheet_config)
-#
-# The attendance field is a hash that describes when class meets.  The keys include
-#    first_sunday:      the Sunday before the first day of class (format: yyyy-mm-dd)
-#    last_saturday:     the Saturday after the last day of class
-#    meeting_days:      a String containing the days classes meet (e.g., "MWF", "TR")
-#                       (Use "R" for Thursday, "S" for Saturday, and "U" for Sunday)
-#    skip_weeks:        an array containing the Sunday beginning a week to skip
-#    skip_days:         an array of days to skip.
-#
-#  See demo/demo_workbook_builder_config.rb for a sample config file.
+# See demo/demo_workbook_builder_config.rb for a sample config file and an 
+# explanation of the available fields.
 #
 # (c) 2022 Zachary Kurmas
 ######################################################################################
@@ -130,10 +100,10 @@ def verify_config(config, options)
     exit Poprawa::ExitValues::INVALID_CONFIG
   end
 
-  # verify that each category has a title
+  # verify that each category has a key
   config[:categories].each do |category|
-    unless category.has_key?(:title)
-      $stderr.puts "Config must include a :title item for each category."
+    unless category.has_key?(:key)
+      $stderr.puts "Config must include a :key for each category."
       exit Poprawa::ExitValues::INVALID_CONFIG
     end
   end
@@ -141,17 +111,17 @@ def verify_config(config, options)
   # if attendance exists, verify that it contains a first sunday and last saturday item
   if config.has_key?(:attendance)
     unless config[:attendance].has_key?(:first_sunday)
-      $stderr.puts "Config must include a :first_sunday item specifying the date of the first sunday."
+      $stderr.puts "Attendance config must include a value for :first_sunday."
       exit Poprawa::ExitValues::INVALID_CONFIG
     end
 
     unless config[:attendance].has_key?(:last_saturday)
-      $stderr.puts "Config must include a :last_saturday item specifying the date of the last saturday."
+      $stderr.puts "Attendance config must include a value for :last_saturday."
       exit Poprawa::ExitValues::INVALID_CONFIG
     end
 
     unless config[:attendance].has_key?(:meeting_days)
-      $stderr.puts "Config must include a :meeting_days item specifying which days of the week the class meets."
+      $stderr.puts "Attendance config must include a value for :meeting_days."
       exit Poprawa::ExitValues::INVALID_CONFIG
     end
   end
@@ -408,12 +378,17 @@ def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
   start_date = Date.parse(config[:attendance][:first_sunday])
   end_date = Date.parse(config[:attendance][:last_saturday])
 
-  # TODO: Add tests for meeting_days, skip_weeks, and skip_days
   meeting_days = config[:attendance][:meeting_days].to_s.downcase.chars.map { |day_char| "umtwrfs".index(day_char) }
   skip_weeks = config[:attendance][:skip_weeks]&.map { |week| Date.parse(week.to_s)} if config[:attendance].has_key?(:skip_weeks)
   skip_days = config[:attendance][:skip_days]&.map { |day| Date.parse(day.to_s)} if config[:attendance].has_key?(:skip_days)
 
-  left = false
+  # Add borders to the user info data.
+  (0...config[:info_sheet_config].count).each do |col_index|
+    (3...sheet.sheet_data.rows.size).each do |row_index|     
+      sheet.sheet_data[row_index][col_index].change_border(:top, "thin")
+    end
+  end 
+
   col_index = config[:info_sheet_config].count
   start_date.upto(end_date) do |current_date|
 
@@ -434,12 +409,11 @@ def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
     top = false
     (2...sheet.sheet_data.rows.size).each do |row_index|
       sheet.add_cell(row_index, col_index)
-      sheet.sheet_data[row_index][col_index].change_border(:left, "thin") if left # skip the first column
+      sheet.sheet_data[row_index][col_index].change_border(:left, "thin")
       sheet.sheet_data[row_index][col_index].change_border(:top, "thin") if top  # skip the first data row
       top = true
     end
 
-    left = true
     col_index += 1
   end
 end

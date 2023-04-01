@@ -82,9 +82,24 @@ your roster in by hand),
 * freeze the user info columns so they are always visible when entering grades, and 
 * lock the links to the user info columns in the grading worksheets so they aren't accidentally modified.
 
-### Workbook Builder Config
+### Workbook Builder Command Line
 
-#### Student data input
+The basic operation of `workbook_builder` is 
+
+`workbook_builder name_of_config_file.rb`
+
+Because accidentally overwriting a populated gradebook would be disastrous, `workbook_builder` is quite paranoid:
+* It will prompt you before overwriting the output file. (Unless you are foolish/brave enough to use the `--force` flag.)
+* It will copy the existing output file to `name_of_file.xlsx~` before overwriting.
+
+There are a few other command-line options:
+* `--output` will let you override the name of the output file. (Same paranoia as above applies.)
+* `---merge` will let you provide additional config files. (This feature is intended primarily to facilitate testing; but, I can see it being potentially useful for making a quick one-time change to a config without having to edit or copy the "main" config file. It could also be useful for maintaining data that is common to all courses, such as the start and end dates.)
+   * Values in subsequent config files overwrite existing values.
+   * If a value passed to `merge` begins with `{` it is assumed to be Ruby code, not a file containing ruby code.  
+   (Again, added primarily to simplify end-to-end testing.)
+
+#### Student Data Input
 
 Open this sample user info `.csv`: [demp/demo_student_roster.csv](demo_student_roster.csv)
 * `workbook_builder` _ignores the header row_. Most data sources (e.g., LMS gradebook exports) produce 

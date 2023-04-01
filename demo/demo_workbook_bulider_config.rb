@@ -19,7 +19,7 @@
   gradebook_file: "#{File.dirname(__FILE__)}/demo_empty_workbook.xlsx",
 
   # The name of the .csv file containing user data. (See note above about prefixing.)
-  roster_file: "#{File.dirname(__FILE__)}/testStudentInfo.csv",
+  roster_file: "#{File.dirname(__FILE__)}/demo_student_roster.csv",
 
   # info_sheet specifies the name of the Worksheet within the Workbook that contains student info.
   # info_sheet_config describes the columns in the info Worksheet.
@@ -45,7 +45,7 @@
   # Important: The .csv is assumed to have a header row. This row is ignored. The values in the 
   # header row do not affect how the values are imported.
   # To ignore a column in the .csv, just set the corresponding entry in the array to nil.
-  roster_config: [:lname, :fname, :username, :section]
+  roster_config: [:lname, :fname, :username, :section],
 
   # If your .csv file was exported from the BB Classic gradebook, then simply 
   # set roster_config to :bb_classic
