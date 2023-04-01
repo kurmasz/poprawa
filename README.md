@@ -51,7 +51,7 @@ for a different type of mark/grade (including simply recording text).
 
 #### Marks
 
-Each mark (cell in a "non-info" column) can contain three components:
+Each mark/grade can contain three components:
 1. The mark/grade
 2. The number of late days
 3. A comment (private to the instructor)
@@ -77,11 +77,32 @@ your roster in by hand),
 * freeze the user info columns so they are always visible when entering grades, and 
 * lock the links to the user info columns in the grading worksheets so they aren't accidentally modified.
 
-Open this sample user info `.csv`: [demo_student_roster.csv](demo_student_roster.csv)
+Open this sample user info `.csv`: [demp/demo_student_roster.csv](demo_student_roster.csv)
 * `workbook_builder` _ignores the header row_. Most data sources (e.g., LMS gradebook exports) produce 
 a header row, so `workbook_builder` assumes there is one, and ignores the first row. 
 
-Now, look at this sample workbook builder config file: [demo_workbook_builder_config.csv](demo_workbook_builder_config.csv). This file begins by specifying the location of both the `.csv` file used for input and the Excel file it should generate as output. Next, it describes the format if the `.csv` file.
+Now, look at this sample workbook builder config file: [demo/demo_workbook_builder_config.csv](demo_workbook_builder_config.csv). This file begins by specifying the location of both the `.csv` file used for input and the Excel file it should generate as output (`gradebook_file` and `roster_file` respectively). Next, it describes the columns that will be created for the info sheet:
+
+```ruby
+  info_sheet_name: "info",
+  info_sheet_config: [
+    { lname: "Last Name" },
+    { fname: "First Name" },
+    { username: "Username" },
+    { section: "Section" },
+    { github: "GitHub" },
+    { major: "Major" },
+  ]
+```
+
+This syntax is a bit unusual: `info_sheet_config` is an array. Each item in the array is a `Hash` that provides the values in the two header rows. They key is the "short name" and the value is the "long name". (Compare the values in the code above to the header rows in the demo workbook.) Each `Hash` must have exactly one key/value pair.
+
+`roster_config` uses "short names" to map the columns in the `.csv` file to the desired column in the info worksheet. In this example, the columns in the `.csv` and the info sheet happen to be in the same order, but that need not be the case.  Notice that the mapping is done using the order of the items in `roster_config` and the "short names" provided by `info_sheet_config`. _The `.csv` file's header row does not affect this mapping._
+
+
+
+
+
 
 
 
