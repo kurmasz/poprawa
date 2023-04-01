@@ -186,6 +186,7 @@ end
 def parse_csv_userinfo(input_file, columns)
   students = []
 
+  # TODO: make the header row optional qqq1
   CSV.foreach(input_file, headers: :first_row, encoding: "bom|utf-8") do |row|
     student = {}
     columns.each_with_index do |key, index|

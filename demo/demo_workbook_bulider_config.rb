@@ -40,12 +40,15 @@
     { major: "Major" },
   ],
 
-  # The contents of an arbitrary .csv student roster file.
-  # (Each symbol must correspond to the "short name" of a column in the info_sheet_config below)
+  # Specify how each column in an arbitrary .csv file should map to student info.
+  # Each symbol must correspond to the "short name" of a column in the info_sheet_config above.
+  # Important: The .csv is assumed to have a header row. This row is ignored. The values in the 
+  # header row do not affect how the values are imported.
+  # To ignore a column in the .csv, just set the corresponding entry in the array to nil.
   roster_config: [:lname, :fname, :username, :section]
 
-  # If your .csv file was exported from the BB Classic gradebook, then simply set 
-  # roster_config to :bb_classic
+  # If your .csv file was exported from the BB Classic gradebook, then simply 
+  # set roster_config to :bb_classic
   # roster_config: :bb_classic
 
 

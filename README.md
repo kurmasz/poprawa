@@ -77,6 +77,10 @@ your roster in by hand),
 * freeze the user info columns so they are always visible when entering grades, and 
 * lock the links to the user info columns in the grading worksheets so they aren't accidentally modified.
 
+### Workbook Builder Config
+
+#### Student data input
+
 Open this sample user info `.csv`: [demp/demo_student_roster.csv](demo_student_roster.csv)
 * `workbook_builder` _ignores the header row_. Most data sources (e.g., LMS gradebook exports) produce 
 a header row, so `workbook_builder` assumes there is one, and ignores the first row. 
@@ -97,17 +101,25 @@ Now, look at this sample workbook builder config file: [demo/demo_workbook_build
 
 This syntax is a bit unusual: `info_sheet_config` is an array. Each item in the array is a `Hash` that provides the values in the two header rows. They key is the "short name" and the value is the "long name". (Compare the values in the code above to the header rows in the demo workbook.) Each `Hash` must have exactly one key/value pair.
 
-`roster_config` uses "short names" to map the columns in the `.csv` file to the desired column in the info worksheet. In this example, the columns in the `.csv` and the info sheet happen to be in the same order, but that need not be the case.  Notice that the mapping is done using the order of the items in `roster_config` and the "short names" provided by `info_sheet_config`. _The `.csv` file's header row does not affect this mapping._
+`roster_config` uses "short names" to map the columns in the `.csv` file to the desired column in the info worksheet. In this example, the columns in the `.csv` and the info sheet happen to be in the same order, but that need not be the case.  Notice that the mapping is done using the order of the items in `roster_config` and the "short names" provided by `info_sheet_config`. _The `.csv` file's header row does not affect this mapping._ To ignore a column in the `.csv`, make the corresponding entry in `roster_config` `nil`.
+
+(As a short-cut, if your LMS is BB Classic, simply set `roster_config: :bb_classic`.)
+
+#### Catagories
+
+Each category describes one worksheet in the workbook. Typically each worksheet contains a different category of marks (homework, project, learning objective, etc.)  Each category is described by:
+  * key:         the name of the worksheet (both programmatically and as displayed on the tabs)
+  * title:       the full name displayed in reports
+  * short_name:  an abbreviation occasionally used in reports
+  * type:        the "type" of grade (letter, `empn`, etc.) Used to (1) style the display in
+                    reports, and (2) calculate final grades.  All entries in a given category must be the same type.
+  * hidden_info_columns: These columns are hidden in the workbook. (You can "unhide" them later
+                    using Excel if you change your mind.)
+
+All worksheets contain links to all student info columns.  However, not all of those columns may be relevant for each worksheet type.  For example, I find it helpful to have the section number displayed on each worksheet.  However, I only need to see a student's GitHub account name when I'm grading projects. The `hidden_info_columns` instructs `workbook_builder` to hide info columns that the user doesn't want displayed.
 
 
-
-
-
-
-
-
-
-### 
+#### Attendance 
 
 
 
