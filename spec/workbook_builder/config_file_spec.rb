@@ -74,7 +74,7 @@ describe "workbook_builder command line" do
   # end
 
   it "displays a helpful message and exits if roster_config is a symbol, but unrecognized" do
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), options: "--merge=\"{roster_config: :invalid_symbol}\"")
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: { roster_config: :invalid_symbol })
 
     expect(result[:err]).to include('Roster config symbol \'invalid_symbol\' not recognized.')
 
@@ -83,15 +83,70 @@ describe "workbook_builder command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
-  it "displays a helpful message and exits if info_sheet_config is an empty array"
+  it "displays a helpful message and exits if info_sheet_config is an empty array" do
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: { info_sheet_config: [] })
 
-  it "displays a helpful message and exits if info_sheet_config contains an item that is not a Hash"
+    expect(result[:err]).to include("Config must include an :info_sheet_config item that is not empty.")
 
-  it "displays a helpful message and exits if info_sheet_config contains a Hash with no items"
+    expect(result[:err].length).to eq 1
 
-  it "displays a helpful message and exits if info_sheet_config contains a Hash with more than one item"
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
 
+  it "displays a helpful message and exits if info_sheet_config contains an item that is not a Hash" do
+    merge_hash = {
+      info_sheet_config: [
+        { lname: "Last Name" },
+        'not a hash',
+        { fname: "First Name" },
+      ],
+    }
 
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+
+    expect(result[:err]).to include("All items in :info_sheet_config array must be Hashes.")
+
+    expect(result[:err].length).to eq 1
+
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  it "displays a helpful message and exits if info_sheet_config contains a Hash with no items" do
+    merge_hash = {
+      info_sheet_config: [
+        { lname: "Last Name" },
+        {},
+        { fname: "First Name" },
+      ],
+    }
+
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+
+    expect(result[:err]).to include("No items in :info_sheet_config array can be empty.")
+
+    expect(result[:err].length).to eq 1
+
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  it "displays a helpful message and exits if info_sheet_config contains a Hash with more than one item" do
+    merge_hash = {
+      info_sheet_config: [
+        { 
+          lname: "Last Name",
+          fname: "First Name" 
+        }
+      ],
+    }
+
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+
+    expect(result[:err]).to include("No Hash in :info_sheet_config can contain more than one item.")
+
+    expect(result[:err].length).to eq 1
+
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
 
   it "displays a helpful message and exists when categories not specified" do
     result = run_workbook_builder(test_data("bad_configs/config_no_categories.rb"))
@@ -104,7 +159,7 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exists when categories is present but empty" do
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), options: "--merge=\"{categories: []}\"")
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: { categories: [] })
 
     expect(result[:err]).to include("Config must include a :categories item that is not empty.")
 
@@ -113,7 +168,67 @@ describe "workbook_builder command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
-  it "displays a helpful message and exists when categories is not an array"
+  it "displays a helpful message and exists when categories is not an array" do
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: { categories: "not an array" })
+
+    expect(result[:err]).to include(":categories item must be an array.")
+
+    expect(result[:err].length).to eq 1
+
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  it "displays a helpful message and exits if categories contains an item that is not a Hash" do
+    merge_hash = {
+      categories: [
+        {
+          key: :category1,
+          title: "Category1",
+          short_title: "C1",
+        },
+        'Category2',
+        {
+          key: :category3,
+          title: "Category3",
+          short_title: "C3",
+        },
+      ],
+    }
+
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+
+    expect(result[:err]).to include("All items in :categories array must be Hashes.")
+
+    expect(result[:err].length).to eq 1
+
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  it "displays a helpful message and exits if categories contains a Hash with no items" do
+    merge_hash = {
+      categories: [
+        {
+          key: :category1,
+          title: "Category1",
+          short_title: "C1",
+        },
+        {},
+        {
+          key: :category3,
+          title: "Category3",
+          short_title: "C3",
+        },
+      ],
+    }
+
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+
+    expect(result[:err]).to include("No items in :categories array can be empty.")
+
+    expect(result[:err].length).to eq 1
+
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
 
   it "displays a helpful message and exits when category key not specified" do
     merge_hash = {
@@ -156,10 +271,14 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exits if attendance has no last_saturday" do
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), options: "--merge=\"{attendance: {
-      first_sunday: \\\"2023-1-8\\\",
-      meeting_days: \\\"TR\\\"
-    }}\"")
+    merge_hash = {
+      attendance: {
+        first_sunday: "2023-1-8",
+        meeting_days: "TR"
+      }
+    }
+
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
 
     expect(result[:err]).to include("Attendance config must include a value for :last_saturday.")
 
@@ -169,10 +288,14 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exits if attendance has no meeting_days" do
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), options: "--merge=\"{attendance: {
-      first_sunday: \\\"2023-1-8\\\",
-      last_saturday: \\\"2023-4-29\\\"
-    }}\"")
+    merge_hash = {
+      attendance: {
+        first_sunday: "2023-1-8",
+        last_saturday: "2023-4-29"
+      }
+    }
+
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
 
     expect(result[:err]).to include("Attendance config must include a value for :meeting_days.")
 
@@ -230,11 +353,15 @@ describe "workbook_builder command line" do
     end
 
     it "creates attendance sheet if attendance item is present" do
-      result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), options: "--merge=\"{attendance: {
-        first_sunday: \\\"2023-1-8\\\",
-        last_saturday: \\\"2023-4-29\\\",
-        meeting_days: \\\"TR\\\"
-      }}\"")
+      merge_hash = {
+        attendance: {
+          first_sunday: "2023-1-8",
+          last_saturday: "2023-4-29",
+          meeting_days: "TR"
+        }
+      }
+
+      result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
 
       workbook = RubyXL::Parser.parse("spec/output/builder/testConfig.xlsx")
 
