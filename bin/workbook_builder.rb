@@ -75,7 +75,7 @@ def verify_config(config, options)
     exit Poprawa::ExitValues::INVALID_CONFIG
   end
 
-  # verify that roster config is either an array or a valid symbol
+  # verify that roster config is valid
   if config[:roster_config].kind_of?(Symbol)
     case config[:roster_config]
     when :bb_classic
@@ -89,10 +89,48 @@ def verify_config(config, options)
     exit Poprawa::ExitValues::INVALID_CONFIG
   end
 
-  # verify that categories item exists and isn't empty
+  # verify that info_sheet_name is valid
+  # **We don't test for the existence of info_sheet_name because there is a default
+  if not config[:info_sheet_name].kind_of?(String)
+    $stderr.puts ":info_sheet_name must be a string."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  elsif config[:info_sheet_name].empty?
+    $stderr.puts ":info_sheet_name cannot be empty."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  # verify that info_sheet_config is valid
+  # **We don't test for the existence of info_sheet_config because there is a default
+  if config[:info_sheet_config].empty?
+    $stderr.puts "Config must include an :info_sheet_config item that is not empty."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  elsif not config[:info_sheet_config].kind_of?(Array)
+    $stderr.puts ":info_sheet_config item must be an array."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  elsif not config[:info_sheet_config].all? { |info| info.kind_of?(Hash)}
+    $stderr.puts "All items in :info_sheet_config array must be Hashes."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  elsif config[:info_sheet_config].any? { |info| info.empty? }
+    $stderr.puts "No items in :info_sheet_config array can be empty."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  elsif config[:info_sheet_config].any? { |info| info.size > 1}
+    $stderr.puts "No Hash in :info_sheet_config can contain more than one item."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  # verify that categories is valid
   if config.has_key?(:categories)
     if config[:categories].empty?
       $stderr.puts "Config must include a :categories item that is not empty."
+      exit Poprawa::ExitValues::INVALID_CONFIG
+    elsif not config[:categories].kind_of?(Array)
+      $stderr.puts ":categories item must be an array."
+      exit Poprawa::ExitValues::INVALID_CONFIG
+    elsif not config[:categories].all? { |category| category.kind_of?(Hash)}
+      $stderr.puts "All items in :categories array must be Hashes."
+      exit Poprawa::ExitValues::INVALID_CONFIG
+    elsif config[:categories].any? { |category| category.empty? }
+      $stderr.puts "No items in :categories array can be empty."
       exit Poprawa::ExitValues::INVALID_CONFIG
     end
   else
@@ -108,7 +146,7 @@ def verify_config(config, options)
     end
   end
 
-  # if attendance exists, verify that it contains a first sunday and last saturday item
+  # if attendance exists, verify that it contains a first sunday, last saturday, and meeting_days item
   if config.has_key?(:attendance)
     unless config[:attendance].has_key?(:first_sunday)
       $stderr.puts "Attendance config must include a value for :first_sunday."
