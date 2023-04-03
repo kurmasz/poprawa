@@ -47,7 +47,7 @@ describe "workbook_builder command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
-  it "displays a helpful message if no gradebook_file is specified" do
+  it "displays a helpful message and exits if no gradebook_file is specified" do
     result = run_workbook_builder(test_data("bad_configs/config_no_gradebook_file.rb"), input: "yes")
 
     expect(result[:err]).to include("Config must include a gradebook_file item.")
@@ -77,6 +77,26 @@ describe "workbook_builder command line" do
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: { roster_config: :invalid_symbol })
 
     expect(result[:err]).to include('Roster config symbol \'invalid_symbol\' not recognized.')
+
+    expect(result[:err].length).to eq 1
+
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  it "displays a helpful message and exits if info_sheet_name is not a string" do
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: { info_sheet_name: :not_a_string })
+
+    expect(result[:err]).to include(":info_sheet_name must be a string.")
+
+    expect(result[:err].length).to eq 1
+
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  it "displays a helpful message and exits if info_sheet_name is empty" do
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: { info_sheet_name: "" })
+
+    expect(result[:err]).to include(":info_sheet_name cannot be empty.")
 
     expect(result[:err].length).to eq 1
 

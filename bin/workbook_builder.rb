@@ -89,7 +89,17 @@ def verify_config(config, options)
     exit Poprawa::ExitValues::INVALID_CONFIG
   end
 
-  # verify that info_sheet_config item is valid
+  # verify that info_sheet_name is valid
+  # **We don't test for the existence of info_sheet_name because there is a default
+  if not config[:info_sheet_name].kind_of?(String)
+    $stderr.puts ":info_sheet_name must be a string."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  elsif config[:info_sheet_name].empty?
+    $stderr.puts ":info_sheet_name cannot be empty."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  # verify that info_sheet_config is valid
   # **We don't test for the existence of info_sheet_config because there is a default
   if config[:info_sheet_config].empty?
     $stderr.puts "Config must include an :info_sheet_config item that is not empty."
@@ -108,7 +118,7 @@ def verify_config(config, options)
     exit Poprawa::ExitValues::INVALID_CONFIG
   end
 
-  # verify that categories item is valid
+  # verify that categories is valid
   if config.has_key?(:categories)
     if config[:categories].empty?
       $stderr.puts "Config must include a :categories item that is not empty."
