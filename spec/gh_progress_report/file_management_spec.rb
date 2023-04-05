@@ -24,11 +24,10 @@ describe "gh_progress_report file management" do
     FileUtils.mkdir(base_output_dir) unless File.exist?(output_dir)
     
     # Create necessary student directories
-    dirs = %w(lellaAnderson brodieb davisc Ahmed734 flocar macg Issac93 Rohan JustinKim elee pam3 nelsonm ortizzz JaggerP quinna)
+    dirs = %w(lella98 brodieb davisc evah flores23 macg00 hernandi jacksonr kimj lelel pammartinez nelsonm oritzm JaggerP qunna)
     dirs.each { |dir| FileUtils.mkdir("#{output_dir}/#{dir}") }
 
     result = run_ghpr("--suppress-github", "--output=#{output_dir}", test_data("testWorkbook_config.rb"))
-
 
     expect(result[:err].length).to eq 0
     expect(result[:out].length).to eq 0
