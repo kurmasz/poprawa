@@ -170,12 +170,21 @@ HERE
       
       if !category[:progress_thresholds].nil?
         temp_file = Tempfile.new("grades", Dir.pwd)
-        temp_file.write(category[:progress_thresholds].to_json)
+
+        info = {}
+        info[:thresholds] = category[:progress_thresholds]
+        info[:grades] = {
+          :mastered => mark_count[:m] + mark_count[:e],
+          :progressing => mark_count[:p],
+          :assigned => assigned
+        }
+        info[:output_file] = "#{report_dir}/#{category[:short_title]}.png"
+
+        temp_file.write(info.to_json)
         temp_file.close
 
         js_path = "#{File.dirname(__FILE__)}/../generate_graph.js"
-        imagePath = "#{report_dir}/#{category[:short_title]}.png"
-        command = "node #{js_path} #{imagePath} #{mark_count[:m] + mark_count[:e]} #{mark_count[:p]} #{temp_file.path} #{assigned}"
+        command = "node #{js_path} #{temp_file.path}"
         system(command)
         out.puts
         out.puts "![#{category[:title]}](#{category[:short_title]}.png)"
