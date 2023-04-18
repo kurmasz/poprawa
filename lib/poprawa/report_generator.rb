@@ -171,14 +171,49 @@ HERE
       if !category[:progress_thresholds].nil?
         temp_file = Tempfile.new("grades", Dir.pwd)
 
-        info = {}
-        info[:thresholds] = category[:progress_thresholds]
-        info[:grades] = {
-          :mastered => mark_count[:m] + mark_count[:e],
-          :progressing => mark_count[:p],
-          :assigned => assigned
+        # Determine the student's next grade
+        next_grade = nil
+        category[:progress_thresholds][:meets_expectations].each do |key, value|
+          if mark_count[:m] + mark_count[:e] > value
+            break
+          end
+          next_grade = key.to_sym
+        end
+
+        # determine how many Ps should be counted towards student's next grade
+        counted_p = category[:progress_thresholds][:progressing][next_grade] - category[:progress_thresholds][:meets_expectations][next_grade]
+        if counted_p > mark_count[:p]
+          counted_p = mark_count[:p]
+        end
+
+        # Determine number of attempted but not awarded e, m, or p
+        attempted = assigned - (mark_count[:m] + mark_count[:e] + counted_p)
+
+        # puts "attempted: #{attempted}, assigned: #{assigned}, e: #{mark_count[:e]}, m: #{mark_count[:m]}, counted_p: #{counted_p}"
+
+        info = {
+          "thresholds": category[:progress_thresholds][:meets_expectations],
+          "categories": {
+            "M or Better": {
+              "earned": mark_count[:m] + mark_count[:e],
+              "color": "#a5b899"
+            },
+            "\"Counted\" P": {
+              "earned": counted_p,
+              "color": "#d3c0a3"
+            },
+            "Attempted": {
+              "earned": attempted,
+              "color": "#d3717d"
+            }
+          },
+          "colors": {
+            "font_color": "#cccccc",
+            "grid_color": "#cccccc",
+            "tick_color": "#cccccc"
+          },
+          "output_file": "#{report_dir}/#{category[:short_title]}.png"
         }
-        info[:output_file] = "#{report_dir}/#{category[:short_title]}.png"
 
         temp_file.write(info.to_json)
         temp_file.close
