@@ -105,7 +105,7 @@ Open this sample user info `.csv`: [demo_student_roster.csv](demo/demo_student_r
 * `workbook_builder` _ignores the header row_. Most data sources (e.g., LMS gradebook exports) produce 
 a header row, so `workbook_builder` assumes there is one, and ignores the first row. 
 
-Now, look at this sample workbook builder config file: [demo_workbook_builder_config.csv](demo/demo_workbook_builder_config.csv). This file begins by specifying the location of both the `.csv` file used for input and the Excel file it should generate as output (`gradebook_file` and `roster_file` respectively). Next, it describes the columns that will be created for the info sheet:
+Now, look at this sample workbook builder config file: [demo_workbook_builder_config.rb](demo/demo_workbook_builder_config.rb). This file begins by specifying the location of both the `.csv` file used for input and the Excel file it should generate as output (`gradebook_file` and `roster_file` respectively). Next, it describes the columns that will be created for the info sheet:
 
 ```ruby
   info_sheet_name: "info",
