@@ -80,6 +80,8 @@ def verify_config(config, options)
     case config[:roster_config]
     when :bb_classic
       # no problem.
+    when :bb_ultra
+      # no problem
     else
       $stderr.puts "Roster config symbol '#{config[:roster_config]}' not recognized."
       exit Poprawa::ExitValues::INVALID_CONFIG
@@ -214,7 +216,7 @@ end
 
 #################################################################
 #
-# parse_blackboard_classic_userinfo
+# parse_blackboard_userinfo
 #
 # Read the data from a .csv exported by Blackboard Classic
 #
@@ -230,15 +232,15 @@ end
 # component is the section number: GVCIS343.01.202320
 #
 #################################################################
-def parse_blackboard_classic_userinfo(input_file)
+def parse_blackboard_userinfo(input_file, section_loc)
   students = []
 
   # TODO: Also handle header row and make sure the expected headers are present.
   CSV.foreach(input_file, headers: :first_row, encoding: "bom|utf-8") do |row|
-    if row[4].nil?
+    if row[section_loc].nil?
       puts "WARNING: Field Child Course ID in row \"#{row.to_s.chomp}\" is empty."
       sec_num = -1
-    elsif (row[4] =~ /[^.]+\.(\d+)\.[^.]+/).nil?
+    elsif (row[section_loc] =~ /[^.]+\.(\d+)\.[^.]+/).nil?
       puts "WARNING: Child Course ID in row \"#{row.to_s.chomp}\" does not have the expected format."
       sec_num = -1
     else
@@ -262,6 +264,15 @@ def parse_blackboard_classic_userinfo(input_file)
   end
   students
 end
+
+def parse_blackboard_classic_userinfo(input_file)
+  parse_blackboard_userinfo(input_file, 4)
+end
+
+def parse_blackboard_ultra_userinfo(input_file)
+  parse_blackboard_userinfo(input_file, 6)
+end
+
 
 #################################################################
 #
@@ -469,6 +480,8 @@ def load_student_info(config)
     case config[:roster_config]
     when :bb_classic
       students = parse_blackboard_classic_userinfo(config[:roster_file])
+    when :bb_ultra
+      students = parse_blackboard_ultra_userinfo(config[:roster_file])
     end # case
   end # roster config type.
   students

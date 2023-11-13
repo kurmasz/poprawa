@@ -182,4 +182,5 @@ push_report = lambda do |student|
 end
 
 Poprawa::ReportGenerator.generate_reports(g, create_dir: options[:create], after: push_report)
+Poprawa::ReportGenerator.generate_class_report(g, File.open("classReport.md", "w+"))
 log.close

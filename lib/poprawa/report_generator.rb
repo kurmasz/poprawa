@@ -6,8 +6,8 @@
 # (c) 2022 Zachary Kurmas
 #####################################################################################
 
-require 'json'
-require 'tempfile'
+require "json"
+require "tempfile"
 
 module Poprawa
   class ReportGenerator
@@ -27,6 +27,7 @@ module Poprawa
     #
     def self.generate_reports(gradebook, students = gradebook.students, create_dir: false, after: nil)
       students.select { |s| s.active? }.each do |student|
+        $stderr.puts student.lname
         locations = setup_student_dir(student, gradebook, create_dir: create_dir)
         unless locations.nil?
           generate_report(student, gradebook, locations[:report_file], locations[:report_dir])
@@ -41,9 +42,8 @@ module Poprawa
     # loads a student directory and creates an output file
     #
     def self.setup_student_dir(student, g, create_dir: false)
-
       student_github = student.info[:github]&.strip
-      if student_github.nil? || student_github.empty? 
+      if student_github.nil? || student_github.empty?
         puts "GitHub account not specified for #{student.full_name}."
         return nil
       end
@@ -89,34 +89,41 @@ module Poprawa
 HERE
 
       gradebook.categories.each do |category|
+        late_header = ""
+        late_separator = ""
+
+        if category.has_key?(:track_late) && category[:track_late]
+          late_header = "Late Days|"
+          late_separator = "-------|"
+        end
+
         out.puts "## #{category[:title]}"
-        out.puts "|#{category[:title]}|Grade|Late Days|"
-        out.puts "|------|-------|-------|"
+        out.puts "|#{category[:title]}|Progress|#{late_header}"
+        out.puts "|------|-------|#{late_separator}"
 
         category[:assignment_names].each do |key, value|
-          marks = format_marks(student.get_mark(category[:key], key))
+          marks = format_marks(student.get_mark(category[:key], key), category[:type])
           late_days = student.get_late_days(category[:key], key)
 
-          out.printf "|%s (%s)|%s|%s|\n", value, key, marks, late_days
+          out.printf "|%s (%s)|%s|", value, key, marks
+          if category.has_key?(:track_late) && category[:track_late]
+            out.printf "%s|", late_days
+          end
+          out.puts
         end # each item
 
-        if category.has_key?(:empn) || category[:type] == :empn
-          #puts "Generating breakdown for #{category.inspect}"
-          generate_mark_breakdown(student, category, out, report_dir)
-        else
-          #puts "*NOT* Generating breakdown for #{category[:key]}"
-        end
-        
+        generate_mark_breakdown(category[:type], student, category, out, report_dir)
+
         current_grade = gradebook.calc_grade(student, category: category[:key])
         out.puts
         out.printf "Projected grade:  #{current_grade}\n" if current_grade
       end # each category
-      
+
       generate_attendance(student, out)
       generate_legend(out)
-
       out.puts Time.now
       out.close
+      # $stderr.puts "End generate report"
     end
 
     #
@@ -124,7 +131,7 @@ HERE
     #
     # returns a formatted string of marks with the highest grade bolded
     #
-    def self.format_marks(marks)
+    def self.format_marks_empn(marks)
       return if marks.nil?
 
       mark_values = { "e" => 3, "m" => 2, "p" => 1 }
@@ -147,27 +154,81 @@ HERE
       return marks.join(" ")
     end
 
+    def self.format_marks_empn2(marks_in)
+      return if marks_in.nil?
+
+      mark_values = { "e" => 3, "m" => 2, "p" => 1 }
+      highest = 0
+      highest_index = -1
+
+      marks = marks_in.split("")
+      at_or_above = ->(base) { marks.select { |m| mark_values.has_key?(m) && mark_values[m] >= mark_values[base] }.count }
+
+      final = "**N**"
+      final = "**-**" if marks.count < 2
+      final = "**P**" if at_or_above.("p") >= 2
+      final = "**M**" if at_or_above.("m") >= 2
+      final = "**E**" if at_or_above.("e") >= 2
+
+      return "#{final} (#{marks_in})"
+    end
+
+    def self.format_marks_sr2(marks_in)
+      marks = marks_in.split("")
+      num_s = marks.select { |m| m.downcase == "s" }.count
+      final = "**N**"
+      final = "**C**" if num_s >= 2
+      return "#{final} (#{marks_in})"
+    end
+
+    # TODO: Test Me
+    def self.format_marks(marks, type)
+      method_name = "format_marks_#{type.to_s}"
+      if (self.respond_to?(method_name))
+        return self.send(method_name, marks)
+      elsif type == :letter || type == :other
+        return marks
+      else
+        puts "WARNING: No formatter for type #{type}"
+        return marks
+      end
+    end
+
+    def self.generate_mark_breakdown_sr2(student, category, out, report_dir)
+      out.puts
+      out.puts
+      message = <<~LINE
+        To complete a learning objective, you must successfully answer the quiz question for that 
+        objective on _two_ separate weeks. When you have done this, you will see a bold-faced "**C**"
+        in the Progress column. If you have not yet completed a learning objective, you will see 
+        a bold-faced "**N**"
+
+        The letters in parentheses indicate your score on the quizzes offered for that learning objective.
+      LINE
+      out.puts message
+    end
+
     #
-    # generate_mark_breakdown
+    # generate_mark_breakdown_empn
     #
-    def self.generate_mark_breakdown(student, category, out, report_dir)
+    def self.generate_mark_breakdown_empn(student, category, out, report_dir)
       assigned = category[:assignment_names].length
       mark_count = { e: 0, m: 0, p: 0, x: 0 }
-      
+
       category[:assignment_names].each do |key, value|
         marks = student.get_mark(category[:key], key)
         next if marks.nil?
-        
+
         mark_count[highest_mark(marks)] += 1
       end
-      
+
       out.puts
-      out.puts "|E|M|P|X|"
+      out.puts "|E|M|P|N|"
       out.puts "|------|-------|-------|-------|"
       out.puts "|#{mark_count[:e]}|#{mark_count[:m]}|#{mark_count[:p]}|#{mark_count[:x]}|"
       out.puts
       out.puts "#{mark_count[:e] + mark_count[:m]} at 'm' or better."
-      
+
       if !category[:progress_thresholds].nil?
         temp_file = Tempfile.new("grades", Dir.pwd)
         temp_file.write(category[:progress_thresholds].to_json)
@@ -179,6 +240,21 @@ HERE
         system(command)
         out.puts
         out.puts "![#{category[:title]}](#{category[:short_title]}.png)"
+      end
+    end
+
+    # TODO: Test me
+    def self.generate_mark_breakdown(type, student, category, out, report_dir)
+      return if type.nil?
+
+      generator_name = "generate_mark_breakdown_#{type.to_s}"
+      if self.respond_to?(generator_name)
+        self.send(generator_name, student, category, out, report_dir)
+      elsif type == :other || type == :letter
+        return
+      else
+        puts "WARNING: No generator defined for type #{type}"
+        return
       end
     end
 
@@ -200,16 +276,61 @@ HERE
     def self.generate_legend(out)
       out.puts
       out.puts "## Legend "
-      out.puts "* `e`: Exceeds expectations"
-      out.puts "* `m`: Meets expectations"
-      out.puts "* `p`: Progressing"
-      out.puts "* `n`: Not Yet"
-      out.puts "* `x`: Missing"
+      out.puts "* `s`: Success (on quiz)"
+      out.puts "* `r`: Retry (quiz)"
+      out.puts "* `e`: Exceeds expectations (project)"
+      out.puts "* `m`: Meets expectations (project)"
+      out.puts "* `p`: Progressing (project)"
+      out.puts "* `n`: Not Yet (project)"
+      out.puts "* `x`: Missing / Not attempted"
       out.puts "* `.`: Waiting for submission"
       out.puts "* `d`: Demonstrated but not yet graded"
-      out.puts "* `r`: Received but not yet graded"
+      # out.puts "* `r`: Received but not yet graded"
       out.puts "* `?`: Received; Grading in progress"
       out.puts "* `!`: Error in grade sheet"
     end
+
+    #
+    # generate_report
+    #
+    # generate a report for the entire class (per learning objective)
+    #
+    def self.generate_class_report(gradebook, out)       
+      students = gradebook.students.select {|s| s.active? }
+
+      sorts = {
+          learningObjectives: lambda { |a, b| b.scan('s').count - a.scan('s').count }
+      }
+
+
+      gradebook.categories.each do |category|
+        out.puts "## #{category[:title]}"
+       
+        next unless sorts.has_key?(category[:key]) 
+
+        category[:assignment_names].each do |key, value|
+          out.puts "\n### #{value}"
+        
+          students.sort! do |a, b|
+            val1 = a.get_mark(category[:key], key)
+            val2 = b.get_mark(category[:key], key)
+            sorts[category[:key]].call(val1, val2)
+          end
+        
+          out.puts "|    | Name               | Marks     |"
+          out.puts "|----|--------------------|-----------|"          
+
+          students.each_with_index do |student, index| 
+            out.puts "|#{index + 1} | #{student.lname}, #{student.fname} | #{student.get_mark(category[:key], key)}|"
+          end
+
+
+        end
+
+    end
+  end
+
+
+
   end # class ReportGenerator
 end # module Poprawa
