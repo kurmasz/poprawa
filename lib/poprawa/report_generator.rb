@@ -27,7 +27,7 @@ module Poprawa
     #
     def self.generate_reports(gradebook, students = gradebook.students, create_dir: false, after: nil)
       students.select { |s| s.active? }.each do |student|
-        $stderr.puts student.lname
+        # $stderr.puts student.lname
         locations = setup_student_dir(student, gradebook, create_dir: create_dir)
         unless locations.nil?
           generate_report(student, gradebook, locations[:report_file], locations[:report_dir])
@@ -352,7 +352,7 @@ HERE
     
         next unless sorts.has_key?(category[:key]) 
 
-        $stderr.puts("#{category[:assignment_names].inspect}")
+        # $stderr.puts("#{category[:assignment_names].inspect}")
 
         category[:assignment_names].each do |key, value|
           out.puts "\n### #{value}"
