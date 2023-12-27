@@ -42,8 +42,27 @@ describe "workbook_builder command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_PARAMETER
   end
 
+  it "displays helpful message if a merge file cannot be found" do
+    result = run_workbook_builder(test_data("workbook_builder_config.rb"), options: '--merge noSuchFile.rb')
+    expect(result[:err]).to include("Config file \"noSuchFile.rb\" not found.")
+    
+    expect(result[:err].length).to eq 1
+    expect(result[:out].length).to eq 0
 
-  it "displays helpful message if a merge file cannot be found"
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_PARAMETER
+  end
+
+  it "displays helpful message if merge file cannot be opened" do
+    cur_dir = GradebookRunner::TEST_DATA #  File.dirname(__FILE__)
+    result = run_workbook_builder(test_data("workbook_builder_config.rb"), options: "--merge #{cur_dir}")
+    expect(result[:err]).to include("Could not open config file \"#{cur_dir}\" because")
+
+    expect(result[:err].length).to eq 2
+    expect(result[:out].length).to eq 0
+
+    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_PARAMETER
+  end
+
 
   context do
     let(:output_dir) { test_output("builder") }

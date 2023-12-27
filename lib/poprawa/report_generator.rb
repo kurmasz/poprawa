@@ -305,8 +305,10 @@ HERE
 
       gradebook.categories.each do |category|
         out.puts "## #{category[:title]}"
-       
+    
         next unless sorts.has_key?(category[:key]) 
+
+        $stderr.puts("#{category[:assignment_names].inspect}")
 
         category[:assignment_names].each do |key, value|
           out.puts "\n### #{value}"
