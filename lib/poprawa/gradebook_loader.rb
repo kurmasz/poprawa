@@ -84,6 +84,10 @@ module Poprawa
     def self.load(filename, config, verbose: false)
       workbook = RubyXL::Parser.parse(filename)
       info_sheet = student_info_worksheet(workbook, config[:info_sheet_name])
+      
+      # TODO:  Do we really need to use info_sheet_config here?
+      # (It is the only part of info_sheet used by the gradebook)
+      # If we do, add appropriate tests to gh_config_file_spec.
       num_info_columns = config[:info_sheet_config].count
 
       student_map = self.load_info(info_sheet)
@@ -208,11 +212,11 @@ module Poprawa
 
       # Note: Empty / missing cells here are not necessarily a problem.
       # They may just represent an unused column.
-      row.cells.map do |cell|
+      row.cells.each_with_index.map do |cell, index|
         stripped_value = strip_to_nil(cell&.value&.to_s)
 
         # TODO: Test Me
-        put_warning "Warning! Missing assignment key in #{sheet_name}" if stripped_value.nil?
+        put_warning "Warning! Missing assignment key in #{sheet_name} --- #{index}" if stripped_value.nil?
         put_warning "Warning! Assignment key '#{stripped_value}' contains whitespace." if stripped_value =~ /\s+/
         stripped_value&.to_sym
       end
@@ -290,7 +294,7 @@ module Poprawa
 
           # Complain if there is a value in a column that does not have a short name
           if !value.nil? && !has_short_name
-            put_warning "WARNING: There is grade data in cell #{cell_location(cell)} for #{sheet.sheet_name}, but this column doesn't have a short name."
+            put_warning "WARNING: There is grade data in cell index #{index} #{long_names[index]} for #{sheet.sheet_name}, but this column doesn't have a short name."
           end
 
           # Finally, a valid grade in a valid column!

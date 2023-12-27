@@ -44,5 +44,7 @@ describe "gh_progress_report command line" do
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_PARAMETER
   end
 
+  it "displays a helpful message if a merge file cannot be found"
+
   # TODO verify the correct behavior of the output
 end
