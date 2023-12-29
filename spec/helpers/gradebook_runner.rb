@@ -93,8 +93,21 @@ module GradebookRunner
     { out: output, err: error, exit: result[:exit] }
   end
 
+  def contains_proc?(object)
+    if object.is_a?(Array)
+      object.each { |item| contains_proc?(item) }
+    elsif object.is_a?(Hash)
+      object.each { |key, value| contains_proc?(value) }
+    elsif object.is_a?(Proc)
+      fail "Invalid spec configuration: A merge hash may not contain lambdas/procs."
+    end
+  end
+
   def run_workbook_builder(*args, input: nil, options: nil, merge: nil)
-    command = "#{WORKBOOK_BUILDER_COMMAND} #{args.join(" ")}"    
+    # If merge is a hash, make sure it doesn't contain a Proc.
+    contains_proc?(merge) if merge.is_a?(Hash)
+
+    command = "#{WORKBOOK_BUILDER_COMMAND} #{args.join(" ")}"
     command += " --merge '#{merge.to_s}' " unless merge.nil?
     command += " #{options}" if options
     run_helper(command, false, input)

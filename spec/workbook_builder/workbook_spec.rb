@@ -49,8 +49,7 @@ describe "resulting workbook" do
     }
     sid = unique_student_id[input_type]
     fail "Unknown input type #{input_type}" if sid.nil? || sid < 0 || sid > 6
-    unique_student = ["Kim", "Justin", "kimj", sid ]
-
+    unique_student = ["Kim", "Justin", "kimj", sid]
 
     # There should be a Worksheet named "info" (as specified in the config)
     info_sheet = workbook["info"]
@@ -91,6 +90,20 @@ describe "resulting workbook" do
     verify_student_info(workbook, :csv)
   end
 
+  it "builds the info sheet if roster_config uses strings instead of symbols" do
+    merge_string = '{roster_config: ["lname", "fname", "username", { section: ->(value) { value.to_i } }] }'
+
+    workbook = run_builder("workbook_builder_config.rb", merge:merge_string, workbook_filename: "builder/testWorkbook.xlsx")
+    verify_student_info(workbook, :csv)
+  end
+
+  it "builds the info sheet if roster_config uses strings instead of symbols for inner Hash" do
+    merge_string = '{roster_config: [:lname, :fname, :username, { "section" => ->(value) { value.to_i } }] }'
+
+    workbook = run_builder("workbook_builder_config.rb", merge:merge_string, workbook_filename: "builder/testWorkbook.xlsx")
+    verify_student_info(workbook, :csv)
+  end
+
   it "contains an info sheet with student data (built from bb-classic CSV)" do
     roster_file = test_data("test_bb_classic_student_roster.csv")
     merge_string = "{ roster_file: \"#{roster_file}\", roster_config: GVConfig::RosterConfig[:bb_classic]}"
@@ -103,7 +116,7 @@ describe "resulting workbook" do
     roster_file = test_data("test_bb_ultra_student_roster_child_id.csv")
     merge_string = "{ roster_file: \"#{roster_file}\", roster_config: GVConfig::RosterConfig[:bb_ultra_with_child_id]}"
 
-    workbook = run_builder("workbook_builder_config.rb",merge: merge_string, workbook_filename: "builder/testWorkbook.xlsx")
+    workbook = run_builder("workbook_builder_config.rb", merge: merge_string, workbook_filename: "builder/testWorkbook.xlsx")
     verify_student_info(workbook, :bb_ultra_with_child_id)
   end
 

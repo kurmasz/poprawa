@@ -32,7 +32,7 @@ require "optparse"
 require "rubyXL"
 require "rubyXL/convenience_methods"
 require "poprawa/config_loader"
-require 'gv_config'
+require "gv_config"
 
 COLUMNS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -61,7 +61,7 @@ default_config = {
 # Verify that pair is a Hash that has exactly one key-value pair
 #####################################################################
 def verify_kv_pair(pair, description)
-  
+
   # TODO Write system tests for the two features that use this.
   unless pair.is_a?(Hash)
     $stderr.puts "Invalid #{description}. Hash expected but #{pair.class} found: #{pair.inspect}"
@@ -72,7 +72,7 @@ def verify_kv_pair(pair, description)
     $stderr.puts "Invalid #{description}. Item may not be empty."
     exit Poprawa::ExitValues::INVALID_CONFIG
   end
-  
+
   if pair.keys.length != 1
     $stderr.puts "Invalid #{description}. Item has multiple keys: #{pair.inspect}"
     exit Poprawa::ExitValues::INVALID_CONFIG
@@ -86,7 +86,7 @@ end
 # roster_config_kv
 #
 # The roster_config array can contain, either
-#   1. Just a symbol, or 
+#   1. Just a symbol, or
 #   2. A Hash with one key/value pair mapping a symbol onto a lambda.
 #
 # Verify that the item is formatted properly and return the resulting
@@ -94,20 +94,20 @@ end
 #
 ########################################################################
 
-def roster_config_kv(item, value_in=nil, call_lambda: false, row: nil)
+def roster_config_kv(item, value_in = nil, call_lambda: false, row: nil)
   if item.is_a?(Hash)
     # Verify that item is just a single key-value pair
-    key, raw_value = verify_kv_pair(item, 'roster_config')
+    key, raw_value = verify_kv_pair(item, "roster config")
 
     unless raw_value.respond_to? :call
       # TODO: Test me
-      $stderr.puts "Invalid roster_config: Value for #{key} must be a lambda. (#{item.inspect})"
+      $stderr.puts "Invalid roster config: Value for #{key} must be a lambda. (#{item.inspect})"
       exit Poprawa::ExitValues::INVALID_CONFIG
     end
 
     # The user-provided lambda can take either one or two parameters.
-    # This code below sends only the number expected. (In other words, 
-    # it makes sure that the program doesn't crash if the user writes a 
+    # This code below sends only the number expected. (In other words,
+    # it makes sure that the program doesn't crash if the user writes a
     # lambda that takes only one parameter.)
 
     args = [value_in, row]
@@ -119,8 +119,6 @@ def roster_config_kv(item, value_in=nil, call_lambda: false, row: nil)
   end
   return [key, value]
 end
-
-
 
 #################################################################
 #
@@ -144,18 +142,13 @@ def verify_config(config, options)
     exit Poprawa::ExitValues::INVALID_CONFIG
   end
 
+  if config[:roster_config].nil?
+    $stderr.puts "Roster config cannot be nil."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
+
   # verify that roster config is valid
-  if config[:roster_config].kind_of?(Symbol)
-    case config[:roster_config]
-    when :bb_classic
-      # no problem.
-    when :bb_ultra
-      # no problem
-    else
-      $stderr.puts "Roster config symbol '#{config[:roster_config]}' not recognized."
-      exit Poprawa::ExitValues::INVALID_CONFIG
-    end
-  elsif not config[:roster_config].kind_of?(Array)
+  unless config[:roster_config].kind_of?(Array)
     $stderr.puts "Roster config of type #{config[:roster_config].class} not recognized."
     exit Poprawa::ExitValues::INVALID_CONFIG
   end
@@ -271,61 +264,8 @@ def parse_csv_userinfo(input_file, roster_file_config)
     roster_file_config.each_with_index do |column_config, index|
       next if column_config.nil?
       key, value = roster_config_kv(column_config, row[index], call_lambda: true, row: row)
-      student[key] = value
+      student[key.to_sym] = value
     end
-
-    student.each do |key, value|
-      if value.nil? || value.to_s.strip.empty?
-        puts "WARNING: Field #{key} in row \"#{row.to_s.chomp}\" is empty."
-      end
-    end
-    students << student
-  end
-  students
-end
-
-#################################################################
-#
-# parse_blackboard_userinfo
-#
-# Read the data from a .csv exported by Blackboard Classic
-#
-# Specifically, this method maps each non-header row in the CSV
-# to the following keys:
-#  :lname
-#  :fname
-#  :username
-#  <Column D is not used>
-#  :section
-#
-# The child course id is expected to be of this form, where the middle
-# component is the section number: GVCIS343.01.202320
-#
-#################################################################
-def parse_blackboard_userinfo(input_file, child_course_id_column: nil)
-  students = []
-
-  # TODO: Also handle header row and make sure the expected headers are present.
-  # (This would effectively just be another check that the .csv file has the correct format.)
-  CSV.foreach(input_file, headers: :first_row, encoding: "bom|utf-8") do |row|
-    if child_course_id_column.nil?
-      sec_num = 0
-    elsif row[child_course_id_column].nil?
-      puts "WARNING: Field Child Course ID in row \"#{row.to_s.chomp}\" is empty."
-      sec_num = -1
-    elsif (row[child_course_id_column] =~ /[^.]+\.(\d+)\.[^.]+/).nil?
-      puts "WARNING: Child Course ID in row \"#{row.to_s.chomp}\" does not have the expected format."
-      sec_num = -1
-    else
-      sec_num = $1.to_i
-    end
-
-    student = {
-      :lname => row[0],
-      :fname => row[1],
-      :username => row[2],
-      :section => sec_num,
-    }
 
     student.each do |key, value|
       if value.nil? || value.to_s.strip.empty?
@@ -538,26 +478,28 @@ end
 #########################################################################################################
 
 def load_student_info(config)
-  if config[:roster_config].kind_of?(Array)
-    config[:roster_config].each do |column_config|
-      next if column_config.nil?
-      column_name, _ = roster_config_kv(column_config)
-      info_sheet_keys = config[:info_sheet_config].map { |kv_pair| kv_pair.keys.first }
-      unless info_sheet_keys.include?(column_name)
-        $stderr.puts "Key #{column_name} found in roster_config but not in info_sheet_config."
-        exit Poprawa::ExitValues::INVALID_CONFIG
-      end
+  unless config[:roster_config].kind_of?(Array)
+    # This should have already been checked.
+    $stderr.puts "roster_config must be an array"
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  config[:roster_config].each do |column_config|
+    next if column_config.nil?
+    column_name, _ = roster_config_kv(column_config)
+    info_sheet_keys = config[:info_sheet_config].map { |kv_pair| kv_pair.keys.first }
+
+    unless column_name.respond_to?(:to_sym)
+      $stderr.puts "Roster config keys must be symbols. (#{column_name} is of type #{column_name.class}.)"
+      exit Poprawa::ExitValues::INVALID_CONFIG
     end
-    students = parse_csv_userinfo(config[:roster_file], config[:roster_config])
-  elsif config[:roster_config].kind_of?(Symbol)
-    case config[:roster_config]
-    when :bb_classic
-      students = parse_blackboard_userinfo(config[:roster_file], child_course_id_column: 4)
-    when :bb_ultra
-      students = parse_blackboard_userinfo(config[:roster_file], child_course_id_column: 6)
-    end # case
-  end # roster config type.
-  students
+
+    unless info_sheet_keys.include?(column_name.to_sym)
+      $stderr.puts "Key #{column_name} found in roster_config but not in info_sheet_config."
+      exit Poprawa::ExitValues::INVALID_CONFIG
+    end
+  end
+  students = parse_csv_userinfo(config[:roster_file], config[:roster_config])
 end
 
 #########################################################################################################

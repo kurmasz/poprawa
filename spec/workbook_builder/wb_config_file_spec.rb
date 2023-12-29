@@ -16,10 +16,8 @@ describe "workbook_builder configuration file" do
     result = run_workbook_builder(test_data("test_csv_student_roster.csv"))
 
     expect(result[:err]).to include("Syntax error in config file:")
-
     expect(result[:err].length).to be >= 2
     expect(result[:out].length).to eq 0
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -32,7 +30,6 @@ describe "workbook_builder configuration file" do
 
     expect(result[:err].length).to be >= 3
     expect(result[:out].length).to eq 0
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -40,10 +37,8 @@ describe "workbook_builder configuration file" do
     result = run_workbook_builder(test_data("bad_configs/config_non_hash_return.rb"))
 
     expect(result[:err]).to include("Config file must return a Ruby Hash.")
-
     expect(result[:err].length).to eq 1
     expect(result[:out].length).to eq 0
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -51,10 +46,8 @@ describe "workbook_builder configuration file" do
     result = run_workbook_builder(test_data("bad_configs/config_no_gradebook_file.rb"), input: "yes")
 
     expect(result[:err]).to include("Config must include a gradebook_file item.")
-
     expect(result[:err].length).to eq 1
     expect(result[:out].length).to eq 0
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -62,24 +55,7 @@ describe "workbook_builder configuration file" do
     result = run_workbook_builder(test_data("bad_configs/config_no_roster_config.rb"), input: "yes")
 
     expect(result[:err]).to include("Config must include a :roster_config item specifying the format of the .csv file.")
-
     expect(result[:err].length).to eq 1
-
-    expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
-  end
-
-  # write one test that complains if it's a string (not an array)
-  # ["bb_classic", 14, {type: :bb_classic}, lambda {puts "Hi"}].each do |c|
-  #   it "displays a helpful message and exits if roster_config has type #{c.class}"
-  # end
-
-  it "displays a helpful message and exits if roster_config is a symbol, but unrecognized" do
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: { roster_config: :invalid_symbol })
-
-    expect(result[:err]).to include('Roster config symbol \'invalid_symbol\' not recognized.')
-
-    expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -87,9 +63,7 @@ describe "workbook_builder configuration file" do
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: { info_sheet_name: :not_a_string })
 
     expect(result[:err]).to include(":info_sheet_name must be a string.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -97,9 +71,7 @@ describe "workbook_builder configuration file" do
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: { info_sheet_name: "" })
 
     expect(result[:err]).to include(":info_sheet_name cannot be empty.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -107,9 +79,7 @@ describe "workbook_builder configuration file" do
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: { info_sheet_config: [] })
 
     expect(result[:err]).to include("Config must include an :info_sheet_config item that is not empty.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -123,11 +93,8 @@ describe "workbook_builder configuration file" do
     }
 
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
-
     expect(result[:err]).to include("All items in :info_sheet_config array must be Hashes.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
