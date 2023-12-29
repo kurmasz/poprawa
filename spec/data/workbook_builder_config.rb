@@ -1,7 +1,7 @@
 {
   gradebook_file: "#{File.dirname(__FILE__)}/../output/builder/testWorkbook.xlsx",
   roster_file: "#{File.dirname(__FILE__)}/test_csv_student_roster.csv",
-  roster_config: [:lname, :fname, :username, :section],
+  roster_config: [:lname, :fname, :username, {section: ->(value) {value.to_i}}],
 
   info_sheet_name: "info",
   info_sheet_config: [

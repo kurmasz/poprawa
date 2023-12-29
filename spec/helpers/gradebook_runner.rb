@@ -93,9 +93,9 @@ module GradebookRunner
     { out: output, err: error, exit: result[:exit] }
   end
 
-  def run_workbook_builder(*args, input: nil, options: nil, merge_hash: nil)
+  def run_workbook_builder(*args, input: nil, options: nil, merge: nil)
     command = "#{WORKBOOK_BUILDER_COMMAND} #{args.join(" ")}"    
-    command += " --merge '#{merge_hash.to_s}' " unless merge_hash.nil?
+    command += " --merge '#{merge.to_s}' " unless merge.nil?
     command += " #{options}" if options
     run_helper(command, false, input)
   end

@@ -20,7 +20,7 @@ $LOAD_PATH.unshift File.dirname(__FILE__) + "/../lib"
 # protected (i.e., "locked") to prevent accidental modification. (If you want to
 # modify user data, do it on the information worksheet.)
 #
-# See demo/demo_workbook_builder_config.rb for a sample config file and an 
+# See demo/demo_workbook_builder_config.rb for a sample config file and an
 # explanation of the available fields.
 #
 # (c) 2022 Zachary Kurmas
@@ -32,6 +32,7 @@ require "optparse"
 require "rubyXL"
 require "rubyXL/convenience_methods"
 require "poprawa/config_loader"
+require 'gv_config'
 
 COLUMNS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -52,6 +53,74 @@ default_config = {
     { fname: "First Name" },
   ],
 }
+
+#####################################################################
+#
+# verify_kv_pair
+#
+# Verify that pair is a Hash that has exactly one key-value pair
+#####################################################################
+def verify_kv_pair(pair, description)
+  
+  # TODO Write system tests for the two features that use this.
+  unless pair.is_a?(Hash)
+    $stderr.puts "Invalid #{description}. Hash expected but #{pair.class} found: #{pair.inspect}"
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  if pair.keys.length == 0
+    $stderr.puts "Invalid #{description}. Item may not be empty."
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
+  
+  if pair.keys.length != 1
+    $stderr.puts "Invalid #{description}. Item has multiple keys: #{pair.inspect}"
+    exit Poprawa::ExitValues::INVALID_CONFIG
+  end
+
+  return pair.to_a.first
+end
+
+#######################################################################
+#
+# roster_config_kv
+#
+# The roster_config array can contain, either
+#   1. Just a symbol, or 
+#   2. A Hash with one key/value pair mapping a symbol onto a lambda.
+#
+# Verify that the item is formatted properly and return the resulting
+# key and value.
+#
+########################################################################
+
+def roster_config_kv(item, value_in=nil, call_lambda: false, row: nil)
+  if item.is_a?(Hash)
+    # Verify that item is just a single key-value pair
+    key, raw_value = verify_kv_pair(item, 'roster_config')
+
+    unless raw_value.respond_to? :call
+      # TODO: Test me
+      $stderr.puts "Invalid roster_config: Value for #{key} must be a lambda. (#{item.inspect})"
+      exit Poprawa::ExitValues::INVALID_CONFIG
+    end
+
+    # The user-provided lambda can take either one or two parameters.
+    # This code below sends only the number expected. (In other words, 
+    # it makes sure that the program doesn't crash if the user writes a 
+    # lambda that takes only one parameter.)
+
+    args = [value_in, row]
+    expected_args = args[0...raw_value.arity]
+    value = call_lambda ? raw_value.call(*expected_args) : value_in
+  else
+    key = item
+    value = value_in
+  end
+  return [key, value]
+end
+
+
 
 #################################################################
 #
@@ -109,13 +178,13 @@ def verify_config(config, options)
   elsif not config[:info_sheet_config].kind_of?(Array)
     $stderr.puts ":info_sheet_config item must be an array."
     exit Poprawa::ExitValues::INVALID_CONFIG
-  elsif not config[:info_sheet_config].all? { |info| info.kind_of?(Hash)}
+  elsif not config[:info_sheet_config].all? { |info| info.kind_of?(Hash) }
     $stderr.puts "All items in :info_sheet_config array must be Hashes."
     exit Poprawa::ExitValues::INVALID_CONFIG
   elsif config[:info_sheet_config].any? { |info| info.empty? }
     $stderr.puts "No items in :info_sheet_config array can be empty."
     exit Poprawa::ExitValues::INVALID_CONFIG
-  elsif config[:info_sheet_config].any? { |info| info.size > 1}
+  elsif config[:info_sheet_config].any? { |info| info.size > 1 }
     $stderr.puts "No Hash in :info_sheet_config can contain more than one item."
     exit Poprawa::ExitValues::INVALID_CONFIG
   end
@@ -128,7 +197,7 @@ def verify_config(config, options)
     elsif not config[:categories].kind_of?(Array)
       $stderr.puts ":categories item must be an array."
       exit Poprawa::ExitValues::INVALID_CONFIG
-    elsif not config[:categories].all? { |category| category.kind_of?(Hash)}
+    elsif not config[:categories].all? { |category| category.kind_of?(Hash) }
       $stderr.puts "All items in :categories array must be Hashes."
       exit Poprawa::ExitValues::INVALID_CONFIG
     elsif config[:categories].any? { |category| category.empty? }
@@ -177,10 +246,10 @@ end
 # columns:    The symbol for the corresponding column in the info
 #             table (or nil if this .csv column should be ignored)
 #
-# For example, if columns is [:lname, :fname, :username, :section], 
+# For example, if columns is [:lname, :fname, :username, :section],
 # then the data from the first column will be stored in the student
 # object with a key of :lname, the second in :fname, and so on.
-# In other words, the keys in this array refer to the keys used 
+# In other words, the keys in this array refer to the keys used
 # internally in this app *not* the values that appear in the CSV file's
 # header row.
 #
@@ -193,22 +262,23 @@ end
 # removing the header information from the .csv file itself.
 #
 #####################################################################
-def parse_csv_userinfo(input_file, columns)
+def parse_csv_userinfo(input_file, roster_file_config)
   students = []
 
-  # TODO: make the header row optional qqq1
+  # TODO: make the header row optional
   CSV.foreach(input_file, headers: :first_row, encoding: "bom|utf-8") do |row|
     student = {}
-    columns.each_with_index do |key, index|
-      student[key] = row[index] unless key.nil?
+    roster_file_config.each_with_index do |column_config, index|
+      next if column_config.nil?
+      key, value = roster_config_kv(column_config, row[index], call_lambda: true, row: row)
+      student[key] = value
     end
 
     student.each do |key, value|
       if value.nil? || value.to_s.strip.empty?
-        puts "WARNING: Field #{key} in row \"#{row.chomp}\" is empty."
+        puts "WARNING: Field #{key} in row \"#{row.to_s.chomp}\" is empty."
       end
     end
-    # p student
     students << student
   end
   students
@@ -228,19 +298,22 @@ end
 #  <Column D is not used>
 #  :section
 #
-# The section column is expected to be of this form, where the middle
+# The child course id is expected to be of this form, where the middle
 # component is the section number: GVCIS343.01.202320
 #
 #################################################################
-def parse_blackboard_userinfo(input_file, section_loc)
+def parse_blackboard_userinfo(input_file, child_course_id_column: nil)
   students = []
 
   # TODO: Also handle header row and make sure the expected headers are present.
+  # (This would effectively just be another check that the .csv file has the correct format.)
   CSV.foreach(input_file, headers: :first_row, encoding: "bom|utf-8") do |row|
-    if row[section_loc].nil?
+    if child_course_id_column.nil?
+      sec_num = 0
+    elsif row[child_course_id_column].nil?
       puts "WARNING: Field Child Course ID in row \"#{row.to_s.chomp}\" is empty."
       sec_num = -1
-    elsif (row[section_loc] =~ /[^.]+\.(\d+)\.[^.]+/).nil?
+    elsif (row[child_course_id_column] =~ /[^.]+\.(\d+)\.[^.]+/).nil?
       puts "WARNING: Child Course ID in row \"#{row.to_s.chomp}\" does not have the expected format."
       sec_num = -1
     else
@@ -251,7 +324,7 @@ def parse_blackboard_userinfo(input_file, section_loc)
       :lname => row[0],
       :fname => row[1],
       :username => row[2],
-      :section => $1.to_i,
+      :section => sec_num,
     }
 
     student.each do |key, value|
@@ -259,20 +332,10 @@ def parse_blackboard_userinfo(input_file, section_loc)
         puts "WARNING: Field #{key} in row \"#{row.to_s.chomp}\" is empty."
       end
     end
-    # p student
     students << student
   end
   students
 end
-
-def parse_blackboard_classic_userinfo(input_file)
-  parse_blackboard_userinfo(input_file, 4)
-end
-
-def parse_blackboard_ultra_userinfo(input_file)
-  parse_blackboard_userinfo(input_file, 6)
-end
-
 
 #################################################################
 #
@@ -317,8 +380,9 @@ end
 def header_keys(headers)
   headers.map do |item|
     if (item.keys.length != 1)
-      puts "Invalid info sheet config. Item has multiple keys: #{item.inspect}"
-      exit
+      # TODO Is there a test for this?
+      $stderr.puts "Invalid info sheet config. Item has multiple keys: #{item.inspect}"
+      exit Poprawa::ExitValues::INVALID_CONFIG
     end
     item.keys.first
   end
@@ -428,15 +492,15 @@ def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
   end_date = Date.parse(config[:attendance][:last_saturday])
 
   meeting_days = config[:attendance][:meeting_days].to_s.downcase.chars.map { |day_char| "umtwrfs".index(day_char) }
-  skip_weeks = config[:attendance][:skip_weeks]&.map { |week| Date.parse(week.to_s)} if config[:attendance].has_key?(:skip_weeks)
-  skip_days = config[:attendance][:skip_days]&.map { |day| Date.parse(day.to_s)} if config[:attendance].has_key?(:skip_days)
+  skip_weeks = config[:attendance][:skip_weeks]&.map { |week| Date.parse(week.to_s) } if config[:attendance].has_key?(:skip_weeks)
+  skip_days = config[:attendance][:skip_days]&.map { |day| Date.parse(day.to_s) } if config[:attendance].has_key?(:skip_days)
 
   # Add borders to the user info data.
   (0...config[:info_sheet_config].count).each do |col_index|
-    (3...sheet.sheet_data.rows.size).each do |row_index|     
+    (3...sheet.sheet_data.rows.size).each do |row_index|
       sheet.sheet_data[row_index][col_index].change_border(:top, "thin")
     end
-  end 
+  end
 
   col_index = config[:info_sheet_config].count
   start_date.upto(end_date) do |current_date|
@@ -445,7 +509,7 @@ def add_attendance_sheet(workbook, config, protected_xf_id, unprotected_xf_id)
     next unless meeting_days.include?(current_date.wday)
 
     # Skip any days explicitly listed in config.
-    next if skip_days && skip_days.include?(current_date) 
+    next if skip_days && skip_days.include?(current_date)
 
     # Skip any weeks explicitly listed in config.
     prev_sunday = current_date - current_date.wday
@@ -475,13 +539,22 @@ end
 
 def load_student_info(config)
   if config[:roster_config].kind_of?(Array)
+    config[:roster_config].each do |column_config|
+      next if column_config.nil?
+      column_name, _ = roster_config_kv(column_config)
+      info_sheet_keys = config[:info_sheet_config].map { |kv_pair| kv_pair.keys.first }
+      unless info_sheet_keys.include?(column_name)
+        $stderr.puts "Key #{column_name} found in roster_config but not in info_sheet_config."
+        exit Poprawa::ExitValues::INVALID_CONFIG
+      end
+    end
     students = parse_csv_userinfo(config[:roster_file], config[:roster_config])
   elsif config[:roster_config].kind_of?(Symbol)
     case config[:roster_config]
     when :bb_classic
-      students = parse_blackboard_classic_userinfo(config[:roster_file])
+      students = parse_blackboard_userinfo(config[:roster_file], child_course_id_column: 4)
     when :bb_ultra
-      students = parse_blackboard_ultra_userinfo(config[:roster_file])
+      students = parse_blackboard_userinfo(config[:roster_file], child_course_id_column: 6)
     end # case
   end # roster config type.
   students

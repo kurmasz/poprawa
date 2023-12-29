@@ -1,2 +1,21 @@
+* Write a test to complain if roster_config contains element that 
+is not present in  info_sheet_config.
+
+* Develop "hook" mechanism for 
+  * Parsing a csv column
+  * Parsing an entire CSV row.
+(Need a way to specify code to run when it is in an external .rb file)
+* Have config file import external file.
+
+
 * Write roster_parsing tests for BB Ultra and "plain" csv.
   * Make sure roster_config works in general -- including nil.
+
+* What should happen if 
+  * CSV has a column that isn't listed in the info_sheet_config
+  * info_sheet_config has a column that isn't in CSV.
+(Write corresponding tests.)
+
+* Remove the "bb-specific" code from workbook_builder. Move
+  to an external collection of code. (The main problem is that 
+  there are too many ways to handle child id / no child id)

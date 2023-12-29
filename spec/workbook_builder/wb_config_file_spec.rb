@@ -1,6 +1,6 @@
 #################################################################################################
 #
-# System/end-to-end tests for the workbook builder command line.
+# System/end-to-end tests for the workbook builder configuration file.
 #
 # Author::    Zachary Kurmas
 #
@@ -10,7 +10,7 @@
 require "spec_helper"
 require "rubyXL"
 
-describe "workbook_builder command line" do
+describe "workbook_builder configuration file" do
   it "displays a helpful error message if the config file contains a syntax error" do
     # The syntax error will be that we are passing a .csv file instead of an .rb file
     result = run_workbook_builder(test_data("test_csv_student_roster.csv"))
@@ -74,7 +74,7 @@ describe "workbook_builder command line" do
   # end
 
   it "displays a helpful message and exits if roster_config is a symbol, but unrecognized" do
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: { roster_config: :invalid_symbol })
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: { roster_config: :invalid_symbol })
 
     expect(result[:err]).to include('Roster config symbol \'invalid_symbol\' not recognized.')
 
@@ -84,7 +84,7 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exits if info_sheet_name is not a string" do
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: { info_sheet_name: :not_a_string })
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: { info_sheet_name: :not_a_string })
 
     expect(result[:err]).to include(":info_sheet_name must be a string.")
 
@@ -94,7 +94,7 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exits if info_sheet_name is empty" do
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: { info_sheet_name: "" })
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: { info_sheet_name: "" })
 
     expect(result[:err]).to include(":info_sheet_name cannot be empty.")
 
@@ -104,7 +104,7 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exits if info_sheet_config is an empty array" do
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: { info_sheet_config: [] })
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: { info_sheet_config: [] })
 
     expect(result[:err]).to include("Config must include an :info_sheet_config item that is not empty.")
 
@@ -122,7 +122,7 @@ describe "workbook_builder command line" do
       ],
     }
 
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
 
     expect(result[:err]).to include("All items in :info_sheet_config array must be Hashes.")
 
@@ -140,7 +140,7 @@ describe "workbook_builder command line" do
       ],
     }
 
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
 
     expect(result[:err]).to include("No items in :info_sheet_config array can be empty.")
 
@@ -159,7 +159,7 @@ describe "workbook_builder command line" do
       ],
     }
 
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
 
     expect(result[:err]).to include("No Hash in :info_sheet_config can contain more than one item.")
 
@@ -179,7 +179,7 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exists when categories is present but empty" do
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: { categories: [] })
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: { categories: [] })
 
     expect(result[:err]).to include("Config must include a :categories item that is not empty.")
 
@@ -189,7 +189,7 @@ describe "workbook_builder command line" do
   end
 
   it "displays a helpful message and exists when categories is not an array" do
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: { categories: "not an array" })
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: { categories: "not an array" })
 
     expect(result[:err]).to include(":categories item must be an array.")
 
@@ -215,7 +215,7 @@ describe "workbook_builder command line" do
       ],
     }
 
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
 
     expect(result[:err]).to include("All items in :categories array must be Hashes.")
 
@@ -241,7 +241,7 @@ describe "workbook_builder command line" do
       ],
     }
 
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
 
     expect(result[:err]).to include("No items in :categories array can be empty.")
 
@@ -270,7 +270,7 @@ describe "workbook_builder command line" do
       ],
     }
 
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
 
     expect(result[:err]).to include("Config must include a :key for each category.")
 
@@ -281,7 +281,7 @@ describe "workbook_builder command line" do
 
   it "displays a helpful message and exits if attendance has no first_sunday" do
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"),
-                                  merge_hash: { attendance: { last_saturday: "2023-4-29", meeting_days: "TR" } })
+                                  merge: { attendance: { last_saturday: "2023-4-29", meeting_days: "TR" } })
 
     expect(result[:err]).to include("Attendance config must include a value for :first_sunday.")
 
@@ -298,7 +298,7 @@ describe "workbook_builder command line" do
       }
     }
 
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
 
     expect(result[:err]).to include("Attendance config must include a value for :last_saturday.")
 
@@ -315,7 +315,7 @@ describe "workbook_builder command line" do
       }
     }
 
-    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+    result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
 
     expect(result[:err]).to include("Attendance config must include a value for :meeting_days.")
 
@@ -381,7 +381,7 @@ describe "workbook_builder command line" do
         }
       }
 
-      result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge_hash: merge_hash)
+      result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
 
       workbook = RubyXL::Parser.parse("spec/output/builder/testConfig.xlsx")
 
