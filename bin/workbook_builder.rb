@@ -1,7 +1,7 @@
 #! /usr/bin/env ruby
 
 # TODO: Remove me before production
-# Temporary hack to run scripts in development
+# QQQ1 Temporary hack to run scripts in development
 $LOAD_PATH.unshift File.dirname(__FILE__) + "/../lib"
 
 #####################################################################################
@@ -62,7 +62,6 @@ default_config = {
 #####################################################################
 def verify_kv_pair(pair, description)
 
-  # TODO Write system tests for the two features that use this.
   unless pair.is_a?(Hash)
     $stderr.puts "Invalid #{description}. Hash expected but #{pair.class} found: #{pair.inspect}"
     exit Poprawa::ExitValues::INVALID_CONFIG
@@ -93,14 +92,12 @@ end
 # key and value.
 #
 ########################################################################
-
 def roster_config_kv(item, value_in = nil, call_lambda: false, row: nil)
   if item.is_a?(Hash)
     # Verify that item is just a single key-value pair
     key, raw_value = verify_kv_pair(item, "roster config")
 
     unless raw_value.respond_to? :call
-      # TODO: Test me
       $stderr.puts "Invalid roster config: Value for #{key} must be a lambda. (#{item.inspect})"
       exit Poprawa::ExitValues::INVALID_CONFIG
     end
@@ -210,6 +207,7 @@ def verify_config(config, options)
     end
   end
 
+  # TODO Test this
   # if attendance exists, verify that it contains a first sunday, last saturday, and meeting_days item
   if config.has_key?(:attendance)
     unless config[:attendance].has_key?(:first_sunday)
@@ -258,7 +256,7 @@ end
 def parse_csv_userinfo(input_file, roster_file_config)
   students = []
 
-  # TODO: make the header row optional
+  # TODO: make the header row optional QQQ2
   CSV.foreach(input_file, headers: :first_row, encoding: "bom|utf-8") do |row|
     student = {}
     roster_file_config.each_with_index do |column_config, index|

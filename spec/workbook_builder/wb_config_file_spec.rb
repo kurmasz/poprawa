@@ -108,11 +108,8 @@ describe "workbook_builder configuration file" do
     }
 
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
-
     expect(result[:err]).to include("No items in :info_sheet_config array can be empty.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -127,11 +124,8 @@ describe "workbook_builder configuration file" do
     }
 
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
-
     expect(result[:err]).to include("No Hash in :info_sheet_config can contain more than one item.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -139,9 +133,7 @@ describe "workbook_builder configuration file" do
     result = run_workbook_builder(test_data("bad_configs/config_no_categories.rb"))
 
     expect(result[:err]).to include("Config must include a :categories item.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -149,9 +141,7 @@ describe "workbook_builder configuration file" do
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: { categories: [] })
 
     expect(result[:err]).to include("Config must include a :categories item that is not empty.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -159,9 +149,7 @@ describe "workbook_builder configuration file" do
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: { categories: "not an array" })
 
     expect(result[:err]).to include(":categories item must be an array.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -185,9 +173,7 @@ describe "workbook_builder configuration file" do
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
 
     expect(result[:err]).to include("All items in :categories array must be Hashes.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -211,9 +197,7 @@ describe "workbook_builder configuration file" do
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
 
     expect(result[:err]).to include("No items in :categories array can be empty.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -240,9 +224,7 @@ describe "workbook_builder configuration file" do
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
 
     expect(result[:err]).to include("Config must include a :key for each category.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -251,9 +233,7 @@ describe "workbook_builder configuration file" do
                                   merge: { attendance: { last_saturday: "2023-4-29", meeting_days: "TR" } })
 
     expect(result[:err]).to include("Attendance config must include a value for :first_sunday.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -347,5 +327,8 @@ describe "workbook_builder configuration file" do
       expect(attendance_sheet).to_not be_nil
       expect(result[:exit]).to eq Poprawa::ExitValues::SUCCESS
     end
+
+    # This will need to be several tests
+    it "complains if the attendance configuration is incorrect"
   end
 end
