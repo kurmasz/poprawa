@@ -21,7 +21,7 @@ module GVConfig
   #
   # We are, unfortunately, stuck with Blackboard. If we merge several sections
   # into a single Blackboard course, the gradebook includes a "Child Course ID"
-  # field that looks something like this:  GVCIS343.02.202320
+  # field that looks something like this: GVCIS343.02.202320
   #
   # This method parses the section number out from the longer child course ID.
   #

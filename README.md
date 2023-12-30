@@ -5,7 +5,7 @@ Excel-based gradebooks. It is designed for instructors who use mastery-based gra
 forms of alternative grading) and find that their LMS's gradebook doesn't meet their needs.
 (Yes, I'm looking at you, Blackboard.)
 
-In theory, you can use this code "out of the box" -- if you don't mind doing things the same way 
+In theory, you can use this code "out of the box" --- if you don't mind doing things the same way 
 we do. However, rather than expecting you to conform your practices to our code, our goal is to
 document this code well enough that you can customize it to conform to your preferred workflow.
 
@@ -22,20 +22,21 @@ document this code well enough that you can customize it to conform to your pref
 
 This is what your high-level workflow would look like if you use our code without modifications:
 
-1. Edit a Ruby config file (similar to [this one](demo/demo_workbook_builder_config.rb)) so that it describes the desired gradebook structure (e.g., assignment categories).
-2. Obtain/prepare a `.csv` file (similar to [this one](demo/demo_student_roster.csv)) containing student names and other information.
+1. Obtain/prepare a `.csv` file containing student names and other information. (For example, [`demo_student_roster.csv`](demo/demo_student_roster.csv).)
+2. Prepare a Ruby config file that lists the input and output files and describes the desired gradebook structure (e.g., assignment categories). (For example, [`demo_workbook_builder_config.rb`](demo/demo_workbook_builder_config.rb).)
 3. Run the `workbook_builder` script which uses the config and `.csv` files as input then generates an `.xlsx` workbook with student information but no grades/marks.
-   * `workbook_builder demo_workbook_builder_config.rb` (The config file specifies the roster file.)
+   * `workbook_builder demo_workbook_builder_config.rb`
 4. Enter marks in the grade workbook.
-5. Periodically run the `gh_progress_report` script to generate a progress report for each student in markdown format.
+5. Prepare a Ruby config file that is similar to `demo_workbook_builder_config.rb`, but also specifies the location of the generated results.
+   * (You can use the same config file for both scripts. The scripts ignore unused values.)
+6. Periodically run the `gh_progress_report` script to generate a progress report for each student in markdown format.
+   * `gh_progress_report demo_report_generator_config.rb`.
 
 We use GitHub to make the progress reports available to the students. Specifically, 
 1. Students use [GitHub Classroom](https://classroom.github.com/) to create a precisely-named GitHub repository to which the instructor has write access.
 2. Instructors add each student's GitHub account name to the gradebook's "info" worksheet.  
-   * This is currently a manual process because our courses are not big enough to need automation ( typically 25 to 40 students ()).
-3. The script `gh_progress_report` generates a progress report for each student then writes each progress report to the `README.md` file in the student's GitHub repository and pushes the changes.
-   * This script uses a config file similar to [this one](demo/demo_report_generator_config.rb)
-   * `gh_progress_report demo_report_generator_config.rb`
+   * This is currently a manual process because our courses are not big enough to need automation (typically 25 to 40 students).
+3. The script `gh_progress_report` generates a progress report for each student, writes each progress report to the `README.md` file in the student's GitHub repository and pushes the changes.
    * Because the report is written to `README.md`, students can view their report by simply visiting the website for their GitHub page.
    * We configure GitHub Classroom to create private repositories, so the reports can only be seen by the student. 
 
@@ -60,13 +61,15 @@ See [demo_populated_workbook.xlsx](demo_populated_workbook.xlsx) for an example 
 `workbook_builder` is a script that builds a properly organized grading workbook. 
 
 Routines in the Poprawa library make assumptions about how the Excel workbook is organized. Therefore, 
-although it is possible to simply create a new Excel Workbook "by hand" and populate it, it more convenient and less error-prone to use the `workbook_builder` script. See this example configuration file: [demo/demo_workbook_builder_config.rb](demo_workbook_builder_config.rb)
+although it is possible to simply create a new Excel Workbook "by hand" and populate it, it more convenient and less error-prone to use the `workbook_builder` script. 
 
-See the [Workbook Builder](#workbook-builder-details) section for details.
+See [demo/demo_workbook_builder_config.rb](demo_workbook_builder_config.rb) for an example configuration file and the [Workbook Builder](#workbook-builder-details) section for details.
 
 ### Report Generator
 
-`gh_progress_report` is the script that uses the grading workbook to build Markdown-based progress reports for each student.
+`gh_progress_report` is the script that 
+ 1. uses the grading workbook to build a Markdown-based progress report for each student, then
+ 2. pushes each report to a private GitHub repository.
 
 See the [Report Generator](#report-generator-details) section for details.
 
@@ -77,18 +80,19 @@ To set up your first course using Poprawa:
 
 1. Create a folder to contain all of your course's grading-related files. (For simplicity, I will assume all relevant files are in this one directory.)
 2. Obtain a `.csv` file containing your course roster. (Hopefully your LMS or registration system can export something that will work.)
-3. Make a copy of [demo/demo_workbook_builder_config.rb](demo_workbook_builder_config.rb) and customize it for your course.
+3. Make a copy of [demo/demo_combined_config.rb](demo_combined_config.rb) and customize it for your course.
    * Choose a name for your Excel Workbook and set `gradebook_file` accordingly.
    * Set `roster_file` to the name of the `.csv` you just obtained.
    * Set `info_sheet_config` to describe the user data you wish to maintain. (If you are using the GitHub workflow, make sure one of those entries has a short name of `github`.)
    * Set `roster_config` to map the `.csv` columns to your user data.
    * Configure your categories.
    * Configure your attendance sheet (if desired).
+   * Set `output_dir` to the desired location for the generated progress reports.
 4. Run `workload_builder name_of_your_config_file.rb`
 
 If you are also using the GitHub workflow:
    1. Create an assignment in GitHub Classroom (let's assume it is called `progress-report`) and have all of your students accept that assignment.
-   2. Create a directory and clone all of your student's `progress-report` repositories into that directory.
+   2. Clone all of your student's `progress-report` repositories into the `output_dir` specified in your config file.
    3. Edit your config file and add an `output_dir` entry pointing to the directory containing the progress report repositories.
    4. Add each student's GitHub account name to the `github` user info column.
 
@@ -199,15 +203,18 @@ This syntax is a bit unusual: `info_sheet_config` is an array. Each item in the 
 `roster_config` specifies how to map columns from the student data `.csv` to columns in the info worksheet. Consider this example: 
 
 ```ruby
- roster_config: [:lname, :fname, :username, :section]
+ roster_config: [:lname, :fname, :username, {section: ->(value) {value.to_i}}],
  ```
  
-Because `roster_config[2]` is `:username`, then the data in column 2 of the student data `.csv` will be placed in the column labeled `username` in the info worksheet. In this example, the columns in the `.csv` and the info sheet happen to be in the same order, but that need not be the case. To ignore a column in the `.csv`, make the corresponding entry in `roster_config` `nil`. _The `.csv` file's header row does not affect this mapping._ 
+Because `roster_config[2]` is `:username`, then the data in column 2 of the student data `.csv` will be placed in the column whose "short name" is  `:username` in the info worksheet.
+ *  In this example, the columns in the `.csv` and the info sheet happen to be in the same order, but that need not be the case. 
+ * To ignore a column in the `.csv`, set the corresponding entry in `roster_config` to `nil`. 
+ * When a `roster_config` item is a symbol (e.g., `:lname`, `:fname`, and `:username`), the data is simply copied from the `.csv` to the info worksheet.
+ * Instead of a symbol, you can provide a `Hash` that maps the column name to a lambda (or other callable object). That lambda will then be used to transform the value in the `.csv` into the desired value for the info worksheet.  The example above uses a lambda to convert the string in the `:section` column to an integer. The [GVConfig](lib/gv_config.rb) module includes an example of a more complex transformation (extracting the section number from a long course identifier).
+ 
+ Remember: _The `.csv` file's header row does not affect this mapping._ 
 
 
-In place of an array, you can use the following built-in short-cuts:
-  * `:bb_classic`
-  * `:bb_ultra`
 
 ### Catagories
 
@@ -219,7 +226,7 @@ Each category describes one worksheet in the workbook. Typically each worksheet 
                     reports, and (2) calculate progress / final grades.  All entries in a given category must be the same type. See [Grading Types](#grading-types).
   * `hidden_info_columns`: A list of columns from the info worksheet that you don't want displayed on this worksheet
   
-All worksheets contain links to all student info columns.  However, not all of those columns may be relevant for each worksheet type.  For example, I find it helpful to have the section number displayed on each worksheet.  However, I only need to see a student's GitHub account name when I'm grading projects. The `hidden_info_columns` instructs `workbook_builder` to hide info columns that the user doesn't want displayed. You can "unhide" them later using Excel if you change your mind.
+All category worksheets contain links to all student info columns.  However, some of those columns may not be relevant for some worksheet types.  For example, I find it helpful to have the section number displayed on each worksheet.  However, I only need to see a student's GitHub account name when I'm grading projects. The `hidden_info_columns` instructs `workbook_builder` to hide info columns that the user doesn't want displayed. You can "unhide" them later using Excel if you change your mind.
 
 ### Attendance 
 
