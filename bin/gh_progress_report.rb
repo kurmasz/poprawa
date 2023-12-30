@@ -33,12 +33,12 @@ def update_repo(working_dir, student)
 
   # loop through file system until git root is found
   while !File.exist?("#{git_dir}/.git")
-    git_dir = File.dirname(git_dir)
-
-    if git_dir == '/'
+    if git_dir == '/' || git_dir == '.'
       puts "Unable to locate git repo for #{student.info[:github]}"
       return
     end
+
+    git_dir = File.dirname(git_dir)
   end
 
   begin

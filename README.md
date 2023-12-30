@@ -23,8 +23,8 @@ document this code well enough that you can customize it to conform to your pref
 This is what your high-level workflow would look like if you use our code without modifications:
 
 1. Edit a Ruby config file (similar to [this one](demo/demo_workbook_builder_config.rb)) so that it describes the desired gradebook structure (e.g., assignment categories).
-2. Obtain/prepare a `.csv` file (similar to [this one](demo/demo_student_roster.csv))containing student names and other information.
-3. Run the `workbook_builder` script which uses the config and `.csv` files as input then generates an  `xlsx` workbook with student information but no grades/marks.
+2. Obtain/prepare a `.csv` file (similar to [this one](demo/demo_student_roster.csv)) containing student names and other information.
+3. Run the `workbook_builder` script which uses the config and `.csv` files as input then generates an `.xlsx` workbook with student information but no grades/marks.
    * `workbook_builder demo_workbook_builder_config.rb` (The config file specifies the roster file.)
 4. Enter marks in the grade workbook.
 5. Periodically run the `gh_progress_report` script to generate a progress report for each student in markdown format.
@@ -32,9 +32,10 @@ This is what your high-level workflow would look like if you use our code withou
 We use GitHub to make the progress reports available to the students. Specifically, 
 1. Students use [GitHub Classroom](https://classroom.github.com/) to create a precisely-named GitHub repository to which the instructor has write access.
 2. Instructors add each student's GitHub account name to the gradebook's "info" worksheet.  
-   * This is a manual process because our courses are typically 25 to 40 students (not big enough to need automation).
-3. The script `gh_progress_report` writes each progress report to the `README.md` file in the student's GitHub repository, 
-   then pushes the changes. 
+   * This is currently a manual process because our courses are not big enough to need automation ( typically 25 to 40 students ()).
+3. The script `gh_progress_report` generates a progress report for each student then writes each progress report to the `README.md` file in the student's GitHub repository and pushes the changes.
+   * This script uses a config file similar to [this one](demo/demo_report_generator_config.rb)
+   * `gh_progress_report demo_report_generator_config.rb`
    * Because the report is written to `README.md`, students can view their report by simply visiting the website for their GitHub page.
    * We configure GitHub Classroom to create private repositories, so the reports can only be seen by the student. 
 

@@ -38,6 +38,7 @@ require "poprawa/student"
 
 module Poprawa
   class GradebookLoader
+    DEFAULT_ATTENDANCE_SHEET_NAME = "attendance"
 
     # Convert 0-based column indexes into letters.
     # From https://stackoverflow.com/questions/13578555/convert-spreadsheet-column-index-into-character-sequence
@@ -84,7 +85,7 @@ module Poprawa
     def self.load(filename, config, verbose: false)
       workbook = RubyXL::Parser.parse(filename)
       info_sheet = student_info_worksheet(workbook, config[:info_sheet_name])
-      
+
       # TODO:  Do we really need to use info_sheet_config here?
       # (It is the only part of info_sheet used by the gradebook)
       # If we do, add appropriate tests to gh_config_file_spec.
@@ -96,8 +97,11 @@ module Poprawa
         sheet_name = category[:key].to_s
         category[:assignment_names] = self.load_gradesheet(workbook[sheet_name], student_map, num_info_columns)
       end
-      
-      self.load_attendance(workbook[config[:attendance_sheet_name]], student_map, num_info_columns)
+
+      attendance_sheet_name = config.fetch(:attendance_sheet_name, DEFAULT_ATTENDANCE_SHEET_NAME)
+      if (workbook.worksheets.any? { |w| w.sheet_name == attendance_sheet_name })
+        self.load_attendance(workbook[attendance_sheet_name], student_map, num_info_columns)
+      end
 
       yield student_map.values
     end # load method
@@ -251,10 +255,10 @@ module Poprawa
         next if row.index_in_collection < 2
 
         # Collect the values in each cell.
-        cell_values = row.cells.map { |cell| strip_to_nil(cell&.value)}
+        cell_values = row.cells.map { |cell| strip_to_nil(cell&.value) }
 
         # If every cell in the row is empty / nil, then move on.
-        next if cell_values.reject { |item| item.nil?}.length == 0
+        next if cell_values.reject { |item| item.nil? }.length == 0
 
         # TODO: This code assumes students appear in the same row in each
         # worksheet.  There is probably no need to maintain this strict of a structure.
@@ -272,8 +276,8 @@ module Poprawa
         # skip to next student row if inactive
         next unless student.active?
 
-        # Handle the grade columns 
-        # (We use the for .. in syntax using the length of short_names 
+        # Handle the grade columns
+        # (We use the for .. in syntax using the length of short_names
         # instead of .each in case there is a missing cell at the end of the row.)
         for index in num_info_columns..short_names.length
           value = cell_values[index]
@@ -289,7 +293,7 @@ module Poprawa
           # Complain if we are processing this column but there is no value
           if value.nil? && process_this_column
             # TODO Test me
-            put_warning "WARNING: #{sheet.sheet_name} #{long_names[index]} (#{short_names[index]}) Grade missing for #{student.full_name} (Cell #{cell_location_by_index(row.index_in_collection ,index)})"
+            put_warning "WARNING: #{sheet.sheet_name} #{long_names[index]} (#{short_names[index]}) Grade missing for #{student.full_name} (Cell #{cell_location_by_index(row.index_in_collection, index)})"
           end
 
           # Complain if there is a value in a column that does not have a short name
@@ -342,7 +346,7 @@ module Poprawa
     #
     def self.load_attendance(sheet, students, num_info_columns)
       dates = load_date_header(sheet[1], sheet.sheet_name)
-      
+
       sheet.each do |row|
         next if row.nil?
 
@@ -350,10 +354,10 @@ module Poprawa
         next if row.index_in_collection < 2
 
         # Collect the values in each cell.
-        cell_values = row.cells.map { |cell| strip_to_nil(cell&.value)}
+        cell_values = row.cells.map { |cell| strip_to_nil(cell&.value) }
 
         # If every cell in the row is empty / nil, then move on.
-        next if cell_values.reject { |item| item.nil?}.length == 0
+        next if cell_values.reject { |item| item.nil? }.length == 0
 
         # Get Student object for this row.
         # (add 1 row so it matches the row number in the spreadsheet)
@@ -364,7 +368,7 @@ module Poprawa
           exit Poprawa::ExitValues::SPREADSHEET_ERROR
           return
         end
-        
+
         # skip to next student row if inactive
         next unless student.active?
 

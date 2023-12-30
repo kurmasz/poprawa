@@ -1,34 +1,53 @@
-# Progress Report for Ryan Jackson
+# Progress Report for Rohan Jackson
     Note:  This is a draft of the progress report generator.  This version only shows the
     marks I have for each graded item.  Future reports will contain more detail.
 ## Learning Objectives
-|Learning Objectives|Grade|Late Days|
-|------|-------|-------|
-|Origins (o1)|**m**|0|
-|Get/Post (m1)|**m**|0|
-|Implementation (i1)|p **m**|0|
-|URL parts (i2)|**m**|0|
-|Write CSS (h3)|x **m**|0|
+|Learning Objectives|Progress|
+|------|-------|
+|Origins (o1)|**m**|
+|Get/Post (m1)|**m**|
+|Implementation (i1)|p **m**|
+|URL parts (i2)|**m**|
+|Write CSS (h3)|x **m**|
 
-![Learning Objectives](LearningObjectives.png)
+|E|M|P|N|
+|------|-------|-------|-------|
+|0|5|0|0|
+
+5 at 'm' or better.
+
 ## Homework
-|Homework|Grade|Late Days|
-|------|-------|-------|
-|Web Client (H1)|. **m**|0|
-|Web Server (H2)|**m**|0|
-|Qwixx Board (H3)|**m**|0|
+|Homework|Progress|
+|------|-------|
+|Web Client (H1)|. **m**|
+|Web Server (H2)|**m**|
+|Qwixx Board (H3)|**m**|
 
-![Homework](Homework.png)
+|E|M|P|N|
+|------|-------|-------|-------|
+|0|3|0|0|
 
-Current grade:  B
+3 at 'm' or better.
+
+## Projects
+|Projects|Progress|
+|------|-------|
+|Semester Project (sp)|B|
+
+
+## Attendance 
+Days Absent: 0
 
 ## Legend 
-* `e`: Exceeds expectations
-* `m`: Meets expectations
-* `p`: Progressing
-* `x`: Not Yet
-* `.`: Missing
+* `s`: Success (on quiz)
+* `r`: Retry (quiz)
+* `e`: Exceeds expectations (project)
+* `m`: Meets expectations (project)
+* `p`: Progressing (project)
+* `n`: Not Yet (project)
+* `x`: Missing / Not attempted
+* `.`: Waiting for submission
 * `d`: Demonstrated but not yet graded
-* `r`: Received but not yet graded
 * `?`: Received; Grading in progress
-* `!`: Error in gradesheet
+* `!`: Error in grade sheet
+2023-12-30 12:41:50 -0500
