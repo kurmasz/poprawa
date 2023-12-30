@@ -123,9 +123,15 @@ describe "workbook parser roster parsing" do
     # automatically deleted. Need to set the tempfile up
     # differently next time.
 
+    file_names = {
+      bb_classic: "test_bb_classic_student_roster.csv",
+      bb_ultra_with_child_id: "test_bb_ultra_student_roster_child_id.csv",
+    }
+    fail "Unrecognized config '#{config}'" unless file_names.has_key?(config)
+
     bad_roster = Tempfile.new("bad_roster")
     begin
-      good_roster_data = File.read(test_data("test_bb_classic_student_roster.csv"))
+      good_roster_data = File.read(test_data(file_names[config]))
       bad_roster_data = yield(good_roster_data)
       bad_roster.write(bad_roster_data)
       # $stderr.puts bad_roster_data
@@ -161,10 +167,6 @@ describe "workbook parser roster parsing" do
   let(:output_dir) { test_output("builder") }
   before(:each) do
     clean_dir(output_dir)
-  end
-
-  describe "(arbitrary csv)" do
-    it "Add there tests ...."
   end
 
   describe "(BB classic)" do
@@ -218,4 +220,20 @@ describe "workbook parser roster parsing" do
       end
     end
   end # BB classic
+
+  describe "(BB ultra)" do
+    it "Complains if a last name is missing" do
+      test_parser(field: "lname", id: "garciam", config: :bb_ultra_with_child_id) { |s| s.gsub(/^"Garcia",/, ",") }
+    end
+
+    it "Complains if a last name contains only whitespace" do
+      test_parser(field: "lname", id: "garciam", config: :bb_ultra_with_child_id) { |s| s.gsub(/^"Garcia",/, '"",') }
+    end
+
+    it "Complains if a Child Course ID is not parsable" do
+      test_parser(field: "Child Course ID", id: "kimj", config:  :bb_ultra_with_child_id, test_section: true) do |s|
+        s.gsub(/"GVCIS343.05.202320"/, '"not_parsable"')
+      end
+    end
+  end
 end # describe workbook parser

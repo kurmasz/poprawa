@@ -266,11 +266,8 @@ describe "workbook_builder configuration file" do
     }
 
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
-
     expect(result[:err]).to include("Attendance config must include a value for :last_saturday.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -283,11 +280,8 @@ describe "workbook_builder configuration file" do
     }
 
     result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
-
     expect(result[:err]).to include("Attendance config must include a value for :meeting_days.")
-
     expect(result[:err].length).to eq 1
-
     expect(result[:exit]).to eq Poprawa::ExitValues::INVALID_CONFIG
   end
 
@@ -310,7 +304,6 @@ describe "workbook_builder configuration file" do
 
       expect(result[:err].length).to eq(0)
       expect(result[:out].length).to be > 0
-
       expect(result[:exit]).to eq Poprawa::ExitValues::SUCCESS
     end
 
@@ -349,11 +342,8 @@ describe "workbook_builder configuration file" do
       }
 
       result = run_workbook_builder(test_data("valid_configs/config_no_info_sheet_config.rb"), merge: merge_hash)
-
       workbook = RubyXL::Parser.parse("spec/output/builder/testConfig.xlsx")
-
       attendance_sheet = workbook["attendance"]
-
       expect(attendance_sheet).to_not be_nil
       expect(result[:exit]).to eq Poprawa::ExitValues::SUCCESS
     end

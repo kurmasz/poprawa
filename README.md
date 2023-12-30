@@ -27,7 +27,7 @@ This is what your high-level workflow would look like if you use our code withou
 3. Run the `workbook_builder` script which uses the config and `.csv` files as input then generates an `.xlsx` workbook with student information but no grades/marks.
    * `workbook_builder demo_workbook_builder_config.rb`
 4. Enter marks in the grade workbook.
-5. Prepare a Ruby config file that is similar to `demo_workbook_builder_config.rb`, but also specifies the location of the generated results.
+5. Prepare a Ruby config file that is similar to `demo_workbook_builder_config.rb`, but also specifies the location of the generated results. (For example, [`demo_report_generator_config.rb`](demo/demo_report_generator_config.rb).)
    * (You can use the same config file for both scripts. The scripts ignore unused values.)
 6. Periodically run the `gh_progress_report` script to generate a progress report for each student in markdown format.
    * `gh_progress_report demo_report_generator_config.rb`.

@@ -2,7 +2,6 @@
 is not present in  info_sheet_config.
 
 
-* Write roster_parsing tests for BB Ultra and "plain" csv.
 
 * Verify that workbook_builder works without specifying info_sheet_name
 * Verify that workbook_builder works using a different info_sheet_name
