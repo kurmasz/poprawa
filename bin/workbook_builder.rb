@@ -567,7 +567,7 @@ else
   output_file = config[:gradebook_file]
 end
 
-if File.exists?(output_file)
+if File.exist?(output_file)
   if options[:force]
     puts "Overwriting output file by --force."
   else

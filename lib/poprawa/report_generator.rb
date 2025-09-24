@@ -14,9 +14,17 @@ module Poprawa
     MARK_ORDER = ["e", "m", "p", "x"]
 
     # TODO  This probably now belongs somewhere else.  But, I'm not sure where...
-    def self.highest_mark(mark_list)
+    def self.highest_mark(mark_list, k = 1)
       marks = mark_list.split("").map { |m| MARK_ORDER.include?(m) ? m : "x" }
-      marks.sort { |a, b| MARK_ORDER.find_index(a) <=> MARK_ORDER.find_index(b) }.first.to_sym
+      return :x if marks.length < k
+      marks.sort { |a, b| MARK_ORDER.find_index(a) <=> MARK_ORDER.find_index(b) }[k - 1].to_sym
+    end
+
+    #TODO Same here
+    def self.high_score(score_list)
+      marks = score_list.split(/\s+/).select { |string| string.match?(/\A-?\d+(\.\d+)?\z/) }.map(&:to_f)
+      #  puts("Score list =>#{score_list.inspect}<= Marks: =>#{marks.inspect}") if score_list.include?("6")
+      marks.count > 0 ? marks.max : 0
     end
 
     #
@@ -72,6 +80,7 @@ module Poprawa
       rescue => e
         puts "#{student.full_name}"
         puts "\tUnable to open output file: #{e.message}"
+        return nil
       end
     end
 
@@ -82,11 +91,6 @@ module Poprawa
     #
     def self.generate_report(student, gradebook, out, report_dir)
       out.puts "# Progress Report for #{student.full_name}"
-
-      out.puts <<HERE
-    Note:  This is a draft of the progress report generator.  This version only shows the
-    marks I have for each graded item.  Future reports will contain more detail.
-HERE
 
       gradebook.categories.each do |category|
         late_header = ""
@@ -181,6 +185,19 @@ HERE
       return "#{final} (#{marks_in})"
     end
 
+    def self.format_marks_high_score(marks_in)
+      marks_str = marks_in.split(/\s+/)
+
+      marks_num = marks_str.map do |m|
+        m == "." ? 0 : m.to_f
+      end
+
+      highest_index = marks_num.index(marks_num.max)
+
+      marks_str[highest_index] = "**#{marks_str[highest_index]}**"
+      marks_str.join(" ")
+    end
+
     # TODO: Test Me
     def self.format_marks(marks, type)
       method_name = "format_marks_#{type.to_s}"
@@ -189,7 +206,7 @@ HERE
       elsif type == :letter || type == :other
         return marks
       else
-        puts "WARNING: No formatter for type #{type}"
+        puts "WARNING: No mark formatter for type #{type}"
         return marks
       end
     end
@@ -211,15 +228,14 @@ HERE
     #
     # generate_mark_breakdown_empn
     #
-    def self.generate_mark_breakdown_empn(student, category, out, report_dir)
+    def self.generate_mark_breakdown_empn(student, category, out, report_dir, k = 1)
       assigned = category[:assignment_names].length
       mark_count = { e: 0, m: 0, p: 0, x: 0 }
 
       category[:assignment_names].each do |key, value|
         marks = student.get_mark(category[:key], key)
         next if marks.nil?
-
-        mark_count[highest_mark(marks)] += 1
+        mark_count[highest_mark(marks, k)] += 1
       end
 
       out.puts
@@ -257,23 +273,23 @@ HERE
           "categories": {
             "M or Better": {
               "earned": mark_count[:m] + mark_count[:e],
-              "color": "#a5b899"
+              "color": "#a5b899",
             },
             "\"Counted\" P": {
               "earned": counted_p,
-              "color": "#d3c0a3"
+              "color": "#d3c0a3",
             },
             "Attempted": {
               "earned": attempted,
-              "color": "#d3717d"
-            }
+              "color": "#d3717d",
+            },
           },
           "colors": {
             "font_color": "#cccccc",
             "grid_color": "#cccccc",
-            "tick_color": "#cccccc"
+            "tick_color": "#cccccc",
           },
-          "output_file": "#{report_dir}/#{category[:short_title]}.png"
+          "output_file": "#{report_dir}/#{category[:short_title]}.png",
         }
 
         temp_file.write(info.to_json)
@@ -287,6 +303,29 @@ HERE
       end
     end
 
+    def self.generate_mark_breakdown_empn2(student, category, out, report_dir)
+      self.generate_mark_breakdown_empn(student, category, out, report_dir, 2)
+    end
+
+    def self.generate_mark_breakdown_high_score(student, category, out, report_dir)
+      out.puts  # print a blank line
+
+      student_total = 0
+      point_total = 0
+      category[:assignment_names].each do |key, value|
+        marks = student.get_mark(category[:key], key)
+        next if marks.nil?
+        to_add = category[:totals]&.key?(key) ? category[:totals][key] : category[:default_total]
+        if to_add.nil?
+          $stderr.puts("It appears that you haven't specified a total or default_total for #{category}")
+        end
+        point_total += to_add
+        student_total += high_score(marks);
+      end
+      pct = point_total > 0 ? (student_total / point_total) * 100 : 0.0
+      out.puts("Total: #{student_total}/#{point_total} (#{format("%.1f", pct)}%)")
+    end
+
     # TODO: Test me
     def self.generate_mark_breakdown(type, student, category, out, report_dir)
       return if type.nil?
@@ -297,7 +336,7 @@ HERE
       elsif type == :other || type == :letter
         return
       else
-        puts "WARNING: No generator defined for type #{type}"
+        puts "WARNING: No mark breakdown generator defined for type #{type}"
         return
       end
     end
@@ -335,48 +374,45 @@ HERE
     end
 
     #
-    # generate_report
+    # generate_class_report
     #
     # generate a report for the entire class (per learning objective)
     #
-    def self.generate_class_report(gradebook, out)       
-      students = gradebook.students.select {|s| s.active? }
+    def self.generate_class_report(gradebook, out)
+      students = gradebook.students.select { |s| s.active? }
 
       sorts = {
-          learningObjectives: lambda { |a, b| b.scan('s').count - a.scan('s').count }
+        learningObjectives: lambda { |a, b| b.scan("s").count - a.scan("s").count },
       }
-
 
       gradebook.categories.each do |category|
         out.puts "## #{category[:title]}"
-    
-        next unless sorts.has_key?(category[:key]) 
+
+        next unless sorts.has_key?(category[:key])
 
         # $stderr.puts("#{category[:assignment_names].inspect}")
 
         category[:assignment_names].each do |key, value|
           out.puts "\n### #{value}"
-        
+
           students.sort! do |a, b|
             val1 = a.get_mark(category[:key], key)
             val2 = b.get_mark(category[:key], key)
+            if val1.nil? or val2.nil?
+              p a
+              p b
+            end
             sorts[category[:key]].call(val1, val2)
           end
-        
-          out.puts "|    | Name               | Marks     |"
-          out.puts "|----|--------------------|-----------|"          
 
-          students.each_with_index do |student, index| 
+          out.puts "|    | Name               | Marks     |"
+          out.puts "|----|--------------------|-----------|"
+
+          students.each_with_index do |student, index|
             out.puts "|#{index + 1} | #{student.lname}, #{student.fname} | #{student.get_mark(category[:key], key)}|"
           end
-
-
         end
-
+      end
     end
-  end
-
-
-
   end # class ReportGenerator
 end # module Poprawa

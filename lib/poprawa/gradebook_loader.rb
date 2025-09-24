@@ -95,6 +95,10 @@ module Poprawa
 
       config[:categories].each do |category|
         sheet_name = category[:key].to_s
+        if workbook[sheet_name].nil?
+          $stderr.puts "Error! Workbook does not have sheet named '#{sheet_name}' as expected."
+          exit
+        end
         category[:assignment_names] = self.load_gradesheet(workbook[sheet_name], student_map, num_info_columns)
       end
 

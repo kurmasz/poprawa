@@ -66,7 +66,7 @@ module Poprawa
       filename = config[:gradebook_file]
       puts "Processing gradebook #{filename}" if verbose
 
-      # !!! load modifies the config hash
+      # !!! load modifies the config hash !!!
       GradebookLoader.load(filename, config, verbose: verbose) do |students|
         @students = students.freeze
         @config = config.freeze
